@@ -10,7 +10,7 @@ import {
   type ITradingEvent,
   type ITradeOffer,
 } from "../trading";
-import type { TradingEventStatus, TradeOfferStatus } from "@botking/db";
+import { TradingEventStatus, TradeOfferStatus } from "@botking/db";
 
 describe("Trading System", () => {
   let tradingEvent: ITradingEvent;

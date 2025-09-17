@@ -9,13 +9,25 @@ import { SoulChip } from "../soul-chip";
 import { SkeletonFactory } from "../skeleton/skeleton-factory";
 import { PartFactory } from "../part/part-factory";
 import { SlotIdentifier } from "@botking/domain";
+import {
+  SkeletonType,
+  BotType,
+  Rarity,
+  MobilityType,
+  PartCategory,
+} from "../types";
 
 describe("Slot Assignment System", () => {
   let testBot: Bot;
 
   beforeEach(() => {
     // Create a test bot with basic components - use PLAYABLE type so it can have soul chips
-    testBot = BotFactory.createBasicBot("Test Bot", "user_123", "BALANCED" as any, "PLAYABLE" as any);
+    testBot = BotFactory.createBasicBot(
+      "Test Bot",
+      "user_123",
+      SkeletonType.BALANCED,
+      BotType.PLAYABLE
+    );
   });
 
   describe("Basic Slot Assignment", () => {
@@ -91,9 +103,9 @@ describe("Slot Assignment System", () => {
     it("should support part installation with specific slot preference", () => {
       // Create a new part
       const newPart = PartFactory.createPart(
-        "head",
+        PartCategory.HEAD,
         "test_head_001",
-        "common",
+        Rarity.COMMON,
         "Test Helmet",
         {
           attack: 5,
@@ -147,26 +159,33 @@ describe("Slot Assignment System", () => {
 
   describe("Skeleton Type Compatibility", () => {
     it("should work with different skeleton types", () => {
-      const skeletonTypes = ["light", "balanced", "heavy", "flying", "modular"];
+      const skeletonTypes = [
+        SkeletonType.LIGHT,
+        SkeletonType.BALANCED,
+        SkeletonType.HEAVY,
+        SkeletonType.FLYING,
+        SkeletonType.MODULAR,
+      ];
 
       skeletonTypes.forEach((skeletonType) => {
         const skeleton = SkeletonFactory.createSkeleton(
           skeletonType,
           `skeleton_${skeletonType}`,
-          "common",
+          Rarity.COMMON,
           4,
           100,
-          "bipedal"
+          MobilityType.BIPEDAL
         );
 
         const soulChip = new SoulChip(
           `soul_${skeletonType}`,
           `Soul Chip ${skeletonType}`,
-          "common" as any,
+          Rarity.COMMON,
           {
             aggressiveness: 50,
             curiosity: 50,
             loyalty: 50,
+            independence: 50,
             empathy: 50,
             dialogueStyle: "casual" as any,
           },
@@ -180,7 +199,7 @@ describe("Slot Assignment System", () => {
 
         const botConfig = {
           name: `Test Bot ${skeletonType}`,
-          botType: "PLAYABLE" as any, // Use PLAYABLE so it can have soul chips
+          botType: BotType.PLAYABLE, // Use PLAYABLE so it can have soul chips
           userId: "test_user", // PLAYABLE bots need a user
           soulChip,
           skeleton,
@@ -196,6 +215,45 @@ describe("Slot Assignment System", () => {
         expect(visualization.skeletonType).toBe(skeletonType.toUpperCase()); // Domain returns uppercase
         expect(visualization.slots.length).toBeGreaterThan(0);
       });
+    });
+  });
+
+  describe("Worker Bot Support", () => {
+    it("should work with worker bots (no soul chips)", () => {
+      // Create a worker bot without soul chips
+      const workerBot = BotFactory.createBasicBot(
+        "Worker Bot",
+        null,
+        SkeletonType.BALANCED,
+        BotType.WORKER
+      );
+
+      expect(workerBot).toBeDefined();
+      expect(workerBot.botType).toBe(BotType.WORKER);
+      expect(workerBot.soulChip).toBeNull();
+
+      // Slot system should still work
+      const visualization = workerBot.getSlotAssignmentForVisualization();
+      expect(visualization).toBeDefined();
+      expect(visualization.skeletonType).toBe("BALANCED");
+      expect(visualization.slots).toBeInstanceOf(Array);
+
+      // Soul chip slot should be unoccupied for worker bots
+      const soulChipSlot = visualization.slots.find(
+        (slot) => slot.slotId === "SOUL_CHIP"
+      );
+      expect(soulChipSlot).toBeDefined();
+      expect(soulChipSlot!.isOccupied).toBe(false); // Worker bots don't have soul chips
+
+      // Validation should work
+      const validation = workerBot.validateSlotAssignments();
+      expect(validation).toBeDefined();
+      expect(typeof validation.isValid).toBe("boolean");
+
+      // Test slot configuration access
+      const slotConfig = workerBot.slotConfiguration;
+      expect(slotConfig).toBeDefined();
+      expect(slotConfig.skeletonType).toBeDefined();
     });
   });
 

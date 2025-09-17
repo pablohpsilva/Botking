@@ -1,0 +1,34 @@
+{
+  "name": "@botking/dto",
+  "version": "1.0.0",
+  "description": "Data Transfer Objects and database abstraction layer for Botking artifacts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
+  },
+  "keywords": [
+    "botking",
+    "dto",
+    "database",
+    "artifacts",
+    "persistence"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@botking/artifact": "workspace:*",
+    "@botking/db": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@prisma/client": "*"
+  }
+}

@@ -24,5 +24,15 @@
     "composite": true
   },
   "include": [],
-  "references": []
+  "references": [
+    {
+      "path": "./packages/db"
+    },
+    {
+      "path": "./packages/time-chain"
+    },
+    {
+      "path": "./packages/artifact"
+    }
+  ]
 }

@@ -94,8 +94,9 @@ export class DTOExample {
 
     // Create bot
     const bot = botFactory.createDefault({
-      userId: "user123",
+      ownerId: "user123",
       name: "Tactical Destroyer",
+      botType: "PLAYABLE" as any,
       soulChipId: soulChip.id,
       skeletonId: skeleton.id,
       partIds: [armPart.id, legPart.id],

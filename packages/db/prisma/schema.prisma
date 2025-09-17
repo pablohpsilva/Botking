@@ -206,20 +206,37 @@ model BotState {
   id                  String      @id @default(cuid())
   userId              String
   name                String      @db.VarChar(100)
-  location            BotLocation @default(STORAGE)
-  energy              Int         @default(100)
-  maxEnergy           Int         @default(100)
-  health              Int         @default(100)
-  maxHealth           Int         @default(100)
+  stateType           String      @default("worker") // "worker" or "non-worker"
+  
+  // Core properties (all bot types)
+  energyLevel         Int         @default(100)
+  maintenanceLevel    Int         @default(100)
+  currentLocation     BotLocation @default(STORAGE)
   experience          Int         @default(0)
+  statusEffects       String[]    @default([])
+  customizations      Json?       @default("{}")
+  
+  // Non-worker specific properties (null for worker bots)
+  bondLevel           Int?        // 0-100, null for worker bots
+  lastActivity        DateTime?   // null for worker bots
+  battlesWon          Int?        @default(0) // null for worker bots
+  battlesLost         Int?        @default(0) // null for worker bots
+  totalBattles        Int?        @default(0) // null for worker bots
+  
+  // Legacy fields (kept for backward compatibility)
+  energy              Int         @default(100) // Maps to energyLevel
+  maxEnergy           Int         @default(100)
+  health              Int         @default(100) // Maps to maintenanceLevel
+  maxHealth           Int         @default(100)
   level               Int         @default(1)
   missionsCompleted   Int         @default(0)
   successRate         Float       @default(0.0)
   totalCombatTime     Int         @default(0)
   damageDealt         Int         @default(0)
   damageTaken         Int         @default(0)
-  statusEffects       String[]    @default([])
-  lastActiveAt        DateTime    @default(now())
+  lastActiveAt        DateTime    @default(now()) // Maps to lastActivity for non-workers
+  
+  // Metadata
   version             Int         @default(1)
   source              String?
   tags                String[]    @default([])
@@ -237,14 +254,19 @@ model BotState {
 
 model Bot {
   id               String               @id @default(cuid())
-  userId           String
+  userId           String?              // Owner ID - can be null for autonomous bots
+  playerId         String?              // Currently assigned player - can be null
   name             String               @db.VarChar(100)
+  botType          BotType              @default(WORKER)
   soulChipId       String
   skeletonId       String
   stateId          String               @unique
   overallRating    Float?
   buildType        String?
   version          Int                  @default(1)
+  assemblyVersion  Int                  @default(1)
+  assemblyDate     DateTime             @default(now())
+  lastModified     DateTime             @default(now())
   source           String?
   tags             String[]             @default([])
   description      String?
@@ -253,7 +275,7 @@ model Bot {
   updatedAt        DateTime             @updatedAt
   
   // Relations
-  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
   soulChip         SoulChip             @relation(fields: [soulChipId], references: [id], onDelete: Cascade)
   skeleton         Skeleton             @relation(fields: [skeletonId], references: [id], onDelete: Cascade)
   state            BotState             @relation(fields: [stateId], references: [id], onDelete: Cascade)
@@ -370,6 +392,14 @@ enum BotLocation {
   MISSION
   MAINTENANCE
   COMBAT
+}
+
+enum BotType {
+  WORKER
+  PLAYABLE
+  KING
+  ROGUE
+  GOVBOT
 }
 
 enum CollectionType {

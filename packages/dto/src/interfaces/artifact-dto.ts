@@ -56,6 +56,14 @@ export enum BotLocationDTO {
   COMBAT = "combat",
 }
 
+export enum BotTypeDTO {
+  WORKER = "worker",
+  PLAYABLE = "playable",
+  KING = "king",
+  ROGUE = "rogue",
+  GOVBOT = "govbot",
+}
+
 /**
  * Combat stats DTO
  */
@@ -143,16 +151,26 @@ export interface ExpansionChipDTO extends UserOwnedDTO, MetadataDTO {
 }
 
 /**
- * Bot State DTO
+ * Base Bot State DTO
  */
-export interface BotStateDTO extends UserOwnedDTO, MetadataDTO {
+export interface BaseBotStateDTO extends UserOwnedDTO, MetadataDTO {
   name: string;
-  location: BotLocationDTO;
-  energy: number;
-  maxEnergy: number;
-  health: number;
-  maxHealth: number;
+  stateType: "worker" | "non-worker";
+
+  // Core properties (all bot types)
+  energyLevel: number;
+  maintenanceLevel: number;
+  currentLocation: BotLocationDTO;
   experience: number;
+  statusEffects: string[];
+  customizations: Record<string, any>;
+
+  // Legacy fields (for backward compatibility)
+  energy: number; // Maps to energyLevel
+  maxEnergy: number;
+  health: number; // Maps to maintenanceLevel
+  maxHealth: number;
+  location: BotLocationDTO; // Maps to currentLocation
   level: number;
   missionStats: {
     missionsCompleted: number;
@@ -161,21 +179,56 @@ export interface BotStateDTO extends UserOwnedDTO, MetadataDTO {
     damageDealt: number;
     damageTaken: number;
   };
-  statusEffects: string[];
   lastActiveAt: Date;
   metadata?: Record<string, any>;
 }
 
 /**
+ * Worker Bot State DTO
+ */
+export interface WorkerBotStateDTO extends BaseBotStateDTO {
+  stateType: "worker";
+  // Worker bots don't have additional properties beyond base
+}
+
+/**
+ * Non-Worker Bot State DTO
+ */
+export interface NonWorkerBotStateDTO extends BaseBotStateDTO {
+  stateType: "non-worker";
+
+  // Non-worker specific properties
+  bondLevel: number;
+  lastActivity: Date;
+  battlesWon: number;
+  battlesLost: number;
+  totalBattles: number;
+}
+
+/**
+ * Union type for all bot state DTOs
+ */
+export type BotStateDTO = WorkerBotStateDTO | NonWorkerBotStateDTO;
+
+/**
  * Complete Bot DTO (composition of all parts)
  */
-export interface BotDTO extends UserOwnedDTO, MetadataDTO {
+export interface BotDTO extends MetadataDTO {
+  id: string;
   name: string;
+  botType: BotTypeDTO;
+  ownerId: string | null; // Owner ID - can be null for autonomous bots
+  playerId: string | null; // Currently assigned player - can be null
   soulChipId: string;
   skeletonId: string;
   partIds: string[];
   expansionChipIds: string[];
   stateId: string;
+  assemblyVersion: number;
+  assemblyDate: Date;
+  lastModified: Date;
+  createdAt: Date;
+  updatedAt: Date;
 
   // Populated relations
   soulChip?: SoulChipDTO;

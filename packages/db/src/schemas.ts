@@ -13,6 +13,7 @@ export type {
   PartCategory,
   ExpansionChipEffect,
   BotLocation,
+  BotType,
   CollectionType,
 } from "@prisma/client";
 
@@ -68,6 +69,14 @@ export const BotLocationSchema = z.enum([
   "MISSION",
   "MAINTENANCE",
   "COMBAT",
+]);
+
+export const BotTypeSchema = z.enum([
+  "WORKER",
+  "PLAYABLE",
+  "KING",
+  "ROGUE",
+  "GOVBOT",
 ]);
 
 export const CollectionTypeSchema = z.enum([
@@ -159,20 +168,38 @@ export const CreateExpansionChipSchema = z.object({
 export const CreateBotStateSchema = z.object({
   userId: z.string(),
   name: z.string().min(1).max(100),
-  location: BotLocationSchema.optional().default("STORAGE"),
-  energy: z.number().int().min(0).optional().default(100),
-  maxEnergy: z.number().int().min(1).optional().default(100),
-  health: z.number().int().min(0).optional().default(100),
-  maxHealth: z.number().int().min(1).optional().default(100),
+  stateType: z.enum(["worker", "non-worker"]).optional().default("worker"),
+
+  // Core properties (all bot types)
+  energyLevel: z.number().int().min(0).max(100).optional().default(100),
+  maintenanceLevel: z.number().int().min(0).max(100).optional().default(100),
+  currentLocation: BotLocationSchema.optional().default("STORAGE"),
   experience: z.number().int().min(0).optional().default(0),
+  statusEffects: z.array(z.string()).optional().default([]),
+  customizations: z.record(z.string(), z.any()).optional().default({}),
+
+  // Non-worker specific properties (optional/null for worker bots)
+  bondLevel: z.number().int().min(0).max(100).optional(),
+  lastActivity: z.date().optional(),
+  battlesWon: z.number().int().min(0).optional(),
+  battlesLost: z.number().int().min(0).optional(),
+  totalBattles: z.number().int().min(0).optional(),
+
+  // Legacy fields (for backward compatibility)
+  location: BotLocationSchema.optional().default("STORAGE"), // Maps to currentLocation
+  energy: z.number().int().min(0).optional().default(100), // Maps to energyLevel
+  maxEnergy: z.number().int().min(1).optional().default(100),
+  health: z.number().int().min(0).optional().default(100), // Maps to maintenanceLevel
+  maxHealth: z.number().int().min(1).optional().default(100),
   level: z.number().int().min(1).optional().default(1),
   missionsCompleted: z.number().int().min(0).optional().default(0),
   successRate: z.number().min(0).max(1).optional().default(0.0),
   totalCombatTime: z.number().int().min(0).optional().default(0),
   damageDealt: z.number().int().min(0).optional().default(0),
   damageTaken: z.number().int().min(0).optional().default(0),
-  statusEffects: z.array(z.string()).optional().default([]),
-  lastActiveAt: z.date().optional().default(new Date()),
+  lastActiveAt: z.date().optional(),
+
+  // Metadata
   version: z.number().int().optional().default(1),
   source: z.string().optional(),
   tags: z.array(z.string()).optional().default([]),
@@ -181,14 +208,19 @@ export const CreateBotStateSchema = z.object({
 });
 
 export const CreateBotSchema = z.object({
-  userId: z.string(),
+  userId: z.string().optional(), // Optional for autonomous bots (ROGUE, GOVBOT)
+  playerId: z.string().optional(), // Optional player assignment
   name: z.string().min(1).max(100),
+  botType: BotTypeSchema.optional().default("WORKER"),
   soulChipId: z.string(),
   skeletonId: z.string(),
   stateId: z.string(),
   overallRating: z.number().min(0).max(100).optional(),
   buildType: z.string().optional(),
   version: z.number().int().optional().default(1),
+  assemblyVersion: z.number().int().optional().default(1),
+  assemblyDate: z.date().optional(),
+  lastModified: z.date().optional(),
   source: z.string().optional(),
   tags: z.array(z.string()).optional().default([]),
   description: z.string().optional(),
@@ -285,4 +317,118 @@ export const BotAssemblySchema = z
     { message: "Cannot equip more parts than skeleton slots allow" }
   );
 
+// Bot type validation schemas
+export const BotTypeValidationSchema = z
+  .object({
+    botType: BotTypeSchema,
+    userId: z.string().nullable().optional(),
+    playerId: z.string().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    switch (data.botType) {
+      case "PLAYABLE":
+      case "KING":
+        // These types must have an owner
+        if (!data.userId) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${data.botType} bots must have an owner assigned`,
+            path: ["userId"],
+          });
+        }
+        break;
+
+      case "ROGUE":
+      case "GOVBOT":
+        // These types cannot have owners or players
+        if (data.userId) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${data.botType} bots cannot have an owner assigned`,
+            path: ["userId"],
+          });
+        }
+        if (data.playerId) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `${data.botType} bots cannot have a player assigned`,
+            path: ["playerId"],
+          });
+        }
+        break;
+
+      case "WORKER":
+        // Workers can optionally have owners but must have one if they have a player
+        if (data.playerId && !data.userId) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Worker bots with a player must have an owner",
+            path: ["userId"],
+          });
+        }
+        break;
+    }
+  });
+
+// Bot state type validation
+export const BotStateTypeValidationSchema = z
+  .object({
+    stateType: z.enum(["worker", "non-worker"]),
+    bondLevel: z.number().optional(),
+    lastActivity: z.date().optional(),
+    battlesWon: z.number().optional(),
+    battlesLost: z.number().optional(),
+    totalBattles: z.number().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.stateType === "worker") {
+      // Worker bots should not have non-worker specific properties
+      if (data.bondLevel !== undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Worker bots cannot have bond level",
+          path: ["bondLevel"],
+        });
+      }
+      if (data.lastActivity !== undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Worker bots do not track last activity",
+          path: ["lastActivity"],
+        });
+      }
+      if (
+        data.battlesWon !== undefined ||
+        data.battlesLost !== undefined ||
+        data.totalBattles !== undefined
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Worker bots do not track battle statistics",
+          path: ["battlesWon"],
+        });
+      }
+    } else if (data.stateType === "non-worker") {
+      // Non-worker bots should have battle stats consistency
+      if (
+        data.battlesWon !== undefined &&
+        data.battlesLost !== undefined &&
+        data.totalBattles !== undefined
+      ) {
+        if (data.totalBattles < data.battlesWon + data.battlesLost) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "Total battles must be greater than or equal to won + lost battles",
+            path: ["totalBattles"],
+          });
+        }
+      }
+    }
+  });
+
 export type BotAssemblyDTO = z.infer<typeof BotAssemblySchema>;
+export type BotTypeValidationDTO = z.infer<typeof BotTypeValidationSchema>;
+export type BotStateTypeValidationDTO = z.infer<
+  typeof BotStateTypeValidationSchema
+>;

@@ -2,8 +2,8 @@ import type { SoulChip } from "../soul-chip";
 import type { ISkeleton } from "../skeleton";
 import type { IPart } from "../part";
 import type { IExpansionChip } from "../expansion-chip";
-import type { BotState } from "../bot-state";
-import type { CombatStats, Ability } from "../types";
+import type { CombatStats, Ability, BotType } from "../types";
+import type { IBotState } from "../bot-state/bot-state-interface";
 
 /**
  * Interface for a complete Bot artifact
@@ -13,7 +13,9 @@ export interface IBot {
   // Core identification
   readonly id: string;
   readonly name: string;
-  readonly ownerId: string;
+  readonly botType: BotType;
+  readonly ownerId: string | null; // Can be null for bots that don't belong to players
+  readonly playerId: string | null; // Currently assigned player (for playable control)
   readonly version: string;
 
   // Core components
@@ -21,7 +23,7 @@ export interface IBot {
   readonly skeleton: ISkeleton;
   readonly parts: ReadonlyArray<IPart>;
   readonly expansionChips: ReadonlyArray<IExpansionChip>;
-  readonly state: BotState;
+  readonly state: IBotState;
 
   // Assembly metadata
   readonly assemblyDate: Date;
@@ -50,12 +52,19 @@ export interface IBot {
   removePart(partId: string): boolean;
   installExpansionChip(chip: IExpansionChip): boolean;
   removeExpansionChip(chipId: string): boolean;
-  
+
   // State management
-  updateState(newState: Partial<BotState>): void;
+  updateState(newState: Partial<IBotState>): void;
   activate(): boolean;
   deactivate(): void;
   reset(): void;
+
+  // Player assignment management
+  assignPlayer(playerId: string): boolean;
+  unassignPlayer(): boolean;
+  canAssignPlayer(): boolean;
+  requiresPlayer(): boolean;
+  canBeUnassigned(): boolean;
 
   // Validation
   validateAssembly(): {
@@ -79,8 +88,14 @@ export interface IBot {
   clone(): IBot;
 
   // Upgrade and maintenance
-  canUpgrade(component: "skeleton" | "part" | "chip", componentId: string): boolean;
-  upgrade(component: "skeleton" | "part" | "chip", componentId: string): boolean;
+  canUpgrade(
+    component: "skeleton" | "part" | "chip",
+    componentId: string
+  ): boolean;
+  upgrade(
+    component: "skeleton" | "part" | "chip",
+    componentId: string
+  ): boolean;
   getMaintenance(): {
     required: boolean;
     urgency: "low" | "medium" | "high" | "critical";
@@ -103,12 +118,14 @@ export interface IBot {
 export interface BotConfiguration {
   id?: string;
   name: string;
-  ownerId: string;
+  botType: BotType;
+  ownerId?: string | null; // Optional for creation, validated based on bot type
+  playerId?: string | null; // Optional initial player assignment
   soulChip: SoulChip;
   skeleton: ISkeleton;
   parts?: IPart[];
   expansionChips?: IExpansionChip[];
-  initialState?: Partial<BotState>;
+  initialState?: Partial<IBotState>;
   metadata?: Record<string, any>;
 }
 

@@ -495,6 +495,152 @@ console.log("Balance score:", balanceCheck.balanceScore);
 - `BotLocation`: Arena, Factory, Idle, Repair Bay, etc.
 - `ExpansionChipEffect`: Different enhancement types
 
+## 6. Bot Artifact (Complete Robot)
+
+The `Bot` artifact represents a fully assembled robot that integrates all components into a cohesive, operational entity. Each bot has a specific type that determines its ownership and player assignment rules.
+
+**Architecture:**
+
+- `IBot`: Interface defining the complete bot contract
+- `Bot`: Main implementation with full component integration
+- `BotFactory`: Factory for creating different types of bots
+- `BotConfiguration`: Configuration interface for bot assembly
+- `BotType`: Enum defining the 5 bot types with distinct rules
+
+**Core Features:**
+
+- **Component Integration**: Seamlessly combines Soul Chip, Skeleton, Parts, Expansion Chips, and Bot State
+- **Bot Type System**: 5 distinct bot types with different ownership and player assignment rules
+- **Player Assignment**: Advanced player assignment with validation and restrictions
+- **Stats Aggregation**: Automatically calculates combined stats from all components
+- **Assembly Validation**: Ensures component compatibility and slot constraints
+- **State Management**: Handles energy, maintenance, location, and experience
+- **Combat Readiness**: Calculates combat power and operational status
+- **Persistence**: JSON serialization, cloning, and state saving
+- **Performance Metrics**: Efficiency, reliability, versatility, and specialization ratings
+
+**Bot Types:**
+
+1. **🏭 WORKER** - Can optionally have a player assigned for control
+2. **🎮 PLAYABLE** - Must always have a player assigned for gameplay
+3. **👑 KING** - Must always have both owner and player assigned (special status)
+4. **🕵️ ROGUE** - Never assigned to players (autonomous AI-controlled)
+5. **🏛️ GOVBOT** - Never assigned to players (system/government controlled)
+
+**Bot Factory Types:**
+
+```typescript
+import { BotFactory, BotType } from "@botking/artifact";
+
+// Worker bots (can optionally have player)
+const workerBot = BotFactory.createBasicBot(
+  "Worker-01",
+  "owner123",
+  "balanced",
+  BotType.WORKER
+);
+const miningBot = BotFactory.createUtilityBot(
+  "Miner-01",
+  "owner123",
+  "mining",
+  BotType.WORKER
+);
+
+// Playable bots (must have player for gameplay)
+const combatBot = BotFactory.createCombatBot(
+  "Fighter-01",
+  "owner123",
+  "assault",
+  BotType.PLAYABLE
+);
+const tankBot = BotFactory.createCombatBot(
+  "Tank-01",
+  "owner123",
+  "tank",
+  BotType.PLAYABLE
+);
+
+// King bots (special status, requires owner and player)
+const kingBot = BotFactory.createKingBot(
+  "Royal-Supreme",
+  "owner123",
+  "player123"
+);
+
+// Rogue bots (autonomous, no player assignment)
+const rogueBot = BotFactory.createRogueBot("Shadow-Runner");
+
+// Government bots (system controlled, no player assignment)
+const govBot = BotFactory.createGovBot("System-Admin", "admin");
+const securityBot = BotFactory.createGovBot("Security-Chief", "security");
+```
+
+**Bot Operations:**
+
+```typescript
+// Assembly and validation
+const validation = bot.validateAssembly();
+console.log("Valid:", validation.valid);
+console.log("Warnings:", validation.warnings);
+
+// Component management
+bot.installPart(newWeapon);
+bot.installExpansionChip(speedChip);
+bot.removePart(oldPartId);
+
+// State management
+bot.activate();
+bot.updateState({ energyLevel: 80, maintenanceLevel: 90 });
+bot.deactivate();
+bot.reset();
+
+// Player assignment management
+bot.assignPlayer("player123"); // Assign player control
+bot.unassignPlayer(); // Remove player control (if allowed)
+bot.canAssignPlayer(); // Check if player can be assigned
+bot.requiresPlayer(); // Check if bot type requires a player
+bot.canBeUnassigned(); // Check if player can be removed
+
+// Performance analysis
+const combatPower = bot.calculateCombatPower();
+const isReady = bot.isReadyForCombat();
+const metrics = bot.getPerformanceMetrics();
+const maintenance = bot.getMaintenance();
+
+// Persistence
+const jsonData = bot.toJSON();
+const serialized = bot.serialize();
+const clone = bot.clone();
+```
+
+**Computed Properties:**
+
+- `botType`: The bot's type determining player assignment rules
+- `ownerId`: Owner of the bot (can be null for autonomous bots)
+- `playerId`: Currently assigned player (can be null)
+- `aggregatedStats`: Combined combat statistics from all components
+- `totalWeight`: Combined weight affecting mobility
+- `powerRequirement`: Total energy consumption
+- `maxEnergy`: Maximum energy capacity
+- `availableAbilities`: All abilities from components
+- `activeEffects`: Current status effects and buffs
+- `isOperational`: Overall operational status
+- `isReadyForCombat`: Combat readiness check
+
+**Assembly Validation:**
+
+The bot system automatically validates:
+
+- **Bot Type Rules**: Ownership and player assignment constraints
+- **Component compatibility** with skeleton type
+- **Slot usage** within limits
+- **Energy requirements** vs capacity
+- **Essential part presence** (arms, legs)
+- **Component conflicts** and synergies
+- **Player assignment validation** based on bot type
+
+This comprehensive bot system provides a complete, production-ready solution for robot management in the Botking game, with full type safety, validation, and extensibility.
+
 ## License
 
 MIT

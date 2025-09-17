@@ -43,11 +43,14 @@ import {
   SoulChipStatsSchema,
   PartStatsSchema,
   BotAssemblySchema,
+  BotTypeValidationSchema,
   type BotAssemblyDTO,
+  type BotTypeValidationDTO,
 
   // Enum schemas
   RaritySchema,
   SkeletonTypeSchema,
+  BotTypeSchema,
   PartCategorySchema,
   ExpansionChipEffectSchema,
   BotLocationSchema,
@@ -64,6 +67,9 @@ export interface ValidationError {
   message: string;
   code: string;
 }
+
+// Re-export types for easy access
+export type { BotTypeValidationDTO };
 
 /**
  * Auto-sync DTO Factory that leverages Prisma + Zod schemas
@@ -273,6 +279,30 @@ export class AutoSyncDTOFactory {
   static validateBotAssembly(data: unknown): ValidationResult<BotAssemblyDTO> {
     try {
       const validated = BotAssemblySchema.parse(data);
+      return { success: true, data: validated };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return {
+          success: false,
+          errors: error.issues.map((err: any) => ({
+            field: err.path.join("."),
+            message: err.message,
+            code: err.code,
+          })),
+        };
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Validate bot type rules (ownership and player assignment constraints)
+   */
+  static validateBotType(
+    data: unknown
+  ): ValidationResult<BotTypeValidationDTO> {
+    try {
+      const validated = BotTypeValidationSchema.parse(data);
       return { success: true, data: validated };
     } catch (error) {
       if (error instanceof z.ZodError) {

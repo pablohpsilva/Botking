@@ -1,4 +1,4 @@
-import { Rarity, BaseStats, PersonalityTraits } from "./types";
+import { Rarity, BaseStats, PersonalityTraits } from "../types";
 
 /**
  * Soul Chip - The core of the bot that defines individuality and emotional connection

@@ -11,6 +11,7 @@ import type {
   CreateBotStateDTO,
   CreateBotDTO,
   BotAssemblyDTO,
+  BotTypeValidationDTO,
 } from "./auto-sync-dto-factory";
 
 export class AutoSyncExample {
@@ -314,6 +315,99 @@ export class AutoSyncExample {
   }
 
   /**
+   * Demonstrate bot type validation (ownership and player assignment rules)
+   */
+  static demonstrateBotTypeValidation(): void {
+    console.log("🤖 Demonstrating Bot Type validation...");
+
+    // Valid bot type configurations
+    console.log("\n✅ Valid configurations:");
+
+    // Worker bot - can have optional owner and player
+    const validWorker = AutoSyncDTOFactory.validateBotType({
+      botType: "WORKER",
+      userId: "owner_123",
+      playerId: "player_456",
+    });
+    console.log("Worker with owner and player:", validWorker.success);
+
+    // Playable bot - must have owner
+    const validPlayable = AutoSyncDTOFactory.validateBotType({
+      botType: "PLAYABLE",
+      userId: "owner_123",
+      playerId: "player_456",
+    });
+    console.log("Playable with owner:", validPlayable.success);
+
+    // King bot - must have owner
+    const validKing = AutoSyncDTOFactory.validateBotType({
+      botType: "KING",
+      userId: "owner_123",
+      playerId: "player_456",
+    });
+    console.log("King with owner and player:", validKing.success);
+
+    // Rogue bot - autonomous, no owner or player
+    const validRogue = AutoSyncDTOFactory.validateBotType({
+      botType: "ROGUE",
+      userId: null,
+      playerId: null,
+    });
+    console.log("Rogue autonomous:", validRogue.success);
+
+    // GovBot - system controlled, no owner or player
+    const validGovBot = AutoSyncDTOFactory.validateBotType({
+      botType: "GOVBOT",
+      userId: null,
+      playerId: null,
+    });
+    console.log("GovBot system controlled:", validGovBot.success);
+
+    console.log("\n❌ Invalid configurations:");
+
+    // King without owner (should fail)
+    const invalidKing = AutoSyncDTOFactory.validateBotType({
+      botType: "KING",
+      userId: null,
+      playerId: "player_456",
+    });
+    if (!invalidKing.success) {
+      console.log(
+        "King without owner rejected:",
+        invalidKing.errors?.[0]?.message || "Validation failed"
+      );
+    }
+
+    // Rogue with owner (should fail)
+    const invalidRogue = AutoSyncDTOFactory.validateBotType({
+      botType: "ROGUE",
+      userId: "owner_123",
+      playerId: null,
+    });
+    if (!invalidRogue.success) {
+      console.log(
+        "Rogue with owner rejected:",
+        invalidRogue.errors?.[0]?.message || "Validation failed"
+      );
+    }
+
+    // Worker with player but no owner (should fail)
+    const invalidWorker = AutoSyncDTOFactory.validateBotType({
+      botType: "WORKER",
+      userId: null,
+      playerId: "player_456",
+    });
+    if (!invalidWorker.success) {
+      console.log(
+        "Worker with player but no owner rejected:",
+        invalidWorker.errors?.[0]?.message || "Validation failed"
+      );
+    }
+
+    console.log("");
+  }
+
+  /**
    * Demonstrate enum validation
    */
   static demonstrateEnumValidation(): void {
@@ -325,6 +419,12 @@ export class AutoSyncExample {
 
     const validSkeletonType = AutoSyncDTOFactory.validateSkeletonType("FLYING");
     console.log("✅ Valid SkeletonType:", validSkeletonType.data);
+
+    const validBotType = AutoSyncDTOFactory.validateBotType({
+      botType: "WORKER",
+      userId: "owner_123",
+    });
+    console.log("✅ Valid BotType:", validBotType.data?.botType);
 
     // Invalid enum values
     const invalidRarity = AutoSyncDTOFactory.validateRarity("SUPER_RARE");
@@ -355,6 +455,7 @@ export class AutoSyncExample {
     this.createExamplePart();
     this.createExampleBotState();
     this.demonstrateBotAssembly();
+    this.demonstrateBotTypeValidation();
     this.demonstrateEnumValidation();
 
     console.log("🎉 All examples completed!");

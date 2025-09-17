@@ -46,10 +46,21 @@ export enum StatusEffect {
   DEFENSE_BOOST = "defense_boost",
   SPEED_BOOST = "speed_boost",
   ENERGY_DRAIN = "energy_drain",
+  ENERGY_BOOST = "energy_boost",
   MAINTENANCE_PENALTY = "maintenance_penalty",
   SHIELD_ACTIVE = "shield_active",
   STEALTH_MODE = "stealth_mode",
   OVERCHARGE = "overcharge",
+
+  // Worker-specific effects
+  PRODUCTIVITY_BOOST = "productivity_boost",
+  FATIGUE = "fatigue",
+  MAINTENANCE_BONUS = "maintenance_bonus",
+
+  // Non-worker specific effects
+  MORALE_BOOST = "morale_boost",
+  MORALE_PENALTY = "morale_penalty",
+  SKILL_IMPROVEMENT = "skill_improvement",
 }
 
 // Bot locations
@@ -80,6 +91,7 @@ export interface CombatStats {
 
 // Status effect with duration
 export interface ActiveStatusEffect {
+  id: string; // unique identifier for this effect instance
   effect: StatusEffect;
   magnitude: number;
   duration: number; // in turns/seconds
@@ -116,4 +128,13 @@ export enum ExpansionChipEffect {
   SPECIAL_ABILITY = "special_ability",
   STAT_BOOST = "stat_boost",
   RESISTANCE = "resistance",
+}
+
+// Bot types with player assignment rules
+export enum BotType {
+  WORKER = "worker", // Can have a player assigned
+  PLAYABLE = "playable", // Must have a player assigned
+  KING = "king", // Must have a player assigned
+  ROGUE = "rogue", // Never assigned to players
+  GOVBOT = "govbot", // Never assigned to players
 }

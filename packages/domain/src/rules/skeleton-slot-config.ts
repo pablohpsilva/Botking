@@ -138,13 +138,13 @@ export const SKELETON_SLOT_CONFIG: SkeletonSlotConfig = {
       default: 1,
     },
     [PartCategory.LEG]: {
-      min: 1,
+      min: 2,
       max: 2, // 1..2 legs
       default: 2,
     },
     [PartCategory.ARM]: {
-      min: 0,
-      max: 2, // 0..2 arms
+      min: 2,
+      max: 2, // 2..2 arms
       default: 2,
     },
     [PartCategory.ACCESSORY]: {
@@ -154,7 +154,7 @@ export const SKELETON_SLOT_CONFIG: SkeletonSlotConfig = {
     },
     expansionChips: {
       min: 0,
-      max: 2, // 0..2 expansion chips
+      max: null, // 0..2 expansion chips
       default: 1,
     },
     soulChips: {

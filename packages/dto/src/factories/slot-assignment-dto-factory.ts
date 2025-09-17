@@ -3,7 +3,7 @@
  */
 
 import { PartCategory } from "@botking/db";
-import { BaseDTOFactory } from "./dto-factory";
+// Note: This factory doesn't extend BaseDTOFactory, so no import needed
 import {
   SlotAssignmentDTO,
   CreateSlotAssignmentDTO,

@@ -17,7 +17,7 @@ import {
   SkeletonDTOFactory,
   PartDTOFactory,
   BotDTOFactory,
-} from "./factories/dto-factory";
+} from "./factories";
 
 /**
  * Example usage of the DTO system

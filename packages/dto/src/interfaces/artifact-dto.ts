@@ -490,3 +490,217 @@ export interface UpdateItemDTO {
 export interface ItemWithUserInventoriesDTO extends ItemDTO {
   userInventories: UserInventoryDTO[];
 }
+
+// Trading System DTOs
+
+export enum TradingEventStatusDTO {
+  DRAFT = "draft",
+  ACTIVE = "active",
+  PAUSED = "paused",
+  ENDED = "ended",
+  CANCELLED = "cancelled",
+}
+
+export enum TradeOfferStatusDTO {
+  ACTIVE = "active",
+  PAUSED = "paused",
+  SOLD_OUT = "sold_out",
+  EXPIRED = "expired",
+}
+
+export enum TradeItemTypeDTO {
+  REQUIRED = "required",
+  REWARD = "reward",
+}
+
+export interface TradingEventDTO {
+  id: string;
+  name: string;
+  description?: string;
+  status: TradingEventStatusDTO;
+  startDate?: string | null; // ISO string
+  endDate?: string | null; // ISO string
+  isRepeatable: boolean;
+  maxTradesPerUser?: number | null;
+  priority: number;
+  tags: string[];
+  imageUrl?: string | null;
+  createdBy?: string | null;
+  isPublic: boolean;
+  version: number;
+  source?: string;
+  metadata?: Record<string, any>;
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
+}
+
+export interface CreateTradingEventDTO {
+  name: string;
+  description?: string | null;
+  status?: TradingEventStatusDTO;
+  startDate?: string | null; // ISO string
+  endDate?: string | null; // ISO string
+  isRepeatable?: boolean;
+  maxTradesPerUser?: number | null;
+  priority?: number;
+  tags?: string[];
+  imageUrl?: string | null;
+  createdBy?: string | null;
+  isPublic?: boolean;
+  metadata?: Record<string, any> | null;
+}
+
+export interface UpdateTradingEventDTO {
+  name?: string | null;
+  description?: string | null;
+  status?: TradingEventStatusDTO | null;
+  startDate?: string | null; // ISO string
+  endDate?: string | null; // ISO string
+  isRepeatable?: boolean | null;
+  maxTradesPerUser?: number | null;
+  priority?: number | null;
+  tags?: string[] | null;
+  imageUrl?: string | null;
+  createdBy?: string | null;
+  isPublic?: boolean | null;
+  metadata?: Record<string, any> | null;
+}
+
+export interface TradeOfferDTO {
+  id: string;
+  tradingEventId: string;
+  name: string;
+  description?: string;
+  status: TradeOfferStatusDTO;
+  maxTotalTrades?: number | null;
+  currentTrades: number;
+  maxPerUser?: number | null;
+  startDate?: string | null; // ISO string
+  endDate?: string | null; // ISO string
+  displayOrder: number;
+  isHighlighted: boolean;
+  tags: string[];
+  version: number;
+  source?: string;
+  metadata?: Record<string, any>;
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
+}
+
+export interface CreateTradeOfferDTO {
+  tradingEventId: string;
+  name: string;
+  description?: string | null;
+  status?: TradeOfferStatusDTO;
+  maxTotalTrades?: number | null;
+  currentTrades?: number;
+  maxPerUser?: number | null;
+  startDate?: string | null; // ISO string
+  endDate?: string | null; // ISO string
+  displayOrder?: number;
+  isHighlighted?: boolean;
+  tags?: string[];
+  metadata?: Record<string, any> | null;
+}
+
+export interface UpdateTradeOfferDTO {
+  tradingEventId?: string | null;
+  name?: string | null;
+  description?: string | null;
+  status?: TradeOfferStatusDTO | null;
+  maxTotalTrades?: number | null;
+  currentTrades?: number | null;
+  maxPerUser?: number | null;
+  startDate?: string | null; // ISO string
+  endDate?: string | null; // ISO string
+  displayOrder?: number | null;
+  isHighlighted?: boolean | null;
+  tags?: string[] | null;
+  metadata?: Record<string, any> | null;
+}
+
+export interface TradeOfferItemDTO {
+  id: string;
+  tradeOfferId: string;
+  itemId: string;
+  itemType: TradeItemTypeDTO;
+  quantity: number;
+  minLevel?: number | null;
+  version: number;
+  source?: string;
+  metadata?: Record<string, any>;
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
+}
+
+export interface CreateTradeOfferItemDTO {
+  tradeOfferId: string;
+  itemId: string;
+  itemType: TradeItemTypeDTO;
+  quantity: number;
+  minLevel?: number | null;
+  metadata?: Record<string, any> | null;
+}
+
+export interface UpdateTradeOfferItemDTO {
+  tradeOfferId?: string | null;
+  itemId?: string | null;
+  itemType?: TradeItemTypeDTO | null;
+  quantity?: number | null;
+  minLevel?: number | null;
+  metadata?: Record<string, any> | null;
+}
+
+export interface UserTradeHistoryDTO {
+  id: string;
+  userId: string;
+  tradingEventId: string;
+  tradeOfferId: string;
+  executedAt: string; // ISO string
+  itemsGiven: any; // JSON snapshot
+  itemsReceived: any; // JSON snapshot
+  userLevel?: number | null;
+  version: number;
+  source?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface CreateUserTradeHistoryDTO {
+  userId: string;
+  tradingEventId: string;
+  tradeOfferId: string;
+  executedAt?: string; // ISO string
+  itemsGiven: any; // JSON snapshot
+  itemsReceived: any; // JSON snapshot
+  userLevel?: number | null;
+  metadata?: Record<string, any> | null;
+}
+
+export interface UpdateUserTradeHistoryDTO {
+  userId?: string | null;
+  tradingEventId?: string | null;
+  tradeOfferId?: string | null;
+  executedAt?: string | null; // ISO string
+  itemsGiven?: any | null; // JSON snapshot
+  itemsReceived?: any | null; // JSON snapshot
+  userLevel?: number | null;
+  metadata?: Record<string, any> | null;
+}
+
+// Trading DTOs with relations
+export interface TradingEventWithOffersDTO extends TradingEventDTO {
+  tradeOffers: TradeOfferDTO[];
+}
+
+export interface TradeOfferWithItemsDTO extends TradeOfferDTO {
+  tradeItems: TradeOfferItemDTO[];
+}
+
+export interface TradeOfferItemWithItemDTO extends TradeOfferItemDTO {
+  item: ItemDTO;
+}
+
+export interface UserTradeHistoryWithDetailsDTO extends UserTradeHistoryDTO {
+  tradingEvent: TradingEventDTO;
+  tradeOffer: TradeOfferDTO;
+}

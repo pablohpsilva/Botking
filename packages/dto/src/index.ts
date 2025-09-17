@@ -21,7 +21,7 @@ export * from "./interfaces/artifact-dto";
 export * from "./interfaces/slot-assignment-dto";
 
 // Export factories
-export * from "./factories/dto-factory";
+export * from "./factories";
 export * from "./factories/slot-assignment-dto-factory";
 
 // Export services
@@ -176,7 +176,7 @@ export {
   UserInventoryDTOFactory,
   ItemDTOFactory,
   DTOFactoryRegistry,
-} from "./factories/dto-factory";
+} from "./factories";
 
 export {
   // Slot assignment factories
@@ -201,7 +201,7 @@ import {
   UserInventoryDTOFactory,
   ItemDTOFactory,
   DTOFactoryRegistry,
-} from "./factories/dto-factory";
+} from "./factories";
 import { DTOExample } from "./simple-example";
 import { BotDTO } from "./interfaces/artifact-dto";
 import { AutoSyncExample } from "./auto-sync-example";

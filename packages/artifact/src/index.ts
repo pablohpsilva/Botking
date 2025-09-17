@@ -8,6 +8,7 @@
  * - Expansion Chips: Slot-based enhancers
  * - Bot State: Dynamic runtime state management
  * - Items: Consumable objects for game mechanics
+ * - Trading: Event-based item exchange system
  */
 
 // Export all types and enums
@@ -21,3 +22,4 @@ export * from "./item";
 export * from "./part";
 export * from "./skeleton";
 export * from "./soul-chip";
+export * from "./trading";

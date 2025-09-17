@@ -48,6 +48,7 @@ model User {
   items         Item[]
   inventory     UserInventory[]
   slotHistory   SlotAssignmentHistory[]
+  tradeHistory  UserTradeHistory[]
 
   @@map("users")
 }
@@ -394,6 +395,7 @@ model Item {
   // Relations
   user                User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userInventories     UserInventory[]
+  tradeOfferItems     TradeOfferItem[]
 
   @@map("items")
 }
@@ -473,6 +475,121 @@ model Collection {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("collections")
+}
+
+// Trading System Models
+model TradingEvent {
+  id          String              @id @default(cuid())
+  name        String              @db.VarChar(100) // "Summer Trades", "Winter Special"
+  description String?             @db.Text
+  status      TradingEventStatus  @default(DRAFT)
+  
+  // Time constraints
+  startDate   DateTime?           // When event becomes active
+  endDate     DateTime?           // When event ends
+  
+  // Event settings
+  isRepeatable Boolean            @default(false) // Can users trade multiple times
+  maxTradesPerUser Int?           // Limit trades per user (null = unlimited)
+  priority    Int                 @default(0) // For sorting/display order
+  
+  // Event metadata
+  tags        String[]            @default([])
+  imageUrl    String?             // Event banner/icon
+  
+  // Admin fields
+  createdBy   String?             // Admin who created this event
+  isPublic    Boolean             @default(true) // Visible to users
+  
+  // Timestamps
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  
+  // Relations
+  tradeOffers TradeOffer[]
+  userTrades  UserTradeHistory[]
+  
+  @@map("trading_events")
+}
+
+model TradeOffer {
+  id              String           @id @default(cuid())
+  tradingEventId  String
+  name            String           @db.VarChar(100) // "Gems for Rare Parts"
+  description     String?          @db.Text
+  status          TradeOfferStatus @default(ACTIVE)
+  
+  // Availability limits
+  maxTotalTrades  Int?             // Total number of times this trade can be executed
+  currentTrades   Int              @default(0) // How many times it's been traded
+  maxPerUser      Int?             // Max times a single user can make this trade
+  
+  // Time constraints (inherit from event if null)
+  startDate       DateTime?
+  endDate         DateTime?
+  
+  // Display settings
+  displayOrder    Int              @default(0)
+  isHighlighted   Boolean          @default(false) // Featured trade
+  
+  // Trade metadata
+  tags            String[]         @default([])
+  
+  // Timestamps
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Relations
+  tradingEvent    TradingEvent     @relation(fields: [tradingEventId], references: [id], onDelete: Cascade)
+  tradeItems      TradeOfferItem[]
+  userTrades      UserTradeHistory[]
+  
+  @@map("trade_offers")
+}
+
+model TradeOfferItem {
+  id            String        @id @default(cuid())
+  tradeOfferId  String
+  itemId        String
+  itemType      TradeItemType // REQUIRED or REWARD
+  quantity      Int           @default(1)
+  
+  // Additional constraints
+  minLevel      Int?          // Minimum user level required
+  
+  // Timestamps
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  tradeOffer    TradeOffer    @relation(fields: [tradeOfferId], references: [id], onDelete: Cascade)
+  item          Item          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  @@unique([tradeOfferId, itemId, itemType]) // Prevent duplicate items in same trade offer
+  @@map("trade_offer_items")
+}
+
+model UserTradeHistory {
+  id              String       @id @default(cuid())
+  userId          String
+  tradingEventId  String
+  tradeOfferId    String
+  
+  // Trade details
+  executedAt      DateTime     @default(now())
+  itemsGiven      Json         // Snapshot of items given
+  itemsReceived   Json         // Snapshot of items received
+  
+  // Transaction metadata
+  userLevel       Int?         // User level at time of trade
+  metadata        Json?        // Additional context
+  
+  // Relations
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tradingEvent    TradingEvent @relation(fields: [tradingEventId], references: [id], onDelete: Cascade)
+  tradeOffer      TradeOffer   @relation(fields: [tradeOfferId], references: [id], onDelete: Cascade)
+  
+  @@map("user_trade_history")
 }
 
 // Enums
@@ -602,4 +719,25 @@ enum GemType {
   RARE
   EPIC
   LEGENDARY
+}
+
+// Trading System Enums
+enum TradingEventStatus {
+  DRAFT        // Event is being prepared
+  ACTIVE       // Event is live and accepting trades
+  PAUSED       // Event is temporarily disabled
+  ENDED        // Event has ended
+  CANCELLED    // Event was cancelled
+}
+
+enum TradeOfferStatus {
+  ACTIVE       // Available for trading
+  PAUSED       // Temporarily disabled
+  SOLD_OUT     // No more available
+  EXPIRED      // Time limit reached
+}
+
+enum TradeItemType {
+  REQUIRED     // Items user must give
+  REWARD       // Items user will receive
 }

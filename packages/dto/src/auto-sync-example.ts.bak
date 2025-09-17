@@ -19,9 +19,7 @@ export class AutoSyncExample {
    * Demonstrate creating a SoulChip with validation
    */
   static createExampleSoulChip(): void {
-    console.log("Creating SoulChip with auto-sync validation", {
-      action: "create_soul_chip",
-    });
+    AutoSyncExample.logger.info("Creating SoulChip with auto-sync validation", { action: "create_soul_chip" });
 
     // Valid SoulChip data
     const validSoulChipData = {
@@ -42,13 +40,12 @@ export class AutoSyncExample {
 
     const validResult = AutoSyncDTOFactory.createSoulChip(validSoulChipData);
     if (validResult.success) {
-      console.log("Valid SoulChip created", {
+      AutoSyncExample.logger.info("Valid SoulChip created", {
         name: validResult.data?.name,
-        totalStats:
-          (validResult.data?.intelligence || 0) +
+        totalStats: (validResult.data?.intelligence || 0) +
           (validResult.data?.resilience || 0) +
           (validResult.data?.adaptability || 0),
-        action: "soul_chip_created",
+        action: "soul_chip_created"
       });
     }
 
@@ -67,18 +64,19 @@ export class AutoSyncExample {
     const invalidResult =
       AutoSyncDTOFactory.createSoulChip(invalidSoulChipData);
     if (!invalidResult.success) {
-      console.log("❌ Invalid SoulChip rejected:");
-      invalidResult.errors?.forEach((error) => {
-        console.log(`   ${error.field}: ${error.message}`);
+      AutoSyncExample.logger.warn("Invalid SoulChip rejected", {
+        errors: invalidResult.errors?.map(e => `${e.field}: ${e.message}`),
+        action: "soul_chip_validation_failed"
       });
     }
+
   }
 
   /**
    * Demonstrate creating a Skeleton
    */
   static createExampleSkeleton(): void {
-    console.log("🦴 Creating Skeleton with auto-sync validation...");
+    AutoSyncExample.logger.info("🦴 Creating Skeleton with auto-sync validation...");
 
     const skeletonData = {
       userId: "user_123",
@@ -98,20 +96,21 @@ export class AutoSyncExample {
 
     const result = AutoSyncDTOFactory.createSkeleton(skeletonData);
     if (result.success) {
-      console.log("Valid Skeleton created", {
+      AutoSyncExample.logger.info("Valid Skeleton created", {
         name: result.data?.name,
         type: result.data?.type,
         slots: result.data?.slots,
-        action: "skeleton_created",
+        action: "skeleton_created"
       });
     }
+
   }
 
   /**
    * Demonstrate creating a Part with stat validation
    */
   static createExamplePart(): void {
-    console.log("⚙️ Creating Part with auto-sync validation...");
+    AutoSyncExample.logger.info("⚙️ Creating Part with auto-sync validation...");
 
     // Valid part
     const validPartData = {
@@ -135,8 +134,8 @@ export class AutoSyncExample {
 
     const validResult = AutoSyncDTOFactory.createPart(validPartData);
     if (validResult.success) {
-      console.log("✅ Valid Part created:", validResult.data?.name);
-      console.log(
+      AutoSyncExample.logger.info("✅ Valid Part created:", validResult.data?.name);
+      AutoSyncExample.logger.info(
         "   Total stats:",
         (validResult.data?.attack || 0) +
           (validResult.data?.defense || 0) +
@@ -160,18 +159,19 @@ export class AutoSyncExample {
 
     const invalidResult = AutoSyncDTOFactory.createPart(invalidPartData);
     if (!invalidResult.success) {
-      console.log("❌ Invalid Part rejected:");
+      AutoSyncExample.logger.info("❌ Invalid Part rejected:");
       invalidResult.errors?.forEach((error) => {
-        console.log(`   ${error.field}: ${error.message}`);
+        AutoSyncExample.logger.info(`   ${error.field}: ${error.message}`);
       });
     }
+
   }
 
   /**
    * Demonstrate creating a BotState
    */
   static createExampleBotState(): void {
-    console.log("🔋 Creating BotState with auto-sync validation...");
+    AutoSyncExample.logger.info("🔋 Creating BotState with auto-sync validation...");
 
     const botStateData = {
       userId: "user_123",
@@ -194,18 +194,19 @@ export class AutoSyncExample {
 
     const result = AutoSyncDTOFactory.createBotState(botStateData);
     if (result.success) {
-      console.log("✅ Valid BotState created:", result.data?.name);
-      console.log(
+      AutoSyncExample.logger.info("✅ Valid BotState created:", result.data?.name);
+      AutoSyncExample.logger.info(
         `   Level: ${result.data?.level}, Success Rate: ${(result.data?.successRate! * 100).toFixed(1)}%`
       );
     }
+
   }
 
   /**
    * Demonstrate advanced bot assembly validation
    */
   static demonstrateBotAssembly(): void {
-    console.log("🤖 Demonstrating Bot Assembly validation...");
+    AutoSyncExample.logger.info("🤖 Demonstrating Bot Assembly validation...");
 
     // Create components
     const soulChip = {
@@ -295,65 +296,66 @@ export class AutoSyncExample {
 
     const result = AutoSyncDTOFactory.validateBotAssembly(botAssembly);
     if (result.success) {
-      console.log("✅ Valid Bot Assembly created!");
-      console.log(
+      AutoSyncExample.logger.info("✅ Valid Bot Assembly created!");
+      AutoSyncExample.logger.info(
         `   Parts: ${result.data?.parts.length}/${result.data?.skeleton.slots} slots used`
       );
-      console.log(`   SoulChip: ${result.data?.soulChip.name}`);
-      console.log(`   Skeleton: ${result.data?.skeleton.name}`);
+      AutoSyncExample.logger.info(`   SoulChip: ${result.data?.soulChip.name}`);
+      AutoSyncExample.logger.info(`   Skeleton: ${result.data?.skeleton.name}`);
     } else {
-      console.log("❌ Invalid Bot Assembly:");
+      AutoSyncExample.logger.info("❌ Invalid Bot Assembly:");
       result.errors?.forEach((error) => {
-        console.log(`   ${error.field}: ${error.message}`);
+        AutoSyncExample.logger.info(`   ${error.field}: ${error.message}`);
       });
     }
+
   }
 
   /**
    * Demonstrate bot type validation (ownership and player assignment rules)
    */
   static demonstrateBotTypeValidation(): void {
-    console.log("🤖 Demonstrating Bot Type validation...");
+    AutoSyncExample.logger.info("🤖 Demonstrating Bot Type validation...");
 
     // Valid bot type configurations
-    console.log("\n✅ Valid configurations:");
+    AutoSyncExample.logger.info("\n✅ Valid configurations:");
 
     // Worker bot - can have optional owner and player
     const validWorker = AutoSyncDTOFactory.validateBotType({
       botType: "WORKER",
       userId: "owner_123",
     });
-    console.log("Worker with owner and player:", validWorker.success);
+    AutoSyncExample.logger.info("Worker with owner and player:", validWorker.success);
 
     // Playable bot - must have owner
     const validPlayable = AutoSyncDTOFactory.validateBotType({
       botType: "PLAYABLE",
       userId: "owner_123",
     });
-    console.log("Playable with owner:", validPlayable.success);
+    AutoSyncExample.logger.info("Playable with owner:", validPlayable.success);
 
     // King bot - must have owner
     const validKing = AutoSyncDTOFactory.validateBotType({
       botType: "KING",
       userId: "owner_123",
     });
-    console.log("King with owner and player:", validKing.success);
+    AutoSyncExample.logger.info("King with owner and player:", validKing.success);
 
     // Rogue bot - autonomous, no owner or player
     const validRogue = AutoSyncDTOFactory.validateBotType({
       botType: "ROGUE",
       userId: null,
     });
-    console.log("Rogue autonomous:", validRogue.success);
+    AutoSyncExample.logger.info("Rogue autonomous:", validRogue.success);
 
     // GovBot - system controlled, no owner or player
     const validGovBot = AutoSyncDTOFactory.validateBotType({
       botType: "GOVBOT",
       userId: null,
     });
-    console.log("GovBot system controlled:", validGovBot.success);
+    AutoSyncExample.logger.info("GovBot system controlled:", validGovBot.success);
 
-    console.log("\n❌ Invalid configurations:");
+    AutoSyncExample.logger.info("\n❌ Invalid configurations:");
 
     // King without owner (should fail)
     const invalidKing = AutoSyncDTOFactory.validateBotType({
@@ -361,7 +363,7 @@ export class AutoSyncExample {
       userId: null,
     });
     if (!invalidKing.success) {
-      console.log(
+      AutoSyncExample.logger.info(
         "King without owner rejected:",
         invalidKing.errors?.[0]?.message || "Validation failed"
       );
@@ -373,7 +375,7 @@ export class AutoSyncExample {
       userId: "owner_123",
     });
     if (!invalidRogue.success) {
-      console.log(
+      AutoSyncExample.logger.info(
         "Rogue with owner rejected:",
         invalidRogue.errors?.[0]?.message || "Validation failed"
       );
@@ -385,51 +387,53 @@ export class AutoSyncExample {
       userId: null,
     });
     if (!invalidWorker.success) {
-      console.log(
+      AutoSyncExample.logger.info(
         "Worker with player but no owner rejected:",
         invalidWorker.errors?.[0]?.message || "Validation failed"
       );
     }
+
   }
 
   /**
    * Demonstrate enum validation
    */
   static demonstrateEnumValidation(): void {
-    console.log("📋 Demonstrating Enum validation...");
+    AutoSyncExample.logger.info("📋 Demonstrating Enum validation...");
 
     // Valid enum values
     const validRarity = AutoSyncDTOFactory.validateRarity("LEGENDARY");
-    console.log("✅ Valid Rarity:", validRarity.data);
+    AutoSyncExample.logger.info("✅ Valid Rarity:", validRarity.data);
 
     const validSkeletonType = AutoSyncDTOFactory.validateSkeletonType("FLYING");
-    console.log("✅ Valid SkeletonType:", validSkeletonType.data);
+    AutoSyncExample.logger.info("✅ Valid SkeletonType:", validSkeletonType.data);
 
     const validBotType = AutoSyncDTOFactory.validateBotType({
       botType: "WORKER",
       userId: "owner_123",
     });
-    console.log("✅ Valid BotType:", validBotType.data?.botType);
+    AutoSyncExample.logger.info("✅ Valid BotType:", validBotType.data?.botType);
 
     // Invalid enum values
     const invalidRarity = AutoSyncDTOFactory.validateRarity("SUPER_RARE");
     if (!invalidRarity.success) {
-      console.log("❌ Invalid Rarity rejected");
+      AutoSyncExample.logger.info("❌ Invalid Rarity rejected");
     }
 
     const invalidLocation =
       AutoSyncDTOFactory.validateBotLocation("UNKNOWN_PLACE");
     if (!invalidLocation.success) {
-      console.log("❌ Invalid BotLocation rejected");
+      AutoSyncExample.logger.info("❌ Invalid BotLocation rejected");
     }
+
   }
 
   /**
    * Run all examples
    */
   static runAllExamples(): void {
-    console.log("🚀 Auto-sync DTO Example - Prisma + Zod Integration\n");
-    console.log(
+    AutoSyncExample.logger.info("🚀 Auto-sync DTO Example - Prisma + Zod Integration\n");
+    AutoSyncExample.logger.info(
       "This demonstrates how DTOs stay automatically in sync with database schema changes!\n"
     );
 
@@ -441,12 +445,12 @@ export class AutoSyncExample {
     this.demonstrateBotTypeValidation();
     this.demonstrateEnumValidation();
 
-    console.log("🎉 All examples completed!");
-    console.log("\n💡 Key Benefits:");
-    console.log("   - ✅ Always in sync with database schema");
-    console.log("   - ✅ Runtime validation with Zod");
-    console.log("   - ✅ TypeScript type safety");
-    console.log("   - ✅ Business logic validation");
-    console.log("   - ✅ Zero manual maintenance");
+    AutoSyncExample.logger.info("🎉 All examples completed!");
+    AutoSyncExample.logger.info("\n💡 Key Benefits:");
+    AutoSyncExample.logger.info("   - ✅ Always in sync with database schema");
+    AutoSyncExample.logger.info("   - ✅ Runtime validation with Zod");
+    AutoSyncExample.logger.info("   - ✅ TypeScript type safety");
+    AutoSyncExample.logger.info("   - ✅ Business logic validation");
+    AutoSyncExample.logger.info("   - ✅ Zero manual maintenance");
   }
 }

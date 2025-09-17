@@ -25,6 +25,7 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@botking/logger": "workspace:*",
     "@prisma/client": "^5.19.1",
     "prisma-zod-generator": "^1.20.3",
     "zod": "^4.1.9"

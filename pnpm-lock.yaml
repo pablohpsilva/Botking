@@ -29,6 +29,9 @@ importers:
       '@botking/domain':
         specifier: workspace:*
         version: link:../domain
+      '@botking/logger':
+        specifier: workspace:*
+        version: link:../logger
     devDependencies:
       typescript:
         specifier: ^5.0.0
@@ -39,6 +42,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@botking/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@prisma/client':
         specifier: ^5.19.1
         version: 5.22.0(prisma@5.22.0)
@@ -86,6 +92,9 @@ importers:
       '@botking/db':
         specifier: workspace:*
         version: link:../db
+      '@botking/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@prisma/client':
         specifier: '*'
         version: 5.22.0(prisma@5.22.0)
@@ -121,6 +130,9 @@ importers:
 
   packages/time-chain:
     dependencies:
+      '@botking/logger':
+        specifier: workspace:*
+        version: link:../logger
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0

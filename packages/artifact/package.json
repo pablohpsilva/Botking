@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@botking/db": "workspace:*",
-    "@botking/domain": "workspace:*"
+    "@botking/domain": "workspace:*",
+    "@botking/logger": "workspace:*"
   }
 }

@@ -1,9 +1,11 @@
 import { PrismaClient } from "@prisma/client";
+import { createPackageLogger } from "@botking/logger";
 
 const prisma = new PrismaClient();
+const logger = createPackageLogger("db");
 
 async function main() {
-  console.log("🌱 Seeding database...");
+  logger.info("Starting database seeding", { action: "seed_start" });
 
   // Create a sample user with better-auth structure
   const user = await prisma.user.create({
@@ -14,7 +16,11 @@ async function main() {
       image: "https://github.com/github.png",
     },
   });
-  console.log("✅ Created user:", user);
+  logger.info("Created user", {
+    userId: user.id,
+    name: user.name,
+    action: "user_created",
+  });
 
   // Create a sample post
   const post = await prisma.post.create({
@@ -26,7 +32,11 @@ async function main() {
       authorId: user.id,
     },
   });
-  console.log("✅ Created post:", post);
+  logger.info("Created post", {
+    postId: post.id,
+    title: post.title,
+    action: "post_created",
+  });
 
   // Create a sample account (credential-based)
   const account = await prisma.account.create({
@@ -37,14 +47,22 @@ async function main() {
       password: "$2a$10$example.hashed.password", // This would be hashed by better-auth
     },
   });
-  console.log("✅ Created account:", account);
+  logger.info("Created account", {
+    accountId: account.id,
+    providerId: account.providerId,
+    action: "account_created",
+  });
 
-  console.log("✅ Database seeded successfully!");
+  logger.info("Database seeded successfully", { action: "seed_complete" });
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Error seeding database:", e);
+    logger.error(
+      "Error seeding database",
+      { action: "seed_failed" },
+      e instanceof Error ? e : new Error(String(e))
+    );
     process.exit(1);
   })
   .finally(async () => {

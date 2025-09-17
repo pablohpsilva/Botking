@@ -1,10 +1,12 @@
 import type { SystemTime, TimeServiceConfig, TimeDrift } from "./types";
+import { createPackageLogger } from "@botking/logger";
 
 /**
  * TimeChain Service - Authoritative time source for the entire system
  * Provides consistent UTC time regardless of where it's running
  */
 export class TimeChainService {
+  private static logger = createPackageLogger("time-chain");
   private config: Required<TimeServiceConfig>;
   private timeOffset: number = 0; // Difference from server time
   private lastSyncTime: number = 0;
@@ -123,7 +125,10 @@ export class TimeChainService {
 
       return this.getDrift();
     } catch (error) {
-      console.warn("Time sync failed:", error);
+      TimeChainService.logger.warn("Time sync failed", {
+        error: error instanceof Error ? error.message : String(error),
+        action: "time_sync_failed",
+      });
       return this.getDrift();
     }
   }
@@ -175,7 +180,14 @@ export class TimeChainService {
       throw new Error("Invalid response format");
     } catch (error) {
       // Fallback to local time if server is unavailable
-      console.warn("Server time fetch failed, using local time:", error);
+      TimeChainService.logger.warn(
+        "Server time fetch failed, using local time",
+        {
+          error: error instanceof Error ? error.message : String(error),
+          action: "server_time_fetch_failed",
+          fallback: "local_time",
+        }
+      );
       return Date.now();
     }
   }

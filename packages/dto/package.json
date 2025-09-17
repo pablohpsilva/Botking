@@ -23,6 +23,7 @@
   "dependencies": {
     "@botking/artifact": "workspace:*",
     "@botking/db": "workspace:*",
+    "@botking/logger": "workspace:*",
     "zod": "^4.1.9"
   },
   "devDependencies": {

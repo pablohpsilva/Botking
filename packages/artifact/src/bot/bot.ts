@@ -27,6 +27,7 @@ import {
   getAvailableSlotsForSkeleton,
 } from "@botking/domain";
 import { SkeletonType as DomainSkeletonType } from "@botking/db";
+import { createPackageLogger } from "@botking/logger";
 
 /**
  * Bot state interface for partial updates
@@ -52,6 +53,7 @@ interface BotStateUpdate {
  * Represents a fully assembled robot with all components
  */
 export class Bot implements IBot {
+  private static logger = createPackageLogger("artifact");
   private _id: string;
   private _name: string;
   private _botType: BotType;
@@ -881,8 +883,13 @@ export class Bot implements IBot {
         return DomainSkeletonType.MODULAR;
       default:
         // Default to balanced if unknown
-        console.warn(
-          `Unknown skeleton type: ${artifactSkeletonType}, defaulting to BALANCED`
+        Bot.logger.warn(
+          `Unknown skeleton type detected, defaulting to BALANCED`,
+          {
+            skeletonType: artifactSkeletonType,
+            action: "skeleton_type_conversion",
+            fallback: "BALANCED",
+          }
         );
         return DomainSkeletonType.BALANCED;
     }

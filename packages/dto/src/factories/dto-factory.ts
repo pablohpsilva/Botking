@@ -2,7 +2,11 @@ import {
   SoulChipDTO,
   SkeletonDTO,
   PartDTO,
+  ExpansionChipDTO,
+  BotStateDTO,
   BotDTO,
+  BotTemplateDTO,
+  CollectionDTO,
   UserInventoryDTO,
   CreateUserInventoryDTO,
   UpdateUserInventoryDTO,
@@ -13,6 +17,7 @@ import {
   SkeletonTypeDTO,
   MobilityTypeDTO,
   PartCategoryDTO,
+  ExpansionChipEffectDTO,
   ItemCategoryDTO,
   ResourceTypeDTO,
   EnhancementDurationDTO,
@@ -524,6 +529,467 @@ export class PartDTOFactory extends BaseDTOFactory<PartDTO> {
 }
 
 /**
+ * ExpansionChip DTO Factory
+ */
+export class ExpansionChipDTOFactory extends BaseDTOFactory<ExpansionChipDTO> {
+  public createDefault(
+    overrides?: Partial<ExpansionChipDTO>
+  ): ExpansionChipDTO {
+    const now = this.getCurrentTimestamp();
+    return {
+      id: this.generateId(),
+      userId: "",
+      name: "",
+      effect: ExpansionChipEffectDTO.STAT_BOOST,
+      rarity: RarityDTO.COMMON,
+      upgradeLevel: 0,
+      effectMagnitude: 1.0,
+      energyCost: 5,
+      version: 1,
+      source: undefined,
+      tags: [],
+      description: undefined,
+      metadata: undefined,
+      createdAt: now,
+      updatedAt: now,
+      ...overrides,
+    };
+  }
+
+  public createFromData(data: any): ExpansionChipDTO {
+    return {
+      id: data.id || this.generateId(),
+      userId: data.userId || "",
+      name: data.name || "",
+      effect: data.effect || ExpansionChipEffectDTO.STAT_BOOST,
+      rarity: data.rarity || RarityDTO.COMMON,
+      upgradeLevel: Number(data.upgradeLevel) || 0,
+      effectMagnitude: Number(data.effectMagnitude) || 1.0,
+      energyCost: Number(data.energyCost) || 5,
+      version: Number(data.version) || 1,
+      source: data.source || undefined,
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      description: data.description || undefined,
+      metadata: data.metadata || undefined,
+      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+    };
+  }
+
+  public validate(dto: ExpansionChipDTO): ValidationResult {
+    const errors: ValidationError[] = [];
+
+    if (!dto.userId || dto.userId.trim().length === 0) {
+      errors.push({
+        field: "userId",
+        message: "Owner ID is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (!dto.name || dto.name.trim().length === 0) {
+      errors.push({
+        field: "name",
+        message: "Expansion chip name is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (dto.name && dto.name.length > 100) {
+      errors.push({
+        field: "name",
+        message: "Name cannot exceed 100 characters",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (dto.upgradeLevel < 0) {
+      errors.push({
+        field: "upgradeLevel",
+        message: "Upgrade level cannot be negative",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (dto.upgradeLevel > 10) {
+      errors.push({
+        field: "upgradeLevel",
+        message: "Upgrade level cannot exceed 10",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (dto.effectMagnitude <= 0) {
+      errors.push({
+        field: "effectMagnitude",
+        message: "Effect magnitude must be greater than 0",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (dto.energyCost < 0) {
+      errors.push({
+        field: "energyCost",
+        message: "Energy cost cannot be negative",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+}
+
+/**
+ * BotState DTO Factory
+ */
+export class BotStateDTOFactory extends BaseDTOFactory<BotStateDTO> {
+  public createDefault(overrides?: Partial<BotStateDTO>): BotStateDTO {
+    const now = this.getCurrentTimestamp();
+    return {
+      id: this.generateId(),
+      userId: "",
+      name: "",
+      stateType: "worker",
+      energyLevel: 100,
+      maintenanceLevel: 100,
+      currentLocation: "storage" as any,
+      experience: 0,
+      statusEffects: [],
+      customizations: {},
+      // Legacy fields
+      energy: 100,
+      maxEnergy: 100,
+      health: 100,
+      maxHealth: 100,
+      location: "storage" as any,
+      level: 1,
+      missionStats: {
+        missionsCompleted: 0,
+        successRate: 0,
+        totalCombatTime: 0,
+        damageDealt: 0,
+        damageTaken: 0,
+      },
+      lastActiveAt: now,
+      version: 1,
+      source: undefined,
+      tags: [],
+      description: undefined,
+      metadata: undefined,
+      createdAt: now,
+      updatedAt: now,
+      ...overrides,
+    } as BotStateDTO;
+  }
+
+  public createFromData(data: any): BotStateDTO {
+    return {
+      id: data.id || this.generateId(),
+      userId: data.userId || "",
+      name: data.name || "",
+      stateType: data.stateType || "worker",
+      energyLevel: Number(data.energyLevel) || 100,
+      maintenanceLevel: Number(data.maintenanceLevel) || 100,
+      currentLocation: data.currentLocation || "storage",
+      experience: Number(data.experience) || 0,
+      statusEffects: Array.isArray(data.statusEffects)
+        ? data.statusEffects
+        : [],
+      customizations: data.customizations || {},
+      // Legacy fields
+      energy: Number(data.energy || data.energyLevel) || 100,
+      maxEnergy: Number(data.maxEnergy) || 100,
+      health: Number(data.health || data.maintenanceLevel) || 100,
+      maxHealth: Number(data.maxHealth) || 100,
+      location: data.location || data.currentLocation || "storage",
+      level: Number(data.level) || 1,
+      missionStats: data.missionStats || {
+        missionsCompleted: 0,
+        successRate: 0,
+        totalCombatTime: 0,
+        damageDealt: 0,
+        damageTaken: 0,
+      },
+      lastActiveAt: data.lastActiveAt
+        ? new Date(data.lastActiveAt)
+        : new Date(),
+      version: Number(data.version) || 1,
+      source: data.source || undefined,
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      description: data.description || undefined,
+      metadata: data.metadata || undefined,
+      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+    } as BotStateDTO;
+  }
+
+  public validate(dto: BotStateDTO): ValidationResult {
+    const errors: ValidationError[] = [];
+
+    if (!dto.userId || dto.userId.trim().length === 0) {
+      errors.push({
+        field: "userId",
+        message: "Owner ID is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (!dto.name || dto.name.trim().length === 0) {
+      errors.push({
+        field: "name",
+        message: "Bot state name is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (dto.energyLevel < 0 || dto.energyLevel > 100) {
+      errors.push({
+        field: "energyLevel",
+        message: "Energy level must be between 0 and 100",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (dto.maintenanceLevel < 0 || dto.maintenanceLevel > 100) {
+      errors.push({
+        field: "maintenanceLevel",
+        message: "Maintenance level must be between 0 and 100",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (dto.experience < 0) {
+      errors.push({
+        field: "experience",
+        message: "Experience cannot be negative",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+}
+
+/**
+ * BotTemplate DTO Factory
+ */
+export class BotTemplateDTOFactory extends BaseDTOFactory<BotTemplateDTO> {
+  public createDefault(overrides?: Partial<BotTemplateDTO>): BotTemplateDTO {
+    const now = this.getCurrentTimestamp();
+    return {
+      id: this.generateId(),
+      userId: "",
+      name: "",
+      description: "",
+      buildType: "worker",
+      templateData: {
+        soulChipTemplate: {},
+        skeletonTemplate: {},
+        partTemplates: [],
+        expansionChipTemplates: [],
+      },
+      rating: 0,
+      downloads: 0,
+      isPublic: false,
+      version: 1,
+      source: undefined,
+      tags: [],
+      metadata: undefined,
+      createdAt: now,
+      updatedAt: now,
+      ...overrides,
+    };
+  }
+
+  public createFromData(data: any): BotTemplateDTO {
+    return {
+      id: data.id || this.generateId(),
+      userId: data.userId || "",
+      name: data.name || "",
+      description: data.description || "",
+      buildType: data.buildType || "worker",
+      templateData: data.templateData || {
+        soulChipTemplate: data.soulChipTemplate || {},
+        skeletonTemplate: data.skeletonTemplate || {},
+        partTemplates: Array.isArray(data.partTemplates)
+          ? data.partTemplates
+          : [],
+        expansionChipTemplates: Array.isArray(data.expansionChipTemplates)
+          ? data.expansionChipTemplates
+          : [],
+      },
+      rating: Number(data.rating) || 0,
+      downloads: Number(data.downloads) || 0,
+      isPublic: Boolean(data.isPublic),
+      version: Number(data.version) || 1,
+      source: data.source || undefined,
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      metadata: data.metadata || undefined,
+      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+    };
+  }
+
+  public validate(dto: BotTemplateDTO): ValidationResult {
+    const errors: ValidationError[] = [];
+
+    if (!dto.userId || dto.userId.trim().length === 0) {
+      errors.push({
+        field: "userId",
+        message: "Owner ID is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (!dto.name || dto.name.trim().length === 0) {
+      errors.push({
+        field: "name",
+        message: "Bot template name is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (dto.name && dto.name.length > 100) {
+      errors.push({
+        field: "name",
+        message: "Name cannot exceed 100 characters",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (!dto.description || dto.description.trim().length === 0) {
+      errors.push({
+        field: "description",
+        message: "Bot template description is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (dto.rating < 0 || dto.rating > 5) {
+      errors.push({
+        field: "rating",
+        message: "Rating must be between 0 and 5",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (dto.downloads < 0) {
+      errors.push({
+        field: "downloads",
+        message: "Downloads cannot be negative",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+}
+
+/**
+ * Collection DTO Factory
+ */
+export class CollectionDTOFactory extends BaseDTOFactory<CollectionDTO> {
+  public createDefault(overrides?: Partial<CollectionDTO>): CollectionDTO {
+    const now = this.getCurrentTimestamp();
+    return {
+      id: this.generateId(),
+      userId: "",
+      name: "",
+      description: "",
+      type: "mixed",
+      itemIds: [],
+      isPublic: false,
+      shareCode: undefined,
+      version: 1,
+      source: undefined,
+      tags: [],
+      metadata: undefined,
+      createdAt: now,
+      updatedAt: now,
+      ...overrides,
+    };
+  }
+
+  public createFromData(data: any): CollectionDTO {
+    return {
+      id: data.id || this.generateId(),
+      userId: data.userId || "",
+      name: data.name || "",
+      description: data.description || "",
+      type: data.type || "mixed",
+      itemIds: Array.isArray(data.itemIds) ? data.itemIds : [],
+      isPublic: Boolean(data.isPublic),
+      shareCode: data.shareCode || undefined,
+      version: Number(data.version) || 1,
+      source: data.source || undefined,
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      metadata: data.metadata || undefined,
+      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+    };
+  }
+
+  public validate(dto: CollectionDTO): ValidationResult {
+    const errors: ValidationError[] = [];
+
+    if (!dto.userId || dto.userId.trim().length === 0) {
+      errors.push({
+        field: "userId",
+        message: "Owner ID is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (!dto.name || dto.name.trim().length === 0) {
+      errors.push({
+        field: "name",
+        message: "Collection name is required",
+        code: "REQUIRED",
+      });
+    }
+
+    if (dto.name && dto.name.length > 100) {
+      errors.push({
+        field: "name",
+        message: "Name cannot exceed 100 characters",
+        code: "INVALID_VALUE",
+      });
+    }
+
+    if (!dto.description || dto.description.trim().length === 0) {
+      errors.push({
+        field: "description",
+        message: "Collection description is required",
+        code: "REQUIRED",
+      });
+    }
+
+    const validTypes = ["bots", "parts", "chips", "skeletons", "mixed"];
+    if (!validTypes.includes(dto.type)) {
+      errors.push({
+        field: "type",
+        message: "Collection type must be one of: " + validTypes.join(", "),
+        code: "INVALID_VALUE",
+      });
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+}
+
+/**
  * Bot DTO Factory
  */
 export class BotDTOFactory extends BaseDTOFactory<BotDTO> {
@@ -660,7 +1126,7 @@ export class UserInventoryDTOFactory extends BaseDTOFactory<UserInventoryDTO> {
       quantity: Number(data.quantity) || 1,
       acquiredAt: data.acquiredAt ? new Date(data.acquiredAt) : new Date(),
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-      metadata: data.metadata || null,
+      metadata: data.metadata || undefined,
       createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
       updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
     };
@@ -675,7 +1141,7 @@ export class UserInventoryDTOFactory extends BaseDTOFactory<UserInventoryDTO> {
       quantity: data.quantity || 1,
       acquiredAt: now,
       expiresAt: data.expiresAt || null,
-      metadata: data.metadata || null,
+      metadata: data.metadata || undefined,
       createdAt: now,
       updatedAt: now,
     };
@@ -804,7 +1270,7 @@ export class ItemDTOFactory extends BaseDTOFactory<ItemDTO> {
       value: Number(data.value) || 1,
       cooldownTime: Number(data.cooldownTime) || 0,
       requirements: Array.isArray(data.requirements) ? data.requirements : [],
-      source: data.source || null,
+      source: data.source || undefined,
       tags: Array.isArray(data.tags) ? data.tags : [],
       effects: data.effects || null,
       speedUpTarget: data.speedUpTarget || null,
@@ -821,7 +1287,7 @@ export class ItemDTOFactory extends BaseDTOFactory<ItemDTO> {
       gemValue: data.gemValue ? Number(data.gemValue) : null,
       tradeHistory: data.tradeHistory || null,
       version: Number(data.version) || 1,
-      metadata: data.metadata || null,
+      metadata: data.metadata || undefined,
       createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
       updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
     };
@@ -843,7 +1309,7 @@ export class ItemDTOFactory extends BaseDTOFactory<ItemDTO> {
       value: data.value || 1,
       cooldownTime: data.cooldownTime || 0,
       requirements: data.requirements || [],
-      source: data.source || null,
+      source: data.source || undefined,
       tags: data.tags || [],
       effects: data.effects || null,
       speedUpTarget: data.speedUpTarget || null,
@@ -858,7 +1324,7 @@ export class ItemDTOFactory extends BaseDTOFactory<ItemDTO> {
       gemValue: data.gemValue || null,
       tradeHistory: null,
       version: 1,
-      metadata: data.metadata || null,
+      metadata: data.metadata || undefined,
       createdAt: now,
       updatedAt: now,
     };
@@ -1065,7 +1531,11 @@ export class DTOFactoryRegistry {
     this.register("soulChip", new SoulChipDTOFactory());
     this.register("skeleton", new SkeletonDTOFactory());
     this.register("part", new PartDTOFactory());
+    this.register("expansionChip", new ExpansionChipDTOFactory());
+    this.register("botState", new BotStateDTOFactory());
     this.register("bot", new BotDTOFactory());
+    this.register("botTemplate", new BotTemplateDTOFactory());
+    this.register("collection", new CollectionDTOFactory());
     this.register("userInventory", new UserInventoryDTOFactory());
     this.register("item", new ItemDTOFactory());
   }

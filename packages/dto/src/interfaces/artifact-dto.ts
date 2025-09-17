@@ -264,6 +264,8 @@ export interface NonWorkerBotStateDTO extends BaseBotStateDTO {
   totalBattles: number;
 }
 
+// Type alias for easier factory usage
+
 /**
  * Union type for all bot state DTOs
  */

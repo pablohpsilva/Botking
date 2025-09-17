@@ -166,7 +166,11 @@ export {
   SoulChipDTOFactory,
   SkeletonDTOFactory,
   PartDTOFactory,
+  ExpansionChipDTOFactory,
+  BotStateDTOFactory,
   BotDTOFactory,
+  BotTemplateDTOFactory,
+  CollectionDTOFactory,
   UserInventoryDTOFactory,
   ItemDTOFactory,
   DTOFactoryRegistry,
@@ -182,7 +186,11 @@ import {
   SoulChipDTOFactory,
   SkeletonDTOFactory,
   PartDTOFactory,
+  ExpansionChipDTOFactory,
+  BotStateDTOFactory,
   BotDTOFactory,
+  BotTemplateDTOFactory,
+  CollectionDTOFactory,
   UserInventoryDTOFactory,
   ItemDTOFactory,
   DTOFactoryRegistry,
@@ -214,7 +222,11 @@ export class DTOPackage {
     soulChip: SoulChipDTOFactory;
     skeleton: SkeletonDTOFactory;
     part: PartDTOFactory;
+    expansionChip: ExpansionChipDTOFactory;
+    botState: BotStateDTOFactory;
     bot: BotDTOFactory;
+    botTemplate: BotTemplateDTOFactory;
+    collection: CollectionDTOFactory;
     userInventory: UserInventoryDTOFactory;
     item: ItemDTOFactory;
   };
@@ -230,7 +242,11 @@ export class DTOPackage {
       soulChip: new SoulChipDTOFactory(),
       skeleton: new SkeletonDTOFactory(),
       part: new PartDTOFactory(),
+      expansionChip: new ExpansionChipDTOFactory(),
+      botState: new BotStateDTOFactory(),
       bot: new BotDTOFactory(),
+      botTemplate: new BotTemplateDTOFactory(),
+      collection: new CollectionDTOFactory(),
       userInventory: new UserInventoryDTOFactory(),
       item: new ItemDTOFactory(),
     };

@@ -18,9 +18,11 @@
 // Export DTO interfaces
 export * from "./interfaces/base-dto";
 export * from "./interfaces/artifact-dto";
+export * from "./interfaces/slot-assignment-dto";
 
 // Export factories
 export * from "./factories/dto-factory";
+export * from "./factories/slot-assignment-dto-factory";
 
 // Export services
 export * from "./services";
@@ -175,6 +177,11 @@ export {
   ItemDTOFactory,
   DTOFactoryRegistry,
 } from "./factories/dto-factory";
+
+export {
+  // Slot assignment factories
+  SlotAssignmentDTOFactory,
+} from "./factories/slot-assignment-dto-factory";
 
 export {
   // Example

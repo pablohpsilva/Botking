@@ -11,6 +11,10 @@ import type {
   GovernmentType,
 } from "../types";
 import type { IBotState } from "../bot-state/bot-state-interface";
+import type {
+  SlotIdentifier,
+  ISkeletonSlotConfiguration,
+} from "@botking/domain";
 
 /**
  * Interface for a complete Bot artifact
@@ -39,6 +43,10 @@ export interface IBot {
   readonly lastModified: Date;
   readonly assemblyVersion: number;
 
+  // Slot assignment tracking
+  readonly slotConfiguration: ISkeletonSlotConfiguration;
+  readonly slotAssignments: ReadonlyMap<SlotIdentifier, any>;
+
   // Computed properties
   readonly isAssembled: boolean;
   readonly isOperational: boolean;
@@ -56,11 +64,25 @@ export interface IBot {
   readonly availableAbilities: ReadonlyArray<Ability>;
   readonly activeEffects: ReadonlyArray<string>;
 
-  // Assembly operations
-  installPart(part: IPart): boolean;
-  removePart(partId: string): boolean;
-  installExpansionChip(chip: IExpansionChip): boolean;
-  removeExpansionChip(chipId: string): boolean;
+  // Assembly operations - Slot-aware methods
+  installPart(
+    part: IPart,
+    preferredSlot?: SlotIdentifier
+  ): { success: boolean; assignedSlot?: SlotIdentifier; message: string };
+  removePart(partId: string): {
+    success: boolean;
+    removedFromSlot?: SlotIdentifier;
+    message: string;
+  };
+  installExpansionChip(
+    chip: IExpansionChip,
+    preferredSlot?: SlotIdentifier
+  ): { success: boolean; assignedSlot?: SlotIdentifier; message: string };
+  removeExpansionChip(chipId: string): {
+    success: boolean;
+    removedFromSlot?: SlotIdentifier;
+    message: string;
+  };
 
   // State management
   updateState(newState: Partial<IBotState>): void;
@@ -72,11 +94,43 @@ export interface IBot {
   canBeOwned(): boolean;
   requiresUser(): boolean;
 
+  // Slot assignment operations
+  swapParts(
+    slotA: SlotIdentifier,
+    slotB: SlotIdentifier
+  ): { success: boolean; message: string };
+  movePart(
+    fromSlot: SlotIdentifier,
+    toSlot: SlotIdentifier
+  ): { success: boolean; message: string };
+  getSlotAssignmentForVisualization(): {
+    skeletonType: string;
+    slots: Array<{
+      slotId: string;
+      category: string;
+      position: string;
+      visualPosition: { x: number; y: number; z: number };
+      isOccupied: boolean;
+      partData?: {
+        id: string;
+        name: string;
+        category: string;
+      };
+    }>;
+  };
+
   // Validation
   validateAssembly(): {
     valid: boolean;
     errors: string[];
     warnings: string[];
+  };
+  validateSlotAssignments(): {
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+    conflictingSlots: string[];
+    unassignedRequiredSlots: string[];
   };
 
   // Combat readiness

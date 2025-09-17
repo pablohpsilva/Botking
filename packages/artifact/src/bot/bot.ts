@@ -18,6 +18,15 @@ import type {
   BotAssemblyResult,
   BotUpgradeResult,
 } from "./bot-interface";
+import {
+  SlotAssignmentService,
+  SlotIdentifier,
+  ISkeletonSlotConfiguration,
+  ISlotAssignmentCommand,
+  SlotAssignmentOperation,
+  getAvailableSlotsForSkeleton,
+} from "@botking/domain";
+import { SkeletonType as DomainSkeletonType } from "@botking/db";
 
 /**
  * Bot state interface for partial updates
@@ -61,6 +70,10 @@ export class Bot implements IBot {
   private _assemblyVersion: number;
   private _metadata: Record<string, any>;
 
+  // Slot assignment tracking
+  private _slotConfiguration: ISkeletonSlotConfiguration;
+  private _slotAssignmentService: SlotAssignmentService;
+
   constructor(config: BotConfiguration) {
     this._id =
       config.id ||
@@ -84,17 +97,29 @@ export class Bot implements IBot {
     this._assemblyVersion = 1;
     this._metadata = config.metadata || {};
 
-    // Initialize parts
+    // Initialize slot assignment system
+    this._slotAssignmentService = new SlotAssignmentService();
+    this._slotConfiguration =
+      this._slotAssignmentService.createSkeletonSlotConfiguration(
+        this._convertSkeletonType(this._skeleton.type)
+      );
+
+    // Auto-assign soul chip to its designated slot
+    this._assignSoulChipToSlot();
+
+    // Initialize parts with automatic slot assignment
     if (config.parts) {
       config.parts.forEach((part) => {
         this._parts.set(part.id, part);
+        this._autoAssignPartToSlot(part);
       });
     }
 
-    // Initialize expansion chips
+    // Initialize expansion chips with automatic slot assignment
     if (config.expansionChips) {
       config.expansionChips.forEach((chip) => {
         this._expansionChips.set(chip.id, chip);
+        this._autoAssignExpansionChipToSlot(chip);
       });
     }
 
@@ -161,6 +186,15 @@ export class Bot implements IBot {
   }
   get assemblyVersion(): number {
     return this._assemblyVersion;
+  }
+
+  // Slot assignment getters
+  get slotConfiguration(): ISkeletonSlotConfiguration {
+    return this._slotConfiguration;
+  }
+
+  get slotAssignments(): ReadonlyMap<SlotIdentifier, any> {
+    return this._slotConfiguration.assignments;
   }
 
   // Computed properties
@@ -362,61 +396,187 @@ export class Bot implements IBot {
     return effects;
   }
 
-  // Assembly operations
-  installPart(part: IPart): boolean {
-    if (this.availableSlots <= 0) {
-      return false;
-    }
-
+  // Assembly operations - Slot-aware methods
+  installPart(
+    part: IPart,
+    preferredSlot?: SlotIdentifier
+  ): { success: boolean; assignedSlot?: SlotIdentifier; message: string } {
     if (!this._skeleton.isCompatibleWithPart(part.category)) {
-      return false;
+      return {
+        success: false,
+        message: `Part category ${part.category} incompatible with skeleton ${this._skeleton.type}`,
+      };
     }
 
-    // Check for duplicate categories (optional business rule)
-    const existingPart = Array.from(this._parts.values()).find(
-      (p) => p.category === part.category
+    // Try to assign to preferred slot first, then auto-assign
+    const targetSlot = preferredSlot || this._findAvailableSlotForPart(part);
+
+    if (!targetSlot) {
+      return {
+        success: false,
+        message: `No available slots for part category ${part.category}`,
+      };
+    }
+
+    const command: ISlotAssignmentCommand = {
+      operation: SlotAssignmentOperation.ASSIGN,
+      slotId: targetSlot,
+      partId: part.id,
+    };
+
+    const result = this._slotAssignmentService.executeSlotAssignment(
+      this._slotConfiguration,
+      command,
+      this._userId || "system"
     );
-    if (existingPart) {
-      return false; // Only one part per category
-    }
 
-    this._parts.set(part.id, part);
-    this._lastModified = new Date();
-    this._assemblyVersion++;
-    return true;
+    if (result.isValid) {
+      this._parts.set(part.id, part);
+      this._lastModified = new Date();
+      this._assemblyVersion++;
+      return {
+        success: true,
+        assignedSlot: targetSlot,
+        message: `Part ${part.name} installed to slot ${targetSlot}`,
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || "Slot assignment failed",
+      };
+    }
   }
 
-  removePart(partId: string): boolean {
-    if (!this._parts.has(partId)) {
-      return false;
+  removePart(partId: string): {
+    success: boolean;
+    removedFromSlot?: SlotIdentifier;
+    message: string;
+  } {
+    const part = this._parts.get(partId);
+    if (!part) {
+      return { success: false, message: `Part ${partId} not found` };
     }
 
-    this._parts.delete(partId);
-    this._lastModified = new Date();
-    this._assemblyVersion++;
-    return true;
+    // Find which slot this part is assigned to
+    const assignedSlot = this._findSlotForPart(partId);
+    if (!assignedSlot) {
+      return {
+        success: false,
+        message: `Part ${partId} is not assigned to any slot`,
+      };
+    }
+
+    const command: ISlotAssignmentCommand = {
+      operation: SlotAssignmentOperation.UNASSIGN,
+      slotId: assignedSlot,
+    };
+
+    const result = this._slotAssignmentService.executeSlotAssignment(
+      this._slotConfiguration,
+      command,
+      this._userId || "system"
+    );
+
+    if (result.isValid) {
+      this._parts.delete(partId);
+      this._lastModified = new Date();
+      this._assemblyVersion++;
+      return {
+        success: true,
+        removedFromSlot: assignedSlot,
+        message: `Part ${part.name} removed from slot ${assignedSlot}`,
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || "Slot unassignment failed",
+      };
+    }
   }
 
-  installExpansionChip(chip: IExpansionChip): boolean {
-    if (this.availableSlots <= 0) {
-      return false;
+  installExpansionChip(
+    chip: IExpansionChip,
+    preferredSlot?: SlotIdentifier
+  ): { success: boolean; assignedSlot?: SlotIdentifier; message: string } {
+    const targetSlot = preferredSlot || this._findAvailableExpansionSlot();
+
+    if (!targetSlot) {
+      return { success: false, message: "No available expansion chip slots" };
     }
 
-    this._expansionChips.set(chip.id, chip);
-    this._lastModified = new Date();
-    this._assemblyVersion++;
-    return true;
+    const command: ISlotAssignmentCommand = {
+      operation: SlotAssignmentOperation.ASSIGN,
+      slotId: targetSlot,
+      partId: chip.id,
+    };
+
+    const result = this._slotAssignmentService.executeSlotAssignment(
+      this._slotConfiguration,
+      command,
+      this._userId || "system"
+    );
+
+    if (result.isValid) {
+      this._expansionChips.set(chip.id, chip);
+      this._lastModified = new Date();
+      this._assemblyVersion++;
+      return {
+        success: true,
+        assignedSlot: targetSlot,
+        message: `Expansion chip ${chip.name} installed to slot ${targetSlot}`,
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || "Slot assignment failed",
+      };
+    }
   }
 
-  removeExpansionChip(chipId: string): boolean {
-    if (!this._expansionChips.has(chipId)) {
-      return false;
+  removeExpansionChip(chipId: string): {
+    success: boolean;
+    removedFromSlot?: SlotIdentifier;
+    message: string;
+  } {
+    const chip = this._expansionChips.get(chipId);
+    if (!chip) {
+      return { success: false, message: `Expansion chip ${chipId} not found` };
     }
 
-    this._expansionChips.delete(chipId);
-    this._lastModified = new Date();
-    this._assemblyVersion++;
-    return true;
+    const assignedSlot = this._findSlotForExpansionChip(chipId);
+    if (!assignedSlot) {
+      return {
+        success: false,
+        message: `Expansion chip ${chipId} is not assigned to any slot`,
+      };
+    }
+
+    const command: ISlotAssignmentCommand = {
+      operation: SlotAssignmentOperation.UNASSIGN,
+      slotId: assignedSlot,
+    };
+
+    const result = this._slotAssignmentService.executeSlotAssignment(
+      this._slotConfiguration,
+      command,
+      this._userId || "system"
+    );
+
+    if (result.isValid) {
+      this._expansionChips.delete(chipId);
+      this._lastModified = new Date();
+      this._assemblyVersion++;
+      return {
+        success: true,
+        removedFromSlot: assignedSlot,
+        message: `Expansion chip ${chip.name} removed from slot ${assignedSlot}`,
+      };
+    } else {
+      return {
+        success: false,
+        message: result.message || "Slot unassignment failed",
+      };
+    }
   }
 
   // State management
@@ -700,6 +860,257 @@ export class Bot implements IBot {
       parts: currentParts,
       chips: currentChips,
       reasoning: reasoning || "Loadout appears balanced.",
+    };
+  }
+
+  // Slot assignment helper methods
+  private _convertSkeletonType(
+    artifactSkeletonType: string
+  ): DomainSkeletonType {
+    // Convert artifact skeleton type strings to domain SkeletonType enum
+    switch (artifactSkeletonType.toLowerCase()) {
+      case "light":
+        return DomainSkeletonType.LIGHT;
+      case "balanced":
+        return DomainSkeletonType.BALANCED;
+      case "heavy":
+        return DomainSkeletonType.HEAVY;
+      case "flying":
+        return DomainSkeletonType.FLYING;
+      case "modular":
+        return DomainSkeletonType.MODULAR;
+      default:
+        // Default to balanced if unknown
+        console.warn(
+          `Unknown skeleton type: ${artifactSkeletonType}, defaulting to BALANCED`
+        );
+        return DomainSkeletonType.BALANCED;
+    }
+  }
+
+  private _assignSoulChipToSlot(): void {
+    const command: ISlotAssignmentCommand = {
+      operation: SlotAssignmentOperation.ASSIGN,
+      slotId: SlotIdentifier.SOUL_CHIP,
+      partId: this._soulChip.id,
+    };
+
+    this._slotAssignmentService.executeSlotAssignment(
+      this._slotConfiguration,
+      command,
+      this._userId || "system"
+    );
+  }
+
+  private _autoAssignPartToSlot(part: IPart): void {
+    const availableSlot = this._findAvailableSlotForPart(part);
+    if (availableSlot) {
+      const command: ISlotAssignmentCommand = {
+        operation: SlotAssignmentOperation.ASSIGN,
+        slotId: availableSlot,
+        partId: part.id,
+      };
+
+      this._slotAssignmentService.executeSlotAssignment(
+        this._slotConfiguration,
+        command,
+        this._userId || "system"
+      );
+    }
+  }
+
+  private _autoAssignExpansionChipToSlot(chip: IExpansionChip): void {
+    const availableSlot = this._findAvailableExpansionSlot();
+    if (availableSlot) {
+      const command: ISlotAssignmentCommand = {
+        operation: SlotAssignmentOperation.ASSIGN,
+        slotId: availableSlot,
+        partId: chip.id,
+      };
+
+      this._slotAssignmentService.executeSlotAssignment(
+        this._slotConfiguration,
+        command,
+        this._userId || "system"
+      );
+    }
+  }
+
+  private _findAvailableSlotForPart(part: IPart): SlotIdentifier | null {
+    // Find available slots that match the part category
+    const availableSlots = this._slotConfiguration.availableSlots.filter(
+      (slot) => {
+        return (
+          (slot.category as string) === part.category &&
+          !this._slotConfiguration.assignments.has(slot.slotId)
+        );
+      }
+    );
+
+    if (availableSlots.length === 0) {
+      return null;
+    }
+
+    // Prioritize primary slots (lower index)
+    availableSlots.sort((a, b) => a.index - b.index);
+    return availableSlots[0].slotId;
+  }
+
+  private _findAvailableExpansionSlot(): SlotIdentifier | null {
+    const availableSlots = this._slotConfiguration.availableSlots.filter(
+      (slot) => {
+        return (
+          slot.category === "expansionChip" &&
+          !this._slotConfiguration.assignments.has(slot.slotId)
+        );
+      }
+    );
+
+    if (availableSlots.length === 0) {
+      return null;
+    }
+
+    // Prioritize primary slots (lower index)
+    availableSlots.sort((a, b) => a.index - b.index);
+    return availableSlots[0].slotId;
+  }
+
+  private _findSlotForPart(partId: string): SlotIdentifier | null {
+    for (const [slotId, assignment] of this._slotConfiguration.assignments) {
+      if (assignment.partId === partId) {
+        return slotId;
+      }
+    }
+    return null;
+  }
+
+  private _findSlotForExpansionChip(chipId: string): SlotIdentifier | null {
+    for (const [slotId, assignment] of this._slotConfiguration.assignments) {
+      if (assignment.partId === chipId) {
+        return slotId;
+      }
+    }
+    return null;
+  }
+
+  // Advanced slot operations
+  swapParts(
+    slotA: SlotIdentifier,
+    slotB: SlotIdentifier
+  ): { success: boolean; message: string } {
+    const command: ISlotAssignmentCommand = {
+      operation: SlotAssignmentOperation.SWAP,
+      slotId: slotA,
+      swapWithSlotId: slotB,
+    };
+
+    const result = this._slotAssignmentService.executeSlotAssignment(
+      this._slotConfiguration,
+      command,
+      this._userId || "system"
+    );
+
+    this._lastModified = new Date();
+    this._assemblyVersion++;
+
+    return {
+      success: result.isValid,
+      message:
+        result.message ||
+        (result.isValid
+          ? "Parts swapped successfully"
+          : "Swap operation failed"),
+    };
+  }
+
+  movePart(
+    fromSlot: SlotIdentifier,
+    toSlot: SlotIdentifier
+  ): { success: boolean; message: string } {
+    const command: ISlotAssignmentCommand = {
+      operation: SlotAssignmentOperation.MOVE,
+      slotId: fromSlot,
+      targetSlotId: toSlot,
+    };
+
+    const result = this._slotAssignmentService.executeSlotAssignment(
+      this._slotConfiguration,
+      command,
+      this._userId || "system"
+    );
+
+    this._lastModified = new Date();
+    this._assemblyVersion++;
+
+    return {
+      success: result.isValid,
+      message:
+        result.message ||
+        (result.isValid ? "Part moved successfully" : "Move operation failed"),
+    };
+  }
+
+  getSlotAssignmentForVisualization(): {
+    skeletonType: string;
+    slots: Array<{
+      slotId: string;
+      category: string;
+      position: string;
+      visualPosition: { x: number; y: number; z: number };
+      isOccupied: boolean;
+      partData?: {
+        id: string;
+        name: string;
+        category: string;
+      };
+    }>;
+  } {
+    const visualization = this._slotAssignmentService.getVisualRepresentation(
+      this._slotConfiguration
+    );
+
+    return {
+      skeletonType: visualization.skeleton.type,
+      slots: visualization.skeleton.slots.map((slot) => ({
+        slotId: slot.slotId,
+        category:
+          this._slotConfiguration.availableSlots.find(
+            (s) => s.slotId === slot.slotId
+          )?.category || "unknown",
+        position:
+          this._slotConfiguration.availableSlots.find(
+            (s) => s.slotId === slot.slotId
+          )?.position || "unknown",
+        visualPosition: slot.position,
+        isOccupied: slot.isOccupied,
+        partData: slot.partData
+          ? {
+              id: slot.partData.partId,
+              name: slot.partData.partName,
+              category: slot.partData.category,
+            }
+          : undefined,
+      })),
+    };
+  }
+
+  validateSlotAssignments(): {
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+    conflictingSlots: string[];
+    unassignedRequiredSlots: string[];
+  } {
+    const validation = this._slotAssignmentService.validateSlotConfiguration(
+      this._slotConfiguration
+    );
+
+    return {
+      isValid: validation.isValid,
+      errors: validation.assignments.flatMap((a) => a.errors),
+      warnings: validation.assignments.flatMap((a) => a.warnings),
+      conflictingSlots: validation.conflictingSlots,
+      unassignedRequiredSlots: validation.unassignedRequiredSlots,
     };
   }
 

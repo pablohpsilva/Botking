@@ -47,6 +47,7 @@ model User {
   collections   Collection[]
   items         Item[]
   inventory     UserInventory[]
+  slotHistory   SlotAssignmentHistory[]
 
   @@map("users")
 }
@@ -285,8 +286,71 @@ model Bot {
   state            BotState             @relation(fields: [stateId], references: [id], onDelete: Cascade)
   parts            BotPart[]
   expansionChips   BotExpansionChip[]
+  slotConfiguration SkeletonSlotConfiguration?
+  slotHistory      SlotAssignmentHistory[]
 
   @@map("bots")
+}
+
+// Slot assignment models for precise bot part placement
+model SlotAssignment {
+  id                String   @id @default(cuid())
+  slotId            String   // SlotIdentifier enum value as string
+  partId            String   // Can be part ID, expansion chip ID, or soul chip ID
+  partName          String   @db.VarChar(100)
+  partCategory      String   // PartCategory or 'expansionChip' or 'soulChip'
+  assignedAt        DateTime @default(now())
+  metadata          Json?    // Visual metadata like rotation, scale, customizations
+  
+  // Foreign key to slot configuration
+  configurationId   String
+  configuration     SkeletonSlotConfiguration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Ensure one assignment per slot per configuration
+  @@unique([configurationId, slotId])
+  @@map("slot_assignments")
+}
+
+model SkeletonSlotConfiguration {
+  id                String   @id @default(cuid())
+  botId             String   @unique // One-to-one with Bot
+  skeletonType      SkeletonType
+  lastModified      DateTime @default(now())
+  
+  // Relations
+  bot               Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  slotAssignments   SlotAssignment[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("skeleton_slot_configurations")
+}
+
+model SlotAssignmentHistory {
+  id                String   @id @default(cuid())
+  botId             String   // Reference to the bot for this history
+  operation         String   // 'assign', 'unassign', 'swap', 'move'
+  slotId            String   // SlotIdentifier enum value as string
+  partId            String?  // Part/chip/soul chip ID involved
+  targetSlotId      String?  // For move operations
+  swapWithSlotId    String?  // For swap operations
+  previousState     Json?    // Previous slot assignment state
+  newState          Json?    // New slot assignment state
+  userId            String   // User who performed the operation
+  timestamp         DateTime @default(now())
+  metadata          Json?    // Additional operation metadata
+  
+  // Relations
+  bot               Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime @default(now())
+  
+  @@map("slot_assignment_history")
 }
 
 model Item {

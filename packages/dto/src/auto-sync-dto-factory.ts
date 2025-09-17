@@ -422,6 +422,7 @@ export class AutoSyncDTOFactory {
           errors.push({
             field: "bondLevel",
             message: "Worker bots cannot have bond level",
+            code: "INVALID_FIELD",
           });
         }
 
@@ -429,6 +430,7 @@ export class AutoSyncDTOFactory {
           errors.push({
             field: "battlesWon",
             message: "Worker bots cannot have battle statistics",
+            code: "INVALID_FIELD",
           });
         }
 
@@ -436,6 +438,7 @@ export class AutoSyncDTOFactory {
           errors.push({
             field: "battlesLost",
             message: "Worker bots cannot have battle statistics",
+            code: "INVALID_FIELD",
           });
         }
 
@@ -446,6 +449,7 @@ export class AutoSyncDTOFactory {
           errors.push({
             field: "totalBattles",
             message: "Worker bots cannot have battle statistics",
+            code: "INVALID_FIELD",
           });
         }
       }
@@ -466,6 +470,7 @@ export class AutoSyncDTOFactory {
               field: "totalBattles",
               message:
                 "Total battles must be greater than or equal to won + lost battles",
+              code: "INVALID_CALCULATION",
             });
           }
         }
@@ -476,6 +481,7 @@ export class AutoSyncDTOFactory {
             errors.push({
               field: "bondLevel",
               message: "Bond level must be between 0 and 100",
+              code: "INVALID_RANGE",
             });
           }
         }
@@ -487,6 +493,7 @@ export class AutoSyncDTOFactory {
           errors.push({
             field: "energyLevel",
             message: "Energy level must be between 0 and 100",
+            code: "INVALID_RANGE",
           });
         }
       }
@@ -503,6 +510,7 @@ export class AutoSyncDTOFactory {
           errors.push({
             field: "maintenanceLevel",
             message: "Maintenance level must be between 0 and 100",
+            code: "INVALID_RANGE",
           });
         }
       }

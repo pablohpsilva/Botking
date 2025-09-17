@@ -32,6 +32,9 @@
       "path": "./packages/time-chain"
     },
     {
+      "path": "./packages/domain"
+    },
+    {
       "path": "./packages/artifact"
     },
     {

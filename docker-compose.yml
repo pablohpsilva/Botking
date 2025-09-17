@@ -1,0 +1,100 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: botking-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: botking
+      POSTGRES_USER: botking_user
+      POSTGRES_PASSWORD: botking_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - botking-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U botking_user -d botking"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Redis Cache & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: botking-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - botking-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # pgAdmin for database management (optional, for development)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: botking-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@botking.dev
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - botking-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Redis Commander for Redis management (optional, for development)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: botking-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: "botking-redis:botking-redis:6379"
+      HTTP_USER: admin
+      HTTP_PASSWORD: admin123
+    ports:
+      - "8081:8081"
+    networks:
+      - botking-network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+# Named volumes for data persistence
+volumes:
+  postgres_data:
+    name: botking-postgres-data
+    driver: local
+  redis_data:
+    name: botking-redis-data
+    driver: local
+  pgadmin_data:
+    name: botking-pgadmin-data
+    driver: local
+
+# Custom network for service communication
+networks:
+  botking-network:
+    name: botking-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

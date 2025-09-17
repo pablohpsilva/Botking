@@ -45,6 +45,8 @@ model User {
   bots          Bot[]
   botStates     BotState[]
   collections   Collection[]
+  items         Item[]
+  inventory     UserInventory[]
 
   @@map("users")
 }
@@ -287,6 +289,72 @@ model Bot {
   @@map("bots")
 }
 
+model Item {
+  id                  String              @id @default(cuid())
+  userId              String?             // Owner of this item - can be null for system items
+  name                String              @db.VarChar(100)
+  category            ItemCategory
+  rarity              Rarity              @default(COMMON)
+  description         String              @db.Text
+  consumable          Boolean             @default(true)
+  tradeable           Boolean             @default(false)
+  stackable           Boolean             @default(true)
+  maxStackSize        Int                 @default(999999999)
+  value               Int                 @default(1) // Credits price?
+  cooldownTime        Int                 @default(0) // seconds
+  requirements        String[]            @default([])
+  source              String?
+  tags                String[]            @default([])
+  effects             Json?               @default("[]") // JSON array of item effects
+  
+  // Item-specific fields based on category
+  speedUpTarget       SpeedUpTarget?      // For SPEED_UP items
+  speedMultiplier     Float?              // For SPEED_UP items
+  timeReduction       Int?                // For SPEED_UP items (seconds)
+  resourceType        ResourceType?       // For RESOURCE items
+  resourceAmount      Int?                // For RESOURCE items
+  enhancementType     ResourceType?       // For enhancement RESOURCE items
+  enhancementDuration EnhancementDuration? // For enhancement RESOURCE items
+  statModifiers       Json?               // For enhancement items - stat modifications
+  gemType             GemType?            // For GEM items
+  gemValue            Int?                // For GEM items
+  tradeHistory        Json?               @default("[]") // For TRADEABLE items - trade records
+  
+  // Metadata
+  version             Int                 @default(1)
+  metadata            Json?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  // Relations
+  user                User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userInventories     UserInventory[]
+
+  @@map("items")
+}
+
+model UserInventory {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  quantity  Int      @default(1)
+  
+  // Optional metadata for inventory items
+  acquiredAt DateTime @default(now())
+  expiresAt  DateTime? // For items with expiration dates
+  metadata   Json?     // Additional item-specific data (condition, customizations, etc.)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, itemId]) // One entry per user per item type
+  @@map("user_inventory")
+}
+
 // Junction tables for many-to-many relationships
 model BotPart {
   id        String   @id @default(cuid())
@@ -430,4 +498,43 @@ enum GovernmentType {
   SECURITY
   ADMIN
   MAINTENANCE
+}
+
+enum ItemCategory {
+  SPEED_UP
+  RESOURCE
+  TRADEABLE
+  GEMS
+}
+
+enum ResourceType {
+  ENERGY
+  SCRAP_PARTS
+  MICROCHIPS
+  STAMINA
+  PARTS_ENHANCER
+  BOT_ENHANCER
+  SKELETON_ENHANCER
+  EXPANSION_CHIP_ENHANCER
+}
+
+enum EnhancementDuration {
+  TEMPORARY
+  PERMANENT
+}
+
+enum SpeedUpTarget {
+  BOT_CONSTRUCTION
+  PART_MANUFACTURING
+  TRAINING
+  MISSION
+  RESEARCH
+  REPAIR
+}
+
+enum GemType {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
 }

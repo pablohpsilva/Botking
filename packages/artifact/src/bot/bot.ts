@@ -5,12 +5,11 @@ import type { IExpansionChip } from "../expansion-chip";
 import type {
   CombatStats,
   Ability,
-  BotType,
   CombatRole,
   UtilitySpecialization,
   GovernmentType,
 } from "../types";
-import { BotLocation } from "../types";
+import { BotLocation, BotType } from "../types";
 import type { IBotState } from "../bot-state/bot-state-interface";
 import { BotStateFactory } from "../bot-state/bot-state-factory";
 import type {
@@ -518,12 +517,12 @@ export class Bot implements IBot {
   // Player assignment management
   canBeOwned(): boolean {
     // ROGUE and GOVBOT types cannot be owned (they are autonomous)
-    return this._botType !== "rogue" && this._botType !== "govbot";
+    return this._botType !== BotType.ROGUE && this._botType !== BotType.GOVBOT;
   }
 
   requiresUser(): boolean {
     // PLAYABLE and KING types must always have a user assigned
-    return this._botType === "playable" || this._botType === "king";
+    return this._botType === BotType.PLAYABLE || this._botType === BotType.KING;
   }
 
   // Private validation methods
@@ -531,16 +530,16 @@ export class Bot implements IBot {
     const errors: string[] = [];
 
     switch (this._botType) {
-      case "playable":
-      case "king":
+      case BotType.PLAYABLE:
+      case BotType.KING:
         // These types must have a user
         if (!this._userId) {
           errors.push(`${this._botType} bots must have a user assigned`);
         }
         break;
 
-      case "rogue":
-      case "govbot":
+      case BotType.ROGUE:
+      case BotType.GOVBOT:
         // These types cannot have users (they are autonomous)
         if (this._userId) {
           errors.push(
@@ -549,7 +548,7 @@ export class Bot implements IBot {
         }
         break;
 
-      case "worker":
+      case BotType.WORKER:
         // Workers can optionally have users
         // No specific validation needed - workers can be owned or autonomous
         break;

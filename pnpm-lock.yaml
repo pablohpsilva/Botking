@@ -22,6 +22,10 @@ importers:
         version: 5.9.2
 
   packages/artifact:
+    dependencies:
+      '@botking/db':
+        specifier: workspace:*
+        version: link:../db
     devDependencies:
       typescript:
         specifier: ^5.0.0

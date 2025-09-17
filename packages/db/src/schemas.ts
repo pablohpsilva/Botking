@@ -102,6 +102,37 @@ export const GovernmentTypeSchema = z.enum([
   "MAINTENANCE",
 ]);
 
+export const ItemCategorySchema = z.enum([
+  "SPEED_UP",
+  "RESOURCE",
+  "TRADEABLE",
+  "GEMS",
+]);
+
+export const ResourceTypeSchema = z.enum([
+  "ENERGY",
+  "SCRAP_PARTS",
+  "MICROCHIPS",
+  "STAMINA",
+  "PARTS_ENHANCER",
+  "BOT_ENHANCER",
+  "SKELETON_ENHANCER",
+  "EXPANSION_CHIP_ENHANCER",
+]);
+
+export const EnhancementDurationSchema = z.enum(["TEMPORARY", "PERMANENT"]);
+
+export const SpeedUpTargetSchema = z.enum([
+  "BOT_CONSTRUCTION",
+  "PART_MANUFACTURING",
+  "TRAINING",
+  "MISSION",
+  "RESEARCH",
+  "REPAIR",
+]);
+
+export const GemTypeSchema = z.enum(["COMMON", "RARE", "EPIC", "LEGENDARY"]);
+
 /**
  * Create schemas for DTO validation
  * These are perfect for API validation and form processing
@@ -244,6 +275,41 @@ export const CreateBotSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
 });
 
+export const CreateItemSchema = z.object({
+  userId: z.string().optional(), // Optional for system items
+  name: z.string().min(1).max(100),
+  category: ItemCategorySchema,
+  rarity: RaritySchema.optional().default("COMMON"),
+  description: z.string().min(1),
+  consumable: z.boolean().optional().default(true),
+  tradeable: z.boolean().optional().default(false),
+  stackable: z.boolean().optional().default(true),
+  maxStackSize: z.number().int().min(1).optional().default(99),
+  value: z.number().int().min(0).optional().default(1),
+  cooldownTime: z.number().int().min(0).optional().default(0),
+  requirements: z.array(z.string()).optional().default([]),
+  source: z.string().optional(),
+  tags: z.array(z.string()).optional().default([]),
+  effects: z.array(z.any()).optional().default([]), // JSON array of item effects
+
+  // Category-specific fields
+  speedUpTarget: SpeedUpTargetSchema.optional(),
+  speedMultiplier: z.number().positive().optional(),
+  timeReduction: z.number().int().min(0).optional(),
+  resourceType: ResourceTypeSchema.optional(),
+  resourceAmount: z.number().int().min(0).optional(),
+  enhancementType: ResourceTypeSchema.optional(),
+  enhancementDuration: EnhancementDurationSchema.optional(),
+  statModifiers: z.record(z.string(), z.number()).optional(),
+  gemType: GemTypeSchema.optional(),
+  gemValue: z.number().int().min(0).optional(),
+  tradeHistory: z.array(z.any()).optional().default([]),
+
+  // Metadata
+  version: z.number().int().optional().default(1),
+  metadata: z.record(z.string(), z.any()).optional(),
+});
+
 export const CreateCollectionSchema = z.object({
   userId: z.string(),
   name: z.string().min(1).max(100),
@@ -285,6 +351,7 @@ export type CreatePartDTO = z.infer<typeof CreatePartSchema>;
 export type CreateExpansionChipDTO = z.infer<typeof CreateExpansionChipSchema>;
 export type CreateBotStateDTO = z.infer<typeof CreateBotStateSchema>;
 export type CreateBotDTO = z.infer<typeof CreateBotSchema>;
+export type CreateItemDTO = z.infer<typeof CreateItemSchema>;
 export type CreateCollectionDTO = z.infer<typeof CreateCollectionSchema>;
 
 export type UpdateSoulChipDTO = z.infer<typeof UpdateSoulChipSchema>;
@@ -301,6 +368,11 @@ export type UtilitySpecializationDTO = z.infer<
   typeof UtilitySpecializationSchema
 >;
 export type GovernmentTypeDTO = z.infer<typeof GovernmentTypeSchema>;
+export type ItemCategoryDTO = z.infer<typeof ItemCategorySchema>;
+export type ResourceTypeDTO = z.infer<typeof ResourceTypeSchema>;
+export type EnhancementDurationDTO = z.infer<typeof EnhancementDurationSchema>;
+export type SpeedUpTargetDTO = z.infer<typeof SpeedUpTargetSchema>;
+export type GemTypeDTO = z.infer<typeof GemTypeSchema>;
 
 // Helper schemas for business logic validation
 export const SoulChipStatsSchema = z

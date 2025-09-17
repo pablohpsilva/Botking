@@ -1,19 +1,38 @@
 /**
- * Shared types and enums for the Botking artifact system
+ * Shared types for the Botking artifact system
+ *
+ * This file imports enums from the database package to ensure single source of truth
+ * and only defines interfaces that are specific to the artifact business logic.
  */
 
-// Rarity levels for all artifacts
-export enum Rarity {
-  COMMON = "common",
-  UNCOMMON = "uncommon",
-  RARE = "rare",
-  EPIC = "epic",
-  LEGENDARY = "legendary",
-  ULTRA_RARE = "ultra-rare",
-  PROTOTYPE = "prototype",
-}
+// Import enums from database for use in interfaces (with aliases to avoid conflicts)
+import {
+  EnhancementDuration as DBEnhancementDuration,
+  ResourceType as DBResourceType,
+  SpeedUpTarget as DBSpeedUpTarget,
+  GemType as DBGemType,
+} from "@botking/db";
 
-// Skeleton types
+// Re-export all enums from the database package
+export {
+  // Basic enums
+  Rarity,
+
+  // Bot-related enums
+  BotType,
+  CombatRole,
+  UtilitySpecialization,
+  GovernmentType,
+
+  // Item-related enums
+  ItemCategory,
+  ResourceType,
+  EnhancementDuration,
+  SpeedUpTarget,
+  GemType,
+} from "@botking/db";
+
+// Skeleton and part enums (these might not be in DB yet, keeping local for now)
 export enum SkeletonType {
   LIGHT = "light",
   BALANCED = "balanced",
@@ -22,7 +41,6 @@ export enum SkeletonType {
   MODULAR = "modular",
 }
 
-// Mobility types for skeletons
 export enum MobilityType {
   WHEELED = "wheeled",
   BIPEDAL = "bipedal",
@@ -31,7 +49,6 @@ export enum MobilityType {
   HYBRID = "hybrid",
 }
 
-// Part categories
 export enum PartCategory {
   ARM = "arm",
   LEG = "leg",
@@ -40,7 +57,6 @@ export enum PartCategory {
   ACCESSORY = "accessory",
 }
 
-// Status effects
 export enum StatusEffect {
   DAMAGE_BOOST = "damage_boost",
   DEFENSE_BOOST = "defense_boost",
@@ -63,7 +79,6 @@ export enum StatusEffect {
   SKILL_IMPROVEMENT = "skill_improvement",
 }
 
-// Bot locations
 export enum BotLocation {
   ARENA = "arena",
   FACTORY = "factory",
@@ -73,52 +88,6 @@ export enum BotLocation {
   STORAGE = "storage",
 }
 
-// Base stats interface
-export interface BaseStats {
-  intelligence: number;
-  resilience: number;
-  adaptability: number;
-}
-
-// Combat stats interface
-export interface CombatStats {
-  attack: number;
-  defense: number;
-  speed: number;
-  perception: number;
-  energyConsumption: number;
-}
-
-// Status effect with duration
-export interface ActiveStatusEffect {
-  id: string; // unique identifier for this effect instance
-  effect: StatusEffect;
-  magnitude: number;
-  duration: number; // in turns/seconds
-  source: string; // what caused this effect
-}
-
-// Personality traits
-export interface PersonalityTraits {
-  aggressiveness: number; // 0-100
-  curiosity: number; // 0-100
-  loyalty: number; // 0-100
-  independence: number; // 0-100
-  empathy: number; // 0-100
-  dialogueStyle: string; // e.g., "formal", "casual", "quirky", "stoic"
-}
-
-// Special abilities
-export interface Ability {
-  id: string;
-  name: string;
-  description: string;
-  cooldown: number;
-  energyCost: number;
-  effect: string; // JSON string describing the effect
-}
-
-// Expansion chip effects
 export enum ExpansionChipEffect {
   ATTACK_BUFF = "attack_buff",
   DEFENSE_BUFF = "defense_buff",
@@ -130,34 +99,84 @@ export enum ExpansionChipEffect {
   RESISTANCE = "resistance",
 }
 
-// Bot types with player assignment rules
-export enum BotType {
-  WORKER = "worker", // Can have a player assigned
-  PLAYABLE = "playable", // Must have a player assigned
-  KING = "king", // Must have a player assigned
-  ROGUE = "rogue", // Never assigned to players
-  GOVBOT = "govbot", // Never assigned to players
+// Interface definitions (these remain local as they define business logic)
+
+export interface BaseStats {
+  intelligence: number;
+  resilience: number;
+  adaptability: number;
 }
 
-// Combat role specializations
-export enum CombatRole {
-  ASSAULT = "assault",
-  TANK = "tank",
-  SNIPER = "sniper",
-  SCOUT = "scout",
+export interface CombatStats {
+  attack: number;
+  defense: number;
+  speed: number;
+  perception: number;
+  energyConsumption: number;
 }
 
-// Utility bot specializations
-export enum UtilitySpecialization {
-  CONSTRUCTION = "construction",
-  MINING = "mining",
-  REPAIR = "repair",
-  TRANSPORT = "transport",
+export interface ActiveStatusEffect {
+  id: string;
+  effect: StatusEffect;
+  magnitude: number;
+  duration: number; // in turns/seconds
+  source: string; // what caused this effect
 }
 
-// Government bot types
-export enum GovernmentType {
-  SECURITY = "security",
-  ADMIN = "admin",
-  MAINTENANCE = "maintenance",
+export interface PersonalityTraits {
+  aggressiveness: number; // 0-100
+  curiosity: number; // 0-100
+  loyalty: number; // 0-100
+  independence: number; // 0-100
+  empathy: number; // 0-100
+  dialogueStyle: string; // e.g., "formal", "casual", "quirky", "stoic"
+}
+
+export interface Ability {
+  id: string;
+  name: string;
+  description: string;
+  cooldown: number;
+  energyCost: number;
+  effect: string; // JSON string describing the effect
+}
+
+// Import enums from database for interfaces
+import {
+  EnhancementDuration,
+  ResourceType,
+  SpeedUpTarget,
+  GemType,
+} from "@botking/db";
+
+// Item effect interfaces (specific to artifact business logic)
+export interface ItemEffect {
+  id: string;
+  type: string;
+  magnitude: number;
+  duration?: number | DBEnhancementDuration;
+  target?: string;
+  description: string;
+}
+
+export interface EnhancementEffect extends ItemEffect {
+  enhancementType: DBResourceType;
+  duration: DBEnhancementDuration;
+  statModifiers: Record<string, number>;
+}
+
+export interface SpeedUpEffect extends ItemEffect {
+  speedUpTarget: DBSpeedUpTarget;
+  speedMultiplier: number;
+  timeReduction: number;
+}
+
+export interface ResourceEffect extends ItemEffect {
+  resourceType: DBResourceType;
+  amount: number;
+}
+
+export interface GemEffect extends ItemEffect {
+  gemType: DBGemType;
+  value: number;
 }

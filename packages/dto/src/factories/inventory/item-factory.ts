@@ -1,314 +1,348 @@
-import { BaseDTOFactory } from "../base/base-factory";
+/**
+ * Item Factory - Artifact-First Approach
+ *
+ * This factory creates Item artifacts and provides methods to convert them to DTOs
+ * for database persistence. Artifacts are the primary objects, DTOs are for persistence.
+ */
+
+import { ArtifactDTOFactory } from "../base/artifact-dto-factory";
 import {
   ItemDTO,
   CreateItemDTO,
   UpdateItemDTO,
-  ItemCategoryDTO,
-  RarityDTO,
 } from "../../interfaces/artifact-dto";
-import { ValidationResult, ValidationError } from "../../interfaces/base-dto";
+import { ValidationResult } from "../../interfaces/base-dto";
+import { ItemConverter } from "../../artifact-bridge/converters";
+import {
+  ItemFactory as ArtifactItemFactory,
+  type IItem,
+  ItemCategory,
+  Rarity,
+  GemType,
+  ResourceType,
+} from "@botking/artifact";
 
 /**
- * Item DTO Factory
+ * Item DTO Factory - Works with artifacts as primary objects
  */
-export class ItemDTOFactory extends BaseDTOFactory<ItemDTO> {
+export class ItemDTOFactory extends ArtifactDTOFactory<IItem, ItemDTO> {
+  constructor() {
+    super("item-factory");
+  }
+  // ==========================================
+  // ARTIFACT CREATION METHODS (Primary)
+  // ==========================================
+
+  /**
+   * Create a default Item artifact
+   */
+  public createArtifact(overrides?: {
+    name?: string;
+    description?: string;
+    category?: ItemCategory;
+    rarity?: Rarity;
+    value?: number;
+    isProtected?: boolean;
+  }): IItem {
+    this.logger.debug("Creating default Item artifact", overrides);
+
+    return ArtifactItemFactory.createResourceItem(
+      overrides?.name || "Default Item",
+      ResourceType.ENERGY, // Default resource type
+      overrides?.value || 10,
+      overrides?.rarity || Rarity.COMMON
+    );
+  }
+
+  /**
+   * Create a Gem artifact
+   */
+  public createGemArtifact(
+    name: string,
+    gemType: GemType,
+    rarity: Rarity = Rarity.COMMON,
+    value?: number
+  ): IItem {
+    this.logger.debug("Creating Gem artifact", { name, gemType, rarity });
+
+    return ArtifactItemFactory.createGems(gemType, value || 100, rarity);
+  }
+
+  /**
+   * Create a Resource artifact
+   */
+  public createResourceArtifact(
+    name: string,
+    description: string,
+    resourceAmount: number,
+    rarity: Rarity = Rarity.COMMON
+  ): IItem {
+    this.logger.debug("Creating Resource artifact", {
+      name,
+      resourceAmount,
+      rarity,
+    });
+
+    return ArtifactItemFactory.createResourceItem(
+      name,
+      ResourceType.ENERGY, // Default to energy
+      resourceAmount,
+      rarity
+    );
+  }
+
+  /**
+   * Create a Speed Up artifact
+   */
+  public createSpeedUpArtifact(
+    name: string,
+    target: string,
+    speedMultiplier: number,
+    duration: number
+  ): IItem {
+    this.logger.debug("Creating Speed Up artifact", {
+      name,
+      target,
+      speedMultiplier,
+    });
+
+    return ArtifactItemFactory.createSpeedUpItem(
+      name,
+      target as any, // Will need proper typing
+      speedMultiplier,
+      duration
+    );
+  }
+
+  /**
+   * Create a Tradeable artifact
+   */
+  public createTradeableArtifact(
+    name: string,
+    description: string,
+    rarity: Rarity,
+    baseValue: number
+  ): IItem {
+    this.logger.debug("Creating Tradeable artifact", {
+      name,
+      rarity,
+      baseValue,
+    });
+
+    return ArtifactItemFactory.createTradeableItem(
+      name,
+      description,
+      [], // effects array (empty by default)
+      baseValue,
+      rarity
+    );
+  }
+
+  // ==========================================
+  // ARTIFACT-TO-DTO CONVERSION METHODS
+  // ==========================================
+
+  /**
+   * Convert Item artifact to DTO for database persistence
+   */
+  public artifactToDTO(item: IItem): ItemDTO {
+    this.logger.debug("Converting Item artifact to DTO", {
+      itemId: item.id,
+      itemName: item.name,
+    });
+
+    const dbData = ItemConverter.toCreateData(item);
+
+    // Add DTO-specific metadata
+    return {
+      ...dbData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as ItemDTO;
+  }
+
+  /**
+   * Convert Item artifact to CreateItemDTO
+   */
+  public artifactToCreateDTO(item: IItem): CreateItemDTO {
+    this.logger.debug("Converting Item artifact to CreateDTO", {
+      itemId: item.id,
+    });
+
+    return {
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      rarity: item.rarity,
+      value: item.value,
+      isProtected: false, // Default value - artifacts don't have this property
+    };
+  }
+
+  /**
+   * Batch convert multiple Item artifacts to DTOs
+   */
+  public batchArtifactsToDTO(items: IItem[]): ItemDTO[] {
+    this.logger.debug("Batch converting Item artifacts to DTOs", {
+      count: items.length,
+    });
+
+    return items.map((item) => this.artifactToDTO(item));
+  }
+
+  // ==========================================
+  // ARTIFACT VALIDATION
+  // ==========================================
+
+  /**
+   * Validate Item artifact
+   */
+  public validateArtifact(item: IItem): ValidationResult {
+    this.logger.debug("Validating Item artifact", { itemId: item.id });
+
+    const errors: string[] = [];
+
+    try {
+      // Basic artifact validation
+      if (!item.id) errors.push("Item ID is required");
+      if (!item.name) errors.push("Item name is required");
+      if (!item.description) errors.push("Item description is required");
+      if (!item.category) errors.push("Item category is required");
+      if (!item.rarity) errors.push("Item rarity is required");
+      if (typeof item.value !== "number" || item.value < 0) {
+        errors.push("Item value must be a non-negative number");
+      }
+
+      // Use artifact's own validation if available
+      if (typeof (item as any).validate === "function") {
+        const artifactValidation = (item as any).validate();
+        if (!artifactValidation.isValid) {
+          errors.push(...artifactValidation.errors);
+        }
+      }
+
+      return {
+        isValid: errors.length === 0,
+        errors: errors.map((error) => ({
+          field: "artifact",
+          message: error,
+          code: "ARTIFACT_VALIDATION_ERROR",
+        })),
+      };
+    } catch (error) {
+      this.logger.error("Item artifact validation failed", {
+        itemId: item.id,
+        error: (error as Error).message,
+      });
+
+      return {
+        isValid: false,
+        errors: [
+          {
+            field: "artifact",
+            message: `Validation error: ${(error as Error).message}`,
+            code: "VALIDATION_EXCEPTION",
+          },
+        ],
+      };
+    }
+  }
+
+  /**
+   * Enhance Item artifact with additional properties
+   */
+  public enhanceArtifact(
+    item: IItem,
+    enhancements: {
+      rarity?: Rarity;
+      value?: number;
+      isProtected?: boolean;
+    }
+  ): IItem {
+    this.logger.debug("Enhancing Item artifact", {
+      itemId: item.id,
+      enhancements,
+    });
+
+    // Create enhanced item with new properties
+    return ArtifactItemFactory.createResourceItem(
+      item.name,
+      ResourceType.ENERGY, // Default to energy since we don't have isProtected
+      enhancements.value || item.value,
+      enhancements.rarity || item.rarity
+    );
+  }
+
+  // ==========================================
+  // REQUIRED IMPLEMENTATIONS (BaseDTOFactory)
+  // ==========================================
+
+  /**
+   * Create default DTO (required by base class)
+   */
   public createDefault(overrides?: Partial<ItemDTO>): ItemDTO {
-    const now = this.getCurrentTimestamp();
-    return {
-      id: this.generateId(),
-      userId: null,
-      name: "",
-      category: ItemCategoryDTO.RESOURCE,
-      rarity: RarityDTO.COMMON,
-      description: "",
-      consumable: true,
-      tradeable: false,
-      stackable: true,
-      maxStackSize: 99,
-      value: 1,
-      cooldownTime: 0,
-      requirements: [],
-      source: null,
-      tags: [],
-      effects: null,
-      isProtected: false,
-      speedUpTarget: null,
-      speedMultiplier: null,
-      timeReduction: null,
-      resourceType: null,
-      resourceAmount: null,
-      enhancementType: null,
-      enhancementDuration: null,
-      statModifiers: null,
-      gemType: null,
-      gemValue: null,
-      tradeHistory: null,
-      version: 1,
-      metadata: null,
-      createdAt: now,
-      updatedAt: now,
-      ...overrides,
-    };
+    // Create artifact first, then convert to DTO
+    const artifact = this.createArtifact({
+      name: overrides?.name || undefined,
+      description: overrides?.description || undefined,
+      category: overrides?.category || undefined,
+      rarity: overrides?.rarity || undefined,
+      value: overrides?.value || undefined,
+    });
+
+    const dto = this.artifactToDTO(artifact);
+    return this.mergeDefaults(dto, overrides);
   }
 
+  /**
+   * Create DTO from data (required by base class)
+   */
   public createFromData(data: any): ItemDTO {
-    return {
-      id: data.id || this.generateId(),
-      userId: data.userId || null,
-      name: data.name || "",
-      category: data.category || ItemCategoryDTO.RESOURCE,
-      rarity: data.rarity || RarityDTO.COMMON,
-      description: data.description || "",
-      consumable: Boolean(
-        data.consumable !== undefined ? data.consumable : true
-      ),
-      tradeable: Boolean(data.tradeable || false),
-      stackable: Boolean(data.stackable !== undefined ? data.stackable : true),
-      maxStackSize: Number(data.maxStackSize) || 99,
-      value: Number(data.value) || 1,
-      cooldownTime: Number(data.cooldownTime) || 0,
-      requirements: Array.isArray(data.requirements) ? data.requirements : [],
-      source: data.source || undefined,
-      tags: Array.isArray(data.tags) ? data.tags : [],
-      effects: data.effects || null,
-      isProtected: Boolean(data.isProtected || false),
-      speedUpTarget: data.speedUpTarget || null,
-      speedMultiplier: data.speedMultiplier
-        ? Number(data.speedMultiplier)
-        : null,
-      timeReduction: data.timeReduction ? Number(data.timeReduction) : null,
-      resourceType: data.resourceType || null,
-      resourceAmount: data.resourceAmount ? Number(data.resourceAmount) : null,
-      enhancementType: data.enhancementType || null,
-      enhancementDuration: data.enhancementDuration || null,
-      statModifiers: data.statModifiers || null,
-      gemType: data.gemType || null,
-      gemValue: data.gemValue ? Number(data.gemValue) : null,
-      tradeHistory: data.tradeHistory || null,
-      version: Number(data.version) || 1,
-      metadata: data.metadata || undefined,
-      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
-      updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
-    };
-  }
+    // If data looks like an artifact, use it
+    if (data.category && data.rarity && typeof data.value === "number") {
+      return this.artifactToDTO(data as IItem);
+    }
 
-  public createFromCreateDTO(data: CreateItemDTO): ItemDTO {
-    const now = this.getCurrentTimestamp();
-    return {
-      id: this.generateId(),
-      userId: data.userId || null,
+    // Otherwise, create artifact from basic data
+    const artifact = this.createArtifact({
       name: data.name,
-      category: data.category,
-      rarity: data.rarity || RarityDTO.COMMON,
       description: data.description,
-      consumable: data.consumable !== undefined ? data.consumable : true,
-      tradeable: data.tradeable || false,
-      stackable: data.stackable !== undefined ? data.stackable : true,
-      maxStackSize: data.maxStackSize || 99,
-      value: data.value || 1,
-      cooldownTime: data.cooldownTime || 0,
-      requirements: data.requirements || [],
-      source: data.source || undefined,
-      tags: data.tags || [],
-      effects: data.effects || null,
-      isProtected: data.isProtected || false,
-      speedUpTarget: data.speedUpTarget || null,
-      speedMultiplier: data.speedMultiplier || null,
-      timeReduction: data.timeReduction || null,
-      resourceType: data.resourceType || null,
-      resourceAmount: data.resourceAmount || null,
-      enhancementType: data.enhancementType || null,
-      enhancementDuration: data.enhancementDuration || null,
-      statModifiers: data.statModifiers || null,
-      gemType: data.gemType || null,
-      gemValue: data.gemValue || null,
-      tradeHistory: null,
-      version: 1,
-      metadata: data.metadata || undefined,
-      createdAt: now,
-      updatedAt: now,
-    };
+      category: data.category,
+      rarity: data.rarity,
+      value: data.value,
+    });
+
+    return this.artifactToDTO(artifact);
   }
 
-  public updateFromDTO(existing: ItemDTO, data: UpdateItemDTO): ItemDTO {
-    return {
-      ...existing,
-      name: data.name !== undefined ? data.name : existing.name,
-      description:
-        data.description !== undefined
-          ? data.description
-          : existing.description,
-      consumable:
-        data.consumable !== undefined ? data.consumable : existing.consumable,
-      tradeable:
-        data.tradeable !== undefined ? data.tradeable : existing.tradeable,
-      stackable:
-        data.stackable !== undefined ? data.stackable : existing.stackable,
-      maxStackSize:
-        data.maxStackSize !== undefined
-          ? data.maxStackSize
-          : existing.maxStackSize,
-      value: data.value !== undefined ? data.value : existing.value,
-      cooldownTime:
-        data.cooldownTime !== undefined
-          ? data.cooldownTime
-          : existing.cooldownTime,
-      requirements:
-        data.requirements !== undefined
-          ? data.requirements
-          : existing.requirements,
-      source: data.source !== undefined ? data.source : existing.source,
-      tags: data.tags !== undefined ? data.tags : existing.tags,
-      effects: data.effects !== undefined ? data.effects : existing.effects,
-      speedUpTarget:
-        data.speedUpTarget !== undefined
-          ? data.speedUpTarget
-          : existing.speedUpTarget,
-      speedMultiplier:
-        data.speedMultiplier !== undefined
-          ? data.speedMultiplier
-          : existing.speedMultiplier,
-      timeReduction:
-        data.timeReduction !== undefined
-          ? data.timeReduction
-          : existing.timeReduction,
-      resourceType:
-        data.resourceType !== undefined
-          ? data.resourceType
-          : existing.resourceType,
-      resourceAmount:
-        data.resourceAmount !== undefined
-          ? data.resourceAmount
-          : existing.resourceAmount,
-      enhancementType:
-        data.enhancementType !== undefined
-          ? data.enhancementType
-          : existing.enhancementType,
-      enhancementDuration:
-        data.enhancementDuration !== undefined
-          ? data.enhancementDuration
-          : existing.enhancementDuration,
-      statModifiers:
-        data.statModifiers !== undefined
-          ? data.statModifiers
-          : existing.statModifiers,
-      gemType: data.gemType !== undefined ? data.gemType : existing.gemType,
-      gemValue: data.gemValue !== undefined ? data.gemValue : existing.gemValue,
-      tradeHistory:
-        data.tradeHistory !== undefined
-          ? data.tradeHistory
-          : existing.tradeHistory,
-      metadata: data.metadata !== undefined ? data.metadata : existing.metadata,
-      updatedAt: this.getCurrentTimestamp(),
-    };
-  }
-
+  /**
+   * Validate DTO (required by base class)
+   */
   public validate(dto: ItemDTO): ValidationResult {
-    const errors: ValidationError[] = [];
+    const errors: string[] = [];
 
-    if (!dto.name || dto.name.trim().length === 0) {
-      errors.push({
-        field: "name",
-        message: "Item name is required",
-        code: "REQUIRED",
-      });
-    }
-
-    if (dto.name && dto.name.length > 100) {
-      errors.push({
-        field: "name",
-        message: "Item name cannot exceed 100 characters",
-        code: "INVALID_VALUE",
-      });
-    }
-
-    if (!dto.description || dto.description.trim().length === 0) {
-      errors.push({
-        field: "description",
-        message: "Item description is required",
-        code: "REQUIRED",
-      });
-    }
-
-    if (dto.maxStackSize < 1) {
-      errors.push({
-        field: "maxStackSize",
-        message: "Max stack size must be at least 1",
-        code: "INVALID_VALUE",
-      });
-    }
-
-    if (dto.value < 0) {
-      errors.push({
-        field: "value",
-        message: "Item value cannot be negative",
-        code: "INVALID_VALUE",
-      });
-    }
-
-    if (dto.cooldownTime < 0) {
-      errors.push({
-        field: "cooldownTime",
-        message: "Cooldown time cannot be negative",
-        code: "INVALID_VALUE",
-      });
+    // Basic validation
+    if (!dto.id) errors.push("Item ID is required");
+    if (!dto.name) errors.push("Item name is required");
+    if (!dto.description) errors.push("Item description is required");
+    if (!dto.category) errors.push("Item category is required");
+    if (!dto.rarity) errors.push("Item rarity is required");
+    if (typeof dto.value !== "number" || dto.value < 0) {
+      errors.push("Item value must be a non-negative number");
     }
 
     // Category-specific validation
-    if (dto.category === ItemCategoryDTO.SPEED_UP) {
-      if (!dto.speedUpTarget) {
-        errors.push({
-          field: "speedUpTarget",
-          message: "Speed up target is required for speed up items",
-          code: "REQUIRED",
-        });
-      }
-      if (!dto.speedMultiplier || dto.speedMultiplier <= 0) {
-        errors.push({
-          field: "speedMultiplier",
-          message: "Speed multiplier must be greater than 0 for speed up items",
-          code: "INVALID_VALUE",
-        });
-      }
-    }
-
-    if (dto.category === ItemCategoryDTO.RESOURCE) {
-      if (!dto.resourceType) {
-        errors.push({
-          field: "resourceType",
-          message: "Resource type is required for resource items",
-          code: "REQUIRED",
-        });
-      }
-      if (!dto.resourceAmount || dto.resourceAmount <= 0) {
-        errors.push({
-          field: "resourceAmount",
-          message: "Resource amount must be greater than 0 for resource items",
-          code: "INVALID_VALUE",
-        });
-      }
-    }
-
-    if (dto.category === ItemCategoryDTO.GEMS) {
-      if (!dto.gemType) {
-        errors.push({
-          field: "gemType",
-          message: "Gem type is required for gem items",
-          code: "REQUIRED",
-        });
-      }
-      if (!dto.gemValue || dto.gemValue <= 0) {
-        errors.push({
-          field: "gemValue",
-          message: "Gem value must be greater than 0 for gem items",
-          code: "INVALID_VALUE",
-        });
-      }
+    if (dto.category === ItemCategory.GEMS && dto.value <= 0) {
+      errors.push("Gems must have a positive value");
     }
 
     return {
       isValid: errors.length === 0,
-      errors,
+      errors: errors.map((error) => ({
+        field: "general",
+        message: error,
+        code: "VALIDATION_ERROR",
+      })),
     };
   }
 }

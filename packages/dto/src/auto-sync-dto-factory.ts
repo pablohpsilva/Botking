@@ -4,6 +4,20 @@
  */
 
 import { z } from "zod";
+import { createPackageLogger } from "@botking/logger";
+import type { PrismaClient } from "@botking/db";
+import type {
+  IBot,
+  IItem,
+  ITradingEvent,
+  ITradeOffer,
+} from "@botking/artifact";
+import {
+  BotConverter,
+  ItemConverter,
+  TradingEventConverter,
+  TradeOfferConverter,
+} from "./artifact-bridge/converters";
 import {
   // Import create schemas from DB package (auto-generated)
   CreateSoulChipSchema,
@@ -76,6 +90,16 @@ export type { BotTypeValidationDTO };
  * Always stays in sync with database schema changes
  */
 export class AutoSyncDTOFactory {
+  private db: PrismaClient;
+  private logger: ReturnType<typeof createPackageLogger>;
+
+  constructor(prismaClient: PrismaClient) {
+    this.db = prismaClient;
+    this.logger = createPackageLogger("dto", { service: "auto-sync-factory" });
+    this.logger.info(
+      "AutoSyncDTOFactory initialized with artifact integration"
+    );
+  }
   /**
    * Validate and create a SoulChip DTO
    */
@@ -674,6 +698,235 @@ export class AutoSyncDTOFactory {
       }
       throw error;
     }
+  }
+
+  // ==========================================
+  // ARTIFACT INTEGRATION METHODS
+  // ==========================================
+
+  /**
+   * Save Bot artifact to database
+   */
+  async saveBotArtifact(bot: IBot) {
+    this.logger.info("Saving Bot artifact to database", {
+      botId: bot.id,
+      botName: bot.name,
+    });
+
+    const createData = BotConverter.toCreateData(bot);
+
+    // Validate against Zod schema
+    const validation = CreateBotSchema.safeParse(createData);
+    if (!validation.success) {
+      this.logger.error("Bot artifact validation failed", {
+        botId: bot.id,
+        errors: validation.error.issues,
+      });
+      throw new Error(`Bot validation failed: ${validation.error.message}`);
+    }
+
+    return this.db.bot.create({
+      data: validation.data,
+    });
+  }
+
+  /**
+   * Update Bot artifact in database
+   */
+  async updateBotArtifact(bot: IBot) {
+    this.logger.info("Updating Bot artifact in database", {
+      botId: bot.id,
+      botName: bot.name,
+    });
+
+    const updateData = BotConverter.toUpdateData(bot);
+
+    // Validate against Zod schema
+    const validation = UpdateBotSchema.safeParse(updateData);
+    if (!validation.success) {
+      this.logger.error("Bot artifact update validation failed", {
+        botId: bot.id,
+        errors: validation.error.issues,
+      });
+      throw new Error(
+        `Bot update validation failed: ${validation.error.message}`
+      );
+    }
+
+    return this.db.bot.update({
+      where: { id: bot.id },
+      data: validation.data,
+    });
+  }
+
+  /**
+   * Save Item artifact to database
+   */
+  async saveItemArtifact(item: IItem) {
+    this.logger.info("Saving Item artifact to database", {
+      itemId: item.id,
+      itemName: item.name,
+    });
+
+    const createData = ItemConverter.toCreateData(item);
+
+    // Skip validation for now until proper schema is available
+    // TODO: Use proper ItemSchema when available
+
+    return this.db.item.create({
+      data: createData as any, // Type assertion until proper types are available
+    });
+  }
+
+  /**
+   * Save TradingEvent artifact to database
+   */
+  async saveTradingEventArtifact(event: ITradingEvent) {
+    this.logger.info("Saving TradingEvent artifact to database", {
+      eventId: event.id,
+      eventName: event.name,
+    });
+
+    const createData = TradingEventConverter.toCreateData(event);
+
+    // Validate against Zod schema
+    // Skip validation for now until proper schema is available
+    // TODO: Use proper TradingEventSchema when available
+
+    return this.db.tradingEvent.create({
+      data: createData as any, // Type assertion until proper types are available
+    });
+  }
+
+  /**
+   * Save TradeOffer artifact to database
+   */
+  async saveTradeOfferArtifact(offer: ITradeOffer) {
+    this.logger.info("Saving TradeOffer artifact to database", {
+      offerId: offer.id,
+      offerName: offer.name,
+    });
+
+    const createData = TradeOfferConverter.toCreateData(offer);
+
+    // Validate against Zod schema
+    // Skip validation for now until proper schema is available
+    // TODO: Use proper TradeOfferSchema when available
+
+    return this.db.tradeOffer.create({
+      data: createData as any, // Type assertion until proper types are available
+    });
+  }
+
+  /**
+   * Load Bot artifact from database with full composition
+   */
+  async loadBotArtifact(id: string): Promise<IBot | null> {
+    this.logger.info("Loading Bot artifact from database", { botId: id });
+
+    const botData = await this.db.bot.findUnique({
+      where: { id },
+      include: {
+        soulChip: true,
+        skeleton: true,
+        parts: true,
+        expansionChips: true,
+        // botState: true, // TODO: Add when BotState is properly defined in schema
+      },
+    });
+
+    if (!botData) {
+      this.logger.warn("Bot not found in database", { botId: id });
+      return null;
+    }
+
+    // TODO: Convert database data back to Bot artifact
+    // This would require implementing the reverse conversion
+    this.logger.info("Bot data loaded from database", {
+      botId: botData.id,
+      componentsLoaded: {
+        soulChip: !!botData.soulChip,
+        skeleton: !!botData.skeleton,
+        parts: botData.parts.length,
+        expansionChips: botData.expansionChips.length,
+        // botState: !!botData.botState, // TODO: Add when available
+      },
+    });
+
+    // For now, return null until we implement the reverse conversion
+    return null;
+  }
+
+  /**
+   * Batch save multiple artifacts
+   */
+  async saveArtifactBatch(artifacts: {
+    bots?: IBot[];
+    items?: IItem[];
+    tradingEvents?: ITradingEvent[];
+    tradeOffers?: ITradeOffer[];
+  }) {
+    this.logger.info("Starting batch artifact save", {
+      botCount: artifacts.bots?.length || 0,
+      itemCount: artifacts.items?.length || 0,
+      tradingEventCount: artifacts.tradingEvents?.length || 0,
+      tradeOfferCount: artifacts.tradeOffers?.length || 0,
+    });
+
+    const results = {
+      bots: artifacts.bots
+        ? await Promise.all(
+            artifacts.bots.map((bot) => this.saveBotArtifact(bot))
+          )
+        : [],
+      items: artifacts.items
+        ? await Promise.all(
+            artifacts.items.map((item) => this.saveItemArtifact(item))
+          )
+        : [],
+      tradingEvents: artifacts.tradingEvents
+        ? await Promise.all(
+            artifacts.tradingEvents.map((event) =>
+              this.saveTradingEventArtifact(event)
+            )
+          )
+        : [],
+      tradeOffers: artifacts.tradeOffers
+        ? await Promise.all(
+            artifacts.tradeOffers.map((offer) =>
+              this.saveTradeOfferArtifact(offer)
+            )
+          )
+        : [],
+    };
+
+    this.logger.info("Batch artifact save completed", {
+      totalSaved: Object.values(results).reduce(
+        (sum, arr) => sum + arr.length,
+        0
+      ),
+    });
+
+    return results;
+  }
+
+  /**
+   * Validate artifact before persistence
+   */
+  validateArtifact(artifact: any, type: string): boolean {
+    const requiredFields = ["id", "name"];
+    const missing = requiredFields.filter((field) => !artifact[field]);
+
+    if (missing.length > 0) {
+      this.logger.warn("Artifact validation failed", {
+        artifactType: type,
+        artifactId: artifact.id,
+        missingFields: missing,
+      });
+      return false;
+    }
+
+    return true;
   }
 }
 

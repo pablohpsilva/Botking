@@ -2,35 +2,26 @@
  * DTO Factories Index
  *
  * Centralized exports for all DTO factories and related utilities.
- * This modular approach replaces the monolithic dto-factory.ts file.
+ * LEAN ARCHITECTURE: Artifact-First Approach
+ *
+ * - Factories create artifacts (domain objects) as primary objects
+ * - Artifacts are converted to DTOs only for database persistence
+ * - Removed legacy factories with property mismatches
+ * - Clean, modern, artifact-first approach
  */
 
-// Base factory
+// Base factories
 export { BaseDTOFactory } from "./base/base-factory";
+export { ArtifactDTOFactory } from "./base/artifact-dto-factory";
 
-// Artifact factories
-export { SoulChipDTOFactory } from "./artifact/soul-chip-factory";
-export { SkeletonDTOFactory } from "./artifact/skeleton-factory";
-export { PartDTOFactory } from "./artifact/part-factory";
-export { ExpansionChipDTOFactory } from "./artifact/expansion-chip-factory";
-export { BotStateDTOFactory } from "./artifact/bot-state-factory";
+// Core artifact factories (lean, artifact-first approach)
 export { BotDTOFactory } from "./artifact/bot-factory";
-export { BotTemplateDTOFactory } from "./artifact/bot-template-factory";
-export { CollectionDTOFactory } from "./artifact/collection-factory";
 
 // Inventory factories
-export { UserInventoryDTOFactory } from "./inventory/user-inventory-factory";
 export { ItemDTOFactory } from "./inventory/item-factory";
 
-// Trading factories
-export { TradingEventDTOFactory } from "./trading/trading-event-factory";
-export { TradeOfferDTOFactory } from "./trading/trade-offer-factory";
-export { TradeOfferItemDTOFactory } from "./trading/trade-offer-item-factory";
-export { UserTradeHistoryDTOFactory } from "./trading/user-trade-history-factory";
+// Utility factories
+export { SlotAssignmentDTOFactory } from "./slot-assignment-dto-factory";
 
-// Registry system
+// Registry system (simplified)
 export { DTOFactoryRegistry } from "./registry";
-
-// Initialize the registry by default
-import { DTOFactoryRegistry } from "./registry";
-DTOFactoryRegistry.initialize();

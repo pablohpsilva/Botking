@@ -1,146 +1,163 @@
 /**
- * Simple example showing how the DTO package would work
- * This demonstrates the architecture without complex implementations
+ * Simple example showing the lean artifact-first DTO architecture
+ * This demonstrates creating artifacts and converting to DTOs for persistence
  */
 
+import { BotDTO, ItemDTO } from "./interfaces/artifact-dto";
+import { BotDTOFactory, ItemDTOFactory } from "./factories";
 import {
-  SoulChipDTO,
-  SkeletonDTO,
-  PartDTO,
-  BotDTO,
-  RarityDTO,
-  SkeletonTypeDTO,
-  PartCategoryDTO,
-} from "./interfaces/artifact-dto";
-import {
-  SoulChipDTOFactory,
-  SkeletonDTOFactory,
-  PartDTOFactory,
-  BotDTOFactory,
-} from "./factories";
+  BotType,
+  SkeletonType,
+  ItemCategory,
+  Rarity,
+  GemType,
+  SpeedUpTarget,
+} from "@botking/artifact";
 
 /**
- * Example usage of the DTO system
+ * Example usage of the lean DTO system
  */
 export class DTOExample {
   /**
-   * Create a complete bot using DTOs
+   * Create a worker bot using artifact-first approach
    */
-  public static createExampleBot(): BotDTO {
-    const soulChipFactory = new SoulChipDTOFactory();
-    const skeletonFactory = new SkeletonDTOFactory();
-    const partFactory = new PartDTOFactory();
+  public static createWorkerBot(): BotDTO {
     const botFactory = new BotDTOFactory();
 
-    // Create soul chip
-    const soulChip = soulChipFactory.createDefault({
-      userId: "user123",
-      name: "Advanced AI Core",
-      personality: "strategic",
-      rarity: RarityDTO.EPIC,
-      baseStats: {
-        intelligence: 85,
-        resilience: 70,
-        adaptability: 90,
-      },
-      specialTrait: "tactical_genius",
-      learningRate: 0.8,
-    });
+    // 1. Create artifact (primary object)
+    const workerBot = botFactory.createWorkerArtifact(
+      "Mining Bot Alpha",
+      "user123",
+      "MINING"
+    );
 
-    // Validate soul chip
-    const soulChipValidation = soulChipFactory.validate(soulChip);
+    // 2. Validate artifact using domain rules
+    const validation = botFactory.validateArtifact(workerBot);
+    if (!validation.isValid) {
+      throw new Error(
+        `Bot validation failed: ${validation.errors?.map((e) => e.message).join(", ")}`
+      );
+    }
 
-    // Create skeleton
-    const skeleton = skeletonFactory.createDefault({
-      userId: "user123",
-      name: "Heavy Combat Frame",
-      type: SkeletonTypeDTO.HEAVY,
-      rarity: RarityDTO.RARE,
-      slots: 6,
-      baseDurability: 200,
-    });
-
-    // Validate skeleton
-    const skeletonValidation = skeletonFactory.validate(skeleton);
-
-    // Create parts
-    const armPart = partFactory.createDefault({
-      userId: "user123",
-      name: "Combat Manipulator",
-      category: PartCategoryDTO.ARM,
-      rarity: RarityDTO.RARE,
-      stats: {
-        attack: 80,
-        defense: 30,
-        speed: 40,
-        perception: 35,
-        energyConsumption: 8,
-      },
-    });
-
-    const legPart = partFactory.createDefault({
-      userId: "user123",
-      name: "Heavy Mobility System",
-      category: PartCategoryDTO.LEG,
-      rarity: RarityDTO.RARE,
-      stats: {
-        attack: 25,
-        defense: 60,
-        speed: 50,
-        perception: 20,
-        energyConsumption: 12,
-      },
-    });
-
-    // Create bot
-    const bot = botFactory.createDefault({
-      userId: "user123",
-      name: "Tactical Destroyer",
-      botType: "PLAYABLE" as any,
-      soulChipId: soulChip.id,
-      skeletonId: skeleton.id,
-      partIds: [armPart.id, legPart.id],
-      expansionChipIds: [],
-      stateId: "state123",
-    });
-
-    // Validate bot
-    const botValidation = botFactory.validate(bot);
-
-    return bot;
+    // 3. Convert to DTO for persistence
+    return botFactory.artifactToDTO(workerBot);
   }
 
   /**
-   * Demonstrate DTO validation
+   * Create a playable bot using artifact-first approach
    */
-  public static demonstrateValidation(): { valid: any; invalid: any } {
-    const factory = new SoulChipDTOFactory();
+  public static createPlayableBot(): BotDTO {
+    const botFactory = new BotDTOFactory();
 
-    // Valid DTO
-    const validSoulChip = factory.createDefault({
-      name: "Test Chip",
-      userId: "user123",
-    });
+    // 1. Create artifact with specific configuration
+    const playableBot = botFactory.createPlayableArtifact(
+      "Combat Bot Beta",
+      "user123",
+      SkeletonType.LIGHT
+    );
 
-    const validResult = factory.validate(validSoulChip);
+    // 2. Validate assembly
+    const validation = botFactory.validateArtifact(playableBot);
+    if (!validation.isValid) {
+      throw new Error(
+        `Bot assembly failed: ${validation.errors?.map((e) => e.message).join(", ")}`
+      );
+    }
 
-    // Invalid DTO
-    const invalidSoulChip = factory.createFromData({
-      name: "", // Invalid: empty name
-      userId: "user123",
-      learningRate: 1.5, // Invalid: > 1
-      baseStats: {
-        intelligence: 150, // Invalid: > 100
-        resilience: -10, // Invalid: < 0
-        adaptability: 50,
-      },
-    });
+    // 3. Convert to DTO for persistence
+    return botFactory.artifactToDTO(playableBot);
+  }
 
-    const invalidResult = factory.validate(invalidSoulChip);
+  /**
+   * Create various items using artifact-first approach
+   */
+  public static createItems(): ItemDTO[] {
+    const itemFactory = new ItemDTOFactory();
 
-    return {
-      valid: validResult,
-      invalid: invalidResult,
-    };
+    // 1. Create different types of item artifacts
+    const commonGem = itemFactory.createGemArtifact(
+      "Common Ruby",
+      GemType.COMMON,
+      Rarity.COMMON,
+      10
+    );
+
+    const rareResource = itemFactory.createResourceArtifact(
+      "Refined Steel",
+      "High-quality material for bot construction",
+      100,
+      Rarity.RARE
+    );
+
+    const speedBooster = itemFactory.createSpeedUpArtifact(
+      "Construction Accelerator",
+      SpeedUpTarget.BOT_CONSTRUCTION,
+      2.0,
+      3600 // 1 hour
+    );
+
+    const tradeableItem = itemFactory.createTradeableArtifact(
+      "Ancient Artifact",
+      "A mysterious relic from the old world",
+      Rarity.LEGENDARY,
+      1000
+    );
+
+    // 2. Validate all artifacts
+    const itemArtifacts = [
+      commonGem,
+      rareResource,
+      speedBooster,
+      tradeableItem,
+    ];
+
+    for (const item of itemArtifacts) {
+      const validation = itemFactory.validateArtifact(item);
+      if (!validation.isValid) {
+        throw new Error(
+          `Item validation failed: ${validation.errors?.map((e) => e.message).join(", ")}`
+        );
+      }
+    }
+
+    // 3. Convert to DTOs for persistence
+    return itemFactory.batchArtifactsToDTO(itemArtifacts);
+  }
+
+  /**
+   * Demonstrate the complete workflow
+   */
+  public static demonstrateWorkflow(): void {
+    console.log("🚀 Lean Artifact-First DTO Example");
+
+    try {
+      // Create bots
+      const workerBot = this.createWorkerBot();
+      const playableBot = this.createPlayableBot();
+
+      console.log("✅ Bots created:", {
+        worker: { name: workerBot.name, type: workerBot.botType },
+        playable: { name: playableBot.name, type: playableBot.botType },
+      });
+
+      // Create items
+      const items = this.createItems();
+
+      console.log(
+        "✅ Items created:",
+        items.map((item) => ({
+          name: item.name,
+          category: item.category,
+          rarity: item.rarity,
+        }))
+      );
+
+      console.log("🎯 Artifact-first architecture working perfectly!");
+    } catch (error) {
+      console.error("❌ Example failed:", (error as Error).message);
+    }
   }
 }
+
+// Export for use in other modules
+export default DTOExample;

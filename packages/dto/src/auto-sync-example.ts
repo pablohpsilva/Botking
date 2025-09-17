@@ -4,16 +4,6 @@
  */
 
 import { AutoSyncDTOFactory } from "./auto-sync-dto-factory";
-import type {
-  CreateSoulChipDTO,
-  CreateSkeletonDTO,
-  CreatePartDTO,
-  CreateBotStateDTO,
-  CreateBotDTO,
-  BotAssemblyDTO,
-  BotTypeValidationDTO,
-} from "./auto-sync-dto-factory";
-
 export class AutoSyncExample {
   /**
    * Demonstrate creating a SoulChip with validation

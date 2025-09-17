@@ -12,12 +12,7 @@ import type {
   ITradingEvent,
   ITradeOffer,
 } from "@botking/artifact";
-import {
-  BotConverter,
-  ItemConverter,
-  TradingEventConverter,
-  TradeOfferConverter,
-} from "./artifact-bridge/converters";
+// Direct conversion - no need for separate converters
 import {
   // Import create schemas from DB package (auto-generated)
   CreateSoulChipSchema,
@@ -713,7 +708,21 @@ export class AutoSyncDTOFactory {
       botName: bot.name,
     });
 
-    const createData = BotConverter.toCreateData(bot);
+    // Direct conversion without separate converter
+    const createData = {
+      id: bot.id,
+      name: bot.name,
+      userId: bot.userId || "unknown",
+      botType: bot.botType,
+      soulChipId: bot.soulChip?.id || null,
+      skeletonId: bot.skeleton.id,
+      partIds: bot.parts.map((part) => part.id),
+      expansionChipIds: bot.expansionChips.map((chip) => chip.id),
+      stateId: bot.state?.id || null,
+      combatRole: bot.combatRole,
+      utilitySpec: bot.utilitySpec,
+      governmentType: bot.governmentType,
+    };
 
     // Validate against Zod schema
     const validation = CreateBotSchema.safeParse(createData);
@@ -739,7 +748,19 @@ export class AutoSyncDTOFactory {
       botName: bot.name,
     });
 
-    const updateData = BotConverter.toUpdateData(bot);
+    // Direct conversion without separate converter
+    const updateData = {
+      name: bot.name,
+      botType: bot.botType,
+      soulChipId: bot.soulChip?.id || null,
+      skeletonId: bot.skeleton.id,
+      partIds: bot.parts.map((part) => part.id),
+      expansionChipIds: bot.expansionChips.map((chip) => chip.id),
+      stateId: bot.state?.id || null,
+      combatRole: bot.combatRole,
+      utilitySpec: bot.utilitySpec,
+      governmentType: bot.governmentType,
+    };
 
     // Validate against Zod schema
     const validation = UpdateBotSchema.safeParse(updateData);
@@ -768,7 +789,16 @@ export class AutoSyncDTOFactory {
       itemName: item.name,
     });
 
-    const createData = ItemConverter.toCreateData(item);
+    // Direct conversion without separate converter
+    const createData = {
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      rarity: item.rarity,
+      value: item.value,
+      isProtected: false, // Default value
+    };
 
     // Skip validation for now until proper schema is available
     // TODO: Use proper ItemSchema when available
@@ -778,45 +808,8 @@ export class AutoSyncDTOFactory {
     });
   }
 
-  /**
-   * Save TradingEvent artifact to database
-   */
-  async saveTradingEventArtifact(event: ITradingEvent) {
-    this.logger.info("Saving TradingEvent artifact to database", {
-      eventId: event.id,
-      eventName: event.name,
-    });
-
-    const createData = TradingEventConverter.toCreateData(event);
-
-    // Validate against Zod schema
-    // Skip validation for now until proper schema is available
-    // TODO: Use proper TradingEventSchema when available
-
-    return this.db.tradingEvent.create({
-      data: createData as any, // Type assertion until proper types are available
-    });
-  }
-
-  /**
-   * Save TradeOffer artifact to database
-   */
-  async saveTradeOfferArtifact(offer: ITradeOffer) {
-    this.logger.info("Saving TradeOffer artifact to database", {
-      offerId: offer.id,
-      offerName: offer.name,
-    });
-
-    const createData = TradeOfferConverter.toCreateData(offer);
-
-    // Validate against Zod schema
-    // Skip validation for now until proper schema is available
-    // TODO: Use proper TradeOfferSchema when available
-
-    return this.db.tradeOffer.create({
-      data: createData as any, // Type assertion until proper types are available
-    });
-  }
+  // Trading artifacts removed for lean architecture
+  // Use direct database operations if needed
 
   /**
    * Load Bot artifact from database with full composition
@@ -884,20 +877,7 @@ export class AutoSyncDTOFactory {
             artifacts.items.map((item) => this.saveItemArtifact(item))
           )
         : [],
-      tradingEvents: artifacts.tradingEvents
-        ? await Promise.all(
-            artifacts.tradingEvents.map((event) =>
-              this.saveTradingEventArtifact(event)
-            )
-          )
-        : [],
-      tradeOffers: artifacts.tradeOffers
-        ? await Promise.all(
-            artifacts.tradeOffers.map((offer) =>
-              this.saveTradeOfferArtifact(offer)
-            )
-          )
-        : [],
+      // Trading artifacts removed for lean architecture
     };
 
     this.logger.info("Batch artifact save completed", {

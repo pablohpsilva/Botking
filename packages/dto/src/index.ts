@@ -16,8 +16,7 @@ export * from "./interfaces/slot-assignment-dto";
 // Export core factories (lean approach)
 export * from "./factories";
 
-// Export artifact bridge (artifact integration)
-export * from "./artifact-bridge";
+// Direct artifact integration - no separate bridge needed
 
 // Export auto-sync DTO factory (Prisma + Zod integration)
 export * from "./auto-sync-dto-factory";

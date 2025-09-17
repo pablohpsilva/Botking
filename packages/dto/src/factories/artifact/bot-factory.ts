@@ -8,7 +8,7 @@
 import { ArtifactDTOFactory } from "../base/artifact-dto-factory";
 import { BotDTO } from "../../interfaces/artifact-dto";
 import { ValidationResult } from "../../interfaces/base-dto";
-import { BotConverter } from "../../artifact-bridge/converters";
+// Direct conversion - no need for separate converter
 import {
   Bot,
   BotFactory as ArtifactBotFactory,
@@ -134,11 +134,32 @@ export class BotDTOFactory extends ArtifactDTOFactory<IBot, BotDTO> {
       botName: bot.name,
     });
 
-    const dbData = BotConverter.toCreateData(bot);
-
-    // Add DTO-specific metadata
+    // Direct conversion without separate converter
     return {
-      ...dbData,
+      id: bot.id,
+      name: bot.name,
+      userId: bot.userId || "unknown",
+      botType: bot.botType,
+
+      // Handle optional soul chip
+      soulChipId: bot.soulChip?.id || null,
+
+      // Required components
+      skeletonId: bot.skeleton.id,
+
+      // Convert arrays to ID arrays
+      partIds: bot.parts.map((part) => part.id),
+      expansionChipIds: bot.expansionChips.map((chip) => chip.id),
+
+      // Bot state reference
+      stateId: bot.state?.id || null,
+
+      // Combat and utility specializations
+      combatRole: bot.combatRole,
+      utilitySpec: bot.utilitySpec,
+      governmentType: bot.governmentType,
+
+      // Metadata
       createdAt: new Date(),
       updatedAt: new Date(),
       version: 1,

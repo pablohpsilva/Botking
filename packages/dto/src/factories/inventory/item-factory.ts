@@ -12,7 +12,7 @@ import {
   UpdateItemDTO,
 } from "../../interfaces/artifact-dto";
 import { ValidationResult } from "../../interfaces/base-dto";
-import { ItemConverter } from "../../artifact-bridge/converters";
+// Direct conversion - no need for separate converter
 import {
   ItemFactory as ArtifactItemFactory,
   type IItem,
@@ -151,11 +151,15 @@ export class ItemDTOFactory extends ArtifactDTOFactory<IItem, ItemDTO> {
       itemName: item.name,
     });
 
-    const dbData = ItemConverter.toCreateData(item);
-
-    // Add DTO-specific metadata
+    // Direct conversion without separate converter
     return {
-      ...dbData,
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      rarity: item.rarity,
+      value: item.value,
+      isProtected: false, // Default value - artifacts don't have this property
       createdAt: new Date(),
       updatedAt: new Date(),
     } as ItemDTO;

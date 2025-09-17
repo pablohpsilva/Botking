@@ -8,7 +8,7 @@ import { SoulChip } from "../soul-chip";
 import { SkeletonFactory, ISkeleton } from "../skeleton";
 import { PartFactory, IPart } from "../part";
 import { ExpansionChipFactory, IExpansionChip } from "../expansion-chip";
-import { BotState } from "../bot-state";
+import { BotStateFactory } from "../bot-state";
 import {
   Rarity,
   SkeletonType,
@@ -29,14 +29,14 @@ export class BotFactory {
    */
   static createBasicBot(
     name: string,
-    ownerId: string,
+    userId: string,
     skeletonType: SkeletonType = SkeletonType.BALANCED,
     botType: BotType = BotType.WORKER
   ): IBot {
     const config: BotConfiguration = {
       name,
       botType,
-      ownerId,
+      userId,
       soulChip: BotFactory.createBasicSoulChip(name),
       skeleton: BotFactory.createBasicSkeleton(skeletonType),
       parts: [BotFactory.createBasicArmPart(), BotFactory.createBasicLegPart()],
@@ -57,7 +57,7 @@ export class BotFactory {
    */
   static createCombatBot(
     name: string,
-    ownerId: string,
+    userId: string,
     combatRole: "assault" | "tank" | "sniper" | "scout" = "assault",
     botType: BotType = BotType.PLAYABLE
   ): IBot {
@@ -122,7 +122,7 @@ export class BotFactory {
     const config: BotConfiguration = {
       name,
       botType,
-      ownerId,
+      userId,
       soulChip: BotFactory.createCombatSoulChip(name, combatRole),
       skeleton: BotFactory.createSkeleton(skeletonType, Rarity.RARE, 8),
       parts,
@@ -143,7 +143,7 @@ export class BotFactory {
    */
   static createUtilityBot(
     name: string,
-    ownerId: string,
+    userId: string,
     specialization:
       | "construction"
       | "mining"
@@ -206,7 +206,7 @@ export class BotFactory {
     const config: BotConfiguration = {
       name,
       botType,
-      ownerId,
+      userId,
       soulChip: BotFactory.createUtilitySoulChip(name, specialization),
       skeleton: BotFactory.createSkeleton(
         SkeletonType.HEAVY,
@@ -240,8 +240,8 @@ export class BotFactory {
         errors.push("Bot name is required");
       }
 
-      if (!config.ownerId || config.ownerId.trim().length === 0) {
-        errors.push("Owner ID is required");
+      if (!config.userId || config.userId.trim().length === 0) {
+        errors.push("User ID is required");
       }
 
       if (!config.soulChip) {
@@ -335,8 +335,7 @@ export class BotFactory {
       id: data.id,
       name: data.name,
       botType: data.botType || BotType.WORKER, // Default to worker if not specified
-      ownerId: data.ownerId,
-      playerId: data.playerId,
+      userId: data.userId,
       soulChip: new SoulChip(
         data.soulChip.id,
         data.soulChip.name,
@@ -370,12 +369,11 @@ export class BotFactory {
   /**
    * Create a King bot - always requires an owner and player
    */
-  static createKingBot(name: string, ownerId: string, playerId: string): IBot {
+  static createKingBot(name: string, userId: string): IBot {
     const config: BotConfiguration = {
       name,
       botType: BotType.KING,
-      ownerId,
-      playerId,
+      userId,
       soulChip: BotFactory.createKingSoulChip(name),
       skeleton: BotFactory.createSkeleton(
         SkeletonType.MODULAR,
@@ -411,8 +409,7 @@ export class BotFactory {
     const config: BotConfiguration = {
       name,
       botType: BotType.ROGUE,
-      ownerId: null,
-      playerId: null,
+      userId: null,
       soulChip: BotFactory.createRogueSoulChip(name),
       skeleton: BotFactory.createSkeleton(SkeletonType.LIGHT, Rarity.RARE, 6),
       parts: [
@@ -445,8 +442,7 @@ export class BotFactory {
     const config: BotConfiguration = {
       name,
       botType: BotType.GOVBOT,
-      ownerId: null,
-      playerId: null,
+      userId: null,
       soulChip: BotFactory.createGovSoulChip(name, govType),
       skeleton: BotFactory.createSkeleton(
         SkeletonType.BALANCED,

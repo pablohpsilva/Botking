@@ -254,8 +254,7 @@ model BotState {
 
 model Bot {
   id               String               @id @default(cuid())
-  userId           String?              // Owner ID - can be null for autonomous bots
-  playerId         String?              // Currently assigned player - can be null
+  userId           String?              // User who owns this bot - can be null for autonomous bots
   name             String               @db.VarChar(100)
   botType          BotType              @default(WORKER)
   soulChipId       String

@@ -22,7 +22,7 @@ describe("Bot Integration with Specialized States", () => {
       expect(workerBot.botType).toBe(BotType.WORKER);
       expect(workerBot.state.getStateType()).toBe("worker");
       expect(workerBot.name).toBe("Integration-Worker");
-      expect(workerBot.ownerId).toBe("factory_001");
+      expect(workerBot.userId).toBe("factory_001");
     });
 
     it("should have worker-specific state properties", () => {
@@ -204,20 +204,18 @@ describe("Bot Integration with Specialized States", () => {
       }
     });
 
-    it("should handle player assignment rules", () => {
-      // Playable bot should allow player assignment
-      expect(playableBot.canAssignPlayer()).toBe(true);
-      expect(playableBot.assignPlayer("new_player_123")).toBe(true);
-      expect(playableBot.playerId).toBe("new_player_123");
+    it("should handle user ownership rules", () => {
+      // Playable bot should be ownable
+      expect(playableBot.canBeOwned()).toBe(true);
 
-      // King should already have player and require one
-      expect(kingBot.requiresPlayer()).toBe(true);
-      expect(kingBot.playerId).toBe("ruler_001");
+      // King should require user
+      expect(kingBot.requiresUser()).toBe(true);
+      expect(kingBot.canBeOwned()).toBe(true);
+      expect(kingBot.userId).toBe("kingdom_001");
 
-      // Rogue should not allow player assignment
-      expect(rogueBot.canAssignPlayer()).toBe(false);
-      expect(rogueBot.assignPlayer("hacker_123")).toBe(false);
-      expect(rogueBot.playerId).toBeNull();
+      // Rogue should not be ownable (autonomous)
+      expect(rogueBot.canBeOwned()).toBe(false);
+      expect(rogueBot.userId).toBeNull();
     });
 
     it("should update non-worker specific state through bot interface", () => {
@@ -396,18 +394,18 @@ describe("Bot Integration with Specialized States", () => {
       expect(govBot.state.getStateType()).toBe("non-worker");
 
       // Verify ownership rules
-      expect(workerBot.ownerId).toBe("company_001");
-      expect(playableBot.ownerId).toBe("player_001");
-      expect(kingBot.ownerId).toBe("kingdom_001");
-      expect(rogueBot.ownerId).toBeNull();
-      expect(govBot.ownerId).toBeNull();
+      expect(workerBot.userId).toBe("company_001");
+      expect(playableBot.userId).toBe("player_001");
+      expect(kingBot.userId).toBe("kingdom_001");
+      expect(rogueBot.userId).toBeNull();
+      expect(govBot.userId).toBeNull();
 
-      // Verify player assignment rules
-      expect(workerBot.canAssignPlayer()).toBe(true);
-      expect(playableBot.requiresPlayer()).toBe(true);
-      expect(kingBot.requiresPlayer()).toBe(true);
-      expect(rogueBot.canAssignPlayer()).toBe(false);
-      expect(govBot.canAssignPlayer()).toBe(false);
+      // Verify user ownership rules
+      expect(workerBot.canBeOwned()).toBe(true);
+      expect(playableBot.requiresUser()).toBe(true);
+      expect(kingBot.requiresUser()).toBe(true);
+      expect(rogueBot.canBeOwned()).toBe(false);
+      expect(govBot.canBeOwned()).toBe(false);
 
       // Verify initial experience levels
       expect(workerBot.state.experience).toBe(0);

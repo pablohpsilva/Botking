@@ -14,8 +14,7 @@ export interface IBot {
   readonly id: string;
   readonly name: string;
   readonly botType: BotType;
-  readonly ownerId: string | null; // Can be null for bots that don't belong to players
-  readonly playerId: string | null; // Currently assigned player (for playable control)
+  readonly userId: string | null; // Can be null for autonomous bots
   readonly version: string;
 
   // Core components
@@ -59,12 +58,9 @@ export interface IBot {
   deactivate(): void;
   reset(): void;
 
-  // Player assignment management
-  assignPlayer(playerId: string): boolean;
-  unassignPlayer(): boolean;
-  canAssignPlayer(): boolean;
-  requiresPlayer(): boolean;
-  canBeUnassigned(): boolean;
+  // User management
+  canBeOwned(): boolean;
+  requiresUser(): boolean;
 
   // Validation
   validateAssembly(): {
@@ -119,8 +115,7 @@ export interface BotConfiguration {
   id?: string;
   name: string;
   botType: BotType;
-  ownerId?: string | null; // Optional for creation, validated based on bot type
-  playerId?: string | null; // Optional initial player assignment
+  userId?: string | null; // Optional for creation, validated based on bot type
   soulChip: SoulChip;
   skeleton: ISkeleton;
   parts?: IPart[];

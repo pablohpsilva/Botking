@@ -217,8 +217,7 @@ export interface BotDTO extends MetadataDTO {
   id: string;
   name: string;
   botType: BotTypeDTO;
-  ownerId: string | null; // Owner ID - can be null for autonomous bots
-  playerId: string | null; // Currently assigned player - can be null
+  userId: string | null; // User ID - can be null for autonomous bots
   soulChipId: string;
   skeletonId: string;
   partIds: string[];

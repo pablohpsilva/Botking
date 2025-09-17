@@ -327,7 +327,6 @@ export class AutoSyncExample {
     const validWorker = AutoSyncDTOFactory.validateBotType({
       botType: "WORKER",
       userId: "owner_123",
-      playerId: "player_456",
     });
     console.log("Worker with owner and player:", validWorker.success);
 
@@ -335,7 +334,6 @@ export class AutoSyncExample {
     const validPlayable = AutoSyncDTOFactory.validateBotType({
       botType: "PLAYABLE",
       userId: "owner_123",
-      playerId: "player_456",
     });
     console.log("Playable with owner:", validPlayable.success);
 
@@ -343,7 +341,6 @@ export class AutoSyncExample {
     const validKing = AutoSyncDTOFactory.validateBotType({
       botType: "KING",
       userId: "owner_123",
-      playerId: "player_456",
     });
     console.log("King with owner and player:", validKing.success);
 
@@ -351,7 +348,6 @@ export class AutoSyncExample {
     const validRogue = AutoSyncDTOFactory.validateBotType({
       botType: "ROGUE",
       userId: null,
-      playerId: null,
     });
     console.log("Rogue autonomous:", validRogue.success);
 
@@ -359,7 +355,6 @@ export class AutoSyncExample {
     const validGovBot = AutoSyncDTOFactory.validateBotType({
       botType: "GOVBOT",
       userId: null,
-      playerId: null,
     });
     console.log("GovBot system controlled:", validGovBot.success);
 
@@ -369,7 +364,6 @@ export class AutoSyncExample {
     const invalidKing = AutoSyncDTOFactory.validateBotType({
       botType: "KING",
       userId: null,
-      playerId: "player_456",
     });
     if (!invalidKing.success) {
       console.log(
@@ -382,7 +376,6 @@ export class AutoSyncExample {
     const invalidRogue = AutoSyncDTOFactory.validateBotType({
       botType: "ROGUE",
       userId: "owner_123",
-      playerId: null,
     });
     if (!invalidRogue.success) {
       console.log(
@@ -395,7 +388,6 @@ export class AutoSyncExample {
     const invalidWorker = AutoSyncDTOFactory.validateBotType({
       botType: "WORKER",
       userId: null,
-      playerId: "player_456",
     });
     if (!invalidWorker.success) {
       console.log(

@@ -209,7 +209,6 @@ export const CreateBotStateSchema = z.object({
 
 export const CreateBotSchema = z.object({
   userId: z.string().optional(), // Optional for autonomous bots (ROGUE, GOVBOT)
-  playerId: z.string().optional(), // Optional player assignment
   name: z.string().min(1).max(100),
   botType: BotTypeSchema.optional().default("WORKER"),
   soulChipId: z.string(),
@@ -322,17 +321,16 @@ export const BotTypeValidationSchema = z
   .object({
     botType: BotTypeSchema,
     userId: z.string().nullable().optional(),
-    playerId: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     switch (data.botType) {
       case "PLAYABLE":
       case "KING":
-        // These types must have an owner
+        // These types must have a user assigned
         if (!data.userId) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `${data.botType} bots must have an owner assigned`,
+            message: `${data.botType} bots must have a user assigned`,
             path: ["userId"],
           });
         }
@@ -340,32 +338,19 @@ export const BotTypeValidationSchema = z
 
       case "ROGUE":
       case "GOVBOT":
-        // These types cannot have owners or players
+        // These types cannot have users (autonomous bots)
         if (data.userId) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `${data.botType} bots cannot have an owner assigned`,
+            message: `${data.botType} bots cannot have a user assigned (they are autonomous)`,
             path: ["userId"],
-          });
-        }
-        if (data.playerId) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `${data.botType} bots cannot have a player assigned`,
-            path: ["playerId"],
           });
         }
         break;
 
       case "WORKER":
-        // Workers can optionally have owners but must have one if they have a player
-        if (data.playerId && !data.userId) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Worker bots with a player must have an owner",
-            path: ["userId"],
-          });
-        }
+        // Workers can optionally have users
+        // No specific validation needed - workers can be owned or autonomous
         break;
     }
   });

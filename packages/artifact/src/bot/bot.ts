@@ -40,8 +40,7 @@ export class Bot implements IBot {
   private _id: string;
   private _name: string;
   private _botType: BotType;
-  private _ownerId: string | null;
-  private _playerId: string | null;
+  private _userId: string | null;
   private _version: string;
   private _soulChip: SoulChip;
   private _skeleton: ISkeleton;
@@ -59,8 +58,7 @@ export class Bot implements IBot {
       `bot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this._name = config.name;
     this._botType = config.botType;
-    this._ownerId = config.ownerId || null;
-    this._playerId = config.playerId || null;
+    this._userId = config.userId || null;
     this._version = "1.0.0";
 
     // Validate bot type and ownership rules
@@ -113,11 +111,8 @@ export class Bot implements IBot {
   get botType(): BotType {
     return this._botType;
   }
-  get ownerId(): string | null {
-    return this._ownerId;
-  }
-  get playerId(): string | null {
-    return this._playerId;
+  get userId(): string | null {
+    return this._userId;
   }
   get version(): string {
     return this._version;
@@ -499,61 +494,14 @@ export class Bot implements IBot {
   }
 
   // Player assignment management
-  assignPlayer(playerId: string): boolean {
-    if (!this.canAssignPlayer()) {
-      return false;
-    }
-
-    if (!playerId || playerId.trim().length === 0) {
-      return false;
-    }
-
-    this._playerId = playerId;
-    this._lastModified = new Date();
-    return true;
+  canBeOwned(): boolean {
+    // ROGUE and GOVBOT types cannot be owned (they are autonomous)
+    return this._botType !== "rogue" && this._botType !== "govbot";
   }
 
-  unassignPlayer(): boolean {
-    if (!this.canBeUnassigned()) {
-      return false;
-    }
-
-    this._playerId = null;
-    this._lastModified = new Date();
-    return true;
-  }
-
-  canAssignPlayer(): boolean {
-    // ROGUE and GOVBOT types can never be assigned to players
-    if (this._botType === "rogue" || this._botType === "govbot") {
-      return false;
-    }
-
-    // Already assigned to a player
-    if (this._playerId !== null) {
-      return false;
-    }
-
-    return true;
-  }
-
-  requiresPlayer(): boolean {
-    // PLAYABLE and KING types must always have a player assigned
+  requiresUser(): boolean {
+    // PLAYABLE and KING types must always have a user assigned
     return this._botType === "playable" || this._botType === "king";
-  }
-
-  canBeUnassigned(): boolean {
-    // Types that require a player cannot be unassigned
-    if (this.requiresPlayer()) {
-      return false;
-    }
-
-    // If no player is assigned, can't unassign
-    if (this._playerId === null) {
-      return false;
-    }
-
-    return true;
   }
 
   // Private validation methods
@@ -563,28 +511,25 @@ export class Bot implements IBot {
     switch (this._botType) {
       case "playable":
       case "king":
-        // These types must have an owner
-        if (!this._ownerId) {
-          errors.push(`${this._botType} bots must have an owner assigned`);
+        // These types must have a user
+        if (!this._userId) {
+          errors.push(`${this._botType} bots must have a user assigned`);
         }
         break;
 
       case "rogue":
       case "govbot":
-        // These types cannot have owners or players
-        if (this._ownerId) {
-          errors.push(`${this._botType} bots cannot have an owner assigned`);
-        }
-        if (this._playerId) {
-          errors.push(`${this._botType} bots cannot have a player assigned`);
+        // These types cannot have users (they are autonomous)
+        if (this._userId) {
+          errors.push(
+            `${this._botType} bots cannot have a user assigned (they are autonomous)`
+          );
         }
         break;
 
       case "worker":
-        // Workers can optionally have owners but must have one if they have a player
-        if (this._playerId && !this._ownerId) {
-          errors.push("Worker bots with a player must have an owner");
-        }
+        // Workers can optionally have users
+        // No specific validation needed - workers can be owned or autonomous
         break;
 
       default:
@@ -611,17 +556,16 @@ export class Bot implements IBot {
     }
 
     // Check bot type requirements
-    if (this.requiresPlayer() && !this._playerId) {
+    if (this.requiresUser() && !this._userId) {
       warnings.push(
-        `${this._botType} bots should have a player assigned for optimal operation`
+        `${this._botType} bots should have a user assigned for optimal operation`
       );
     }
 
-    if (
-      (this._botType === "rogue" || this._botType === "govbot") &&
-      this._playerId
-    ) {
-      errors.push(`${this._botType} bots cannot be assigned to players`);
+    if (!this.canBeOwned() && this._userId) {
+      errors.push(
+        `${this._botType} bots cannot be owned by users (they are autonomous)`
+      );
     }
 
     // Check slot usage
@@ -744,8 +688,7 @@ export class Bot implements IBot {
       id: this._id,
       name: this._name,
       botType: this._botType,
-      ownerId: this._ownerId,
-      playerId: this._playerId,
+      userId: this._userId,
       version: this._version,
       soulChip: this._soulChip.toJSON(),
       skeleton: this._skeleton.toJSON(),
@@ -770,8 +713,7 @@ export class Bot implements IBot {
       id: `${this._id}_clone_${Date.now()}`,
       name: `${this._name} (Clone)`,
       botType: this._botType,
-      ownerId: this._ownerId,
-      playerId: this._playerId,
+      userId: this._userId,
       soulChip: this._soulChip, // Note: This is a reference, might want deep clone
       skeleton: this._skeleton, // Note: This is a reference, might want deep clone
       parts: Array.from(this._parts.values()),

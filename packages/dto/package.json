@@ -22,7 +22,8 @@
   "license": "MIT",
   "dependencies": {
     "@botking/artifact": "workspace:*",
-    "@botking/db": "workspace:*"
+    "@botking/db": "workspace:*",
+    "zod": "^4.1.9"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

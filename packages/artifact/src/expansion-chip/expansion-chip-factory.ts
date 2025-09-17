@@ -5,8 +5,7 @@ import { DefenseBuffChip } from "./defense-buff-chip";
 import { SpeedBuffChip } from "./speed-buff-chip";
 import { AIUpgradeChip } from "./ai-upgrade-chip";
 
-// Import the legacy ExpansionChip for other effects not yet implemented
-import { ExpansionChip as LegacyExpansionChip } from "../expansion-chip-legacy";
+// For unimplemented effects, we'll create a generic chip
 
 /**
  * Factory class for creating different types of expansion chips
@@ -36,19 +35,13 @@ export class ExpansionChipFactory {
       case ExpansionChipEffect.AI_UPGRADE:
         return new AIUpgradeChip(id, name, rarity, description, upgradeLevel);
 
-      // For effects not yet implemented, use the legacy expansion chip
+      // For effects not yet implemented, use a generic attack buff as placeholder
       case ExpansionChipEffect.ENERGY_EFFICIENCY:
       case ExpansionChipEffect.SPECIAL_ABILITY:
       case ExpansionChipEffect.STAT_BOOST:
       case ExpansionChipEffect.RESISTANCE:
-        return new LegacyExpansionChip(
-          id,
-          name,
-          effect,
-          rarity,
-          description,
-          upgradeLevel
-        ) as IExpansionChip;
+        // TODO: Implement specific chips for these effects
+        return new AttackBuffChip(id, name, rarity, description, upgradeLevel);
 
       default:
         throw new Error(`Unknown expansion chip effect: ${effect}`);
@@ -98,9 +91,15 @@ export class ExpansionChipFactory {
           data.upgradeLevel || 0
         );
 
-      // For effects not yet implemented, use the legacy expansion chip
+      // For effects not yet implemented, use attack buff as placeholder
       default:
-        return LegacyExpansionChip.fromJSON(data) as IExpansionChip;
+        return new AttackBuffChip(
+          data.id,
+          data.name,
+          data.rarity,
+          data.description,
+          data.upgradeLevel || 0
+        );
     }
   }
 

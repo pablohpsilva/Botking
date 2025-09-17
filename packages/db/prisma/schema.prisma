@@ -8,6 +8,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator zod {
+  provider         = "prisma-zod-generator"
+  output           = "../src/generated/zod"
+  relationModel    = true
+  modelCase        = "camelCase"
+  modelSuffix      = "Schema"
+  useDecimalJs     = true
+  prismaJsonNullabilityBehavior = "strip"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -26,7 +36,15 @@ model User {
   // Relations
   sessions      Session[]
   accounts      Account[]
-  posts         Post[]
+  
+  // Artifact Relations
+  soulChips     SoulChip[]
+  skeletons     Skeleton[]
+  parts         Part[]
+  expansionChips ExpansionChip[]
+  bots          Bot[]
+  botStates     BotState[]
+  collections   Collection[]
 
   @@map("users")
 }
@@ -74,16 +92,290 @@ model Verification {
   @@map("verifications")
 }
 
-// Example application model
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Artifact Models
+model SoulChip {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String    @db.VarChar(100)
+  personality   String    @db.VarChar(200)
+  rarity        Rarity
+  intelligence  Int       @default(50)
+  resilience    Int       @default(50)
+  adaptability  Int       @default(50)
+  specialTrait  String
+  experiences   String[]  @default([])
+  learningRate  Float     @default(0.5)
+  version       Int       @default(1)
+  source        String?
+  tags          String[]  @default([])
+  description   String?
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bots          Bot[]
 
-  @@map("posts")
+  @@map("soul_chips")
+}
+
+model Skeleton {
+  id               String         @id @default(cuid())
+  userId           String
+  name             String         @db.VarChar(100)
+  type             SkeletonType
+  rarity           Rarity
+  slots            Int            @default(4)
+  baseDurability   Int            @default(100)
+  currentDurability Int           @default(100)
+  maxDurability    Int            @default(100)
+  mobilityType     MobilityType
+  upgradeLevel     Int            @default(0)
+  specialAbilities String[]       @default([])
+  version          Int            @default(1)
+  source           String?
+  tags             String[]       @default([])
+  description      String?
+  metadata         Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  // Relations
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bots             Bot[]
+
+  @@map("skeletons")
+}
+
+model Part {
+  id                String        @id @default(cuid())
+  userId            String
+  name              String        @db.VarChar(100)
+  category          PartCategory
+  rarity            Rarity
+  attack            Int           @default(0)
+  defense           Int           @default(0)
+  speed             Int           @default(0)
+  perception        Int           @default(0)
+  energyConsumption Int           @default(5)
+  upgradeLevel      Int           @default(0)
+  currentDurability Int           @default(100)
+  maxDurability     Int           @default(100)
+  abilities         Json[]        @default([])
+  version           Int           @default(1)
+  source            String?
+  tags              String[]      @default([])
+  description       String?
+  metadata          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  // Relations
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  botParts          BotPart[]
+
+  @@map("parts")
+}
+
+model ExpansionChip {
+  id              String                @id @default(cuid())
+  userId          String
+  name            String                @db.VarChar(100)
+  effect          ExpansionChipEffect
+  rarity          Rarity
+  upgradeLevel    Int                   @default(0)
+  effectMagnitude Float                 @default(1.0)
+  energyCost      Int                   @default(5)
+  version         Int                   @default(1)
+  source          String?
+  tags            String[]              @default([])
+  description     String?
+  metadata        Json?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  
+  // Relations
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  botChips        BotExpansionChip[]
+
+  @@map("expansion_chips")
+}
+
+model BotState {
+  id                  String      @id @default(cuid())
+  userId              String
+  name                String      @db.VarChar(100)
+  location            BotLocation @default(STORAGE)
+  energy              Int         @default(100)
+  maxEnergy           Int         @default(100)
+  health              Int         @default(100)
+  maxHealth           Int         @default(100)
+  experience          Int         @default(0)
+  level               Int         @default(1)
+  missionsCompleted   Int         @default(0)
+  successRate         Float       @default(0.0)
+  totalCombatTime     Int         @default(0)
+  damageDealt         Int         @default(0)
+  damageTaken         Int         @default(0)
+  statusEffects       String[]    @default([])
+  lastActiveAt        DateTime    @default(now())
+  version             Int         @default(1)
+  source              String?
+  tags                String[]    @default([])
+  description         String?
+  metadata            Json?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  
+  // Relations
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bot                 Bot?
+
+  @@map("bot_states")
+}
+
+model Bot {
+  id               String               @id @default(cuid())
+  userId           String
+  name             String               @db.VarChar(100)
+  soulChipId       String
+  skeletonId       String
+  stateId          String               @unique
+  overallRating    Float?
+  buildType        String?
+  version          Int                  @default(1)
+  source           String?
+  tags             String[]             @default([])
+  description      String?
+  metadata         Json?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  
+  // Relations
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  soulChip         SoulChip             @relation(fields: [soulChipId], references: [id], onDelete: Cascade)
+  skeleton         Skeleton             @relation(fields: [skeletonId], references: [id], onDelete: Cascade)
+  state            BotState             @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  parts            BotPart[]
+  expansionChips   BotExpansionChip[]
+
+  @@map("bots")
+}
+
+// Junction tables for many-to-many relationships
+model BotPart {
+  id        String   @id @default(cuid())
+  botId     String
+  partId    String
+  slotIndex Int
+  createdAt DateTime @default(now())
+  
+  // Relations
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  part      Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+  
+  @@unique([botId, partId])
+  @@unique([botId, slotIndex])
+  @@map("bot_parts")
+}
+
+model BotExpansionChip {
+  id             String        @id @default(cuid())
+  botId          String
+  expansionChipId String
+  slotIndex      Int
+  createdAt      DateTime      @default(now())
+  
+  // Relations
+  bot            Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
+  expansionChip  ExpansionChip @relation(fields: [expansionChipId], references: [id], onDelete: Cascade)
+  
+  @@unique([botId, expansionChipId])
+  @@unique([botId, slotIndex])
+  @@map("bot_expansion_chips")
+}
+
+model Collection {
+  id          String      @id @default(cuid())
+  userId      String
+  name        String      @db.VarChar(100)
+  description String?
+  type        CollectionType
+  itemIds     String[]    @default([])
+  isPublic    Boolean     @default(false)
+  shareCode   String?     @unique
+  version     Int         @default(1)
+  source      String?
+  tags        String[]    @default([])
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("collections")
+}
+
+// Enums
+enum Rarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+  ULTRA_RARE
+  PROTOTYPE
+}
+
+enum SkeletonType {
+  LIGHT
+  BALANCED
+  HEAVY
+  FLYING
+  MODULAR
+}
+
+enum MobilityType {
+  WHEELED
+  BIPEDAL
+  WINGED
+  TRACKED
+  HYBRID
+}
+
+enum PartCategory {
+  ARM
+  LEG
+  TORSO
+  HEAD
+  ACCESSORY
+}
+
+enum ExpansionChipEffect {
+  ATTACK_BUFF
+  DEFENSE_BUFF
+  SPEED_BUFF
+  AI_UPGRADE
+  ENERGY_EFFICIENCY
+  SPECIAL_ABILITY
+  STAT_BOOST
+  RESISTANCE
+}
+
+enum BotLocation {
+  STORAGE
+  TRAINING
+  MISSION
+  MAINTENANCE
+  COMBAT
+}
+
+enum CollectionType {
+  BOTS
+  PARTS
+  CHIPS
+  SKELETONS
+  MIXED
 }

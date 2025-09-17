@@ -32,11 +32,7 @@ export {
 export { SoulChip } from "./soul-chip";
 export { BotState } from "./bot-state";
 
-// Export legacy part for backward compatibility
-export { Part } from "./parts-legacy";
-
-// Export legacy expansion chip for backward compatibility
-export { ExpansionChip } from "./expansion-chip-legacy";
+// Legacy exports - use new factory system
 
 // Export skeleton system
 export {
@@ -87,10 +83,12 @@ export {
 // Import for internal use
 import { SoulChip } from "./soul-chip";
 import { BalancedSkeleton, SkeletonFactory, ISkeleton } from "./skeleton";
-import { Part } from "./parts-legacy";
-import { PartFactory } from "./part";
-import { ExpansionChip } from "./expansion-chip-legacy";
-import { ExpansionChipFactory } from "./expansion-chip";
+import { PartFactory, IPart, ArmPart } from "./part";
+import {
+  ExpansionChipFactory,
+  IExpansionChip,
+  AttackBuffChip,
+} from "./expansion-chip";
 import { BotState } from "./bot-state";
 import {
   Rarity,
@@ -148,58 +146,28 @@ export class ArtifactFactory {
   /**
    * Create a basic arm part
    */
-  static createBasicArmPart(): Part {
-    // Try to use the new factory first, fall back to legacy for compatibility
-    try {
-      const part = PartFactory.createPart(
-        PartCategory.ARM,
-        `arm_${Date.now()}`,
-        Rarity.COMMON,
-        "Basic Manipulator Arm",
-        {
-          attack: 15,
-          defense: 5,
-          speed: 10,
-          perception: 5,
-          energyConsumption: 8,
-        },
-        [],
-        0
-      );
-      // For backward compatibility, create a legacy Part instance
-      return new Part(
-        part.id,
-        part.category,
-        part.rarity,
-        part.name,
-        part.stats,
-        part.abilities,
-        part.upgradeLevel
-      );
-    } catch {
-      // Fallback to legacy part
-      return new Part(
-        `arm_${Date.now()}`,
-        PartCategory.ARM,
-        Rarity.COMMON,
-        "Basic Manipulator Arm",
-        {
-          attack: 15,
-          defense: 5,
-          speed: 10,
-          perception: 5,
-          energyConsumption: 8,
-        },
-        [],
-        0
-      );
-    }
+  static createBasicArmPart(): IPart {
+    return PartFactory.createPart(
+      PartCategory.ARM,
+      `arm_${Date.now()}`,
+      Rarity.COMMON,
+      "Basic Manipulator Arm",
+      {
+        attack: 15,
+        defense: 5,
+        speed: 10,
+        perception: 5,
+        energyConsumption: 8,
+      },
+      [],
+      0
+    );
   }
 
   /**
    * Create a basic expansion chip
    */
-  static createBasicExpansionChip(effect: ExpansionChipEffect): ExpansionChip {
+  static createBasicExpansionChip(effect: ExpansionChipEffect): IExpansionChip {
     const effectNames = {
       [ExpansionChipEffect.ATTACK_BUFF]: "Attack Enhancer",
       [ExpansionChipEffect.DEFENSE_BUFF]: "Defense Booster",
@@ -211,27 +179,14 @@ export class ArtifactFactory {
       [ExpansionChipEffect.RESISTANCE]: "Hardening Module",
     };
 
-    // Try to use the new factory first, fall back to legacy for unimplemented effects
-    try {
-      return ExpansionChipFactory.createExpansionChip(
-        effect,
-        `chip_${Date.now()}`,
-        effectNames[effect] || "Unknown Chip",
-        Rarity.COMMON,
-        `A basic expansion chip that provides ${effect} enhancement`,
-        0
-      ) as ExpansionChip;
-    } catch {
-      // Fallback to legacy for unimplemented effects
-      return new ExpansionChip(
-        `chip_${Date.now()}`,
-        effectNames[effect] || "Unknown Chip",
-        effect,
-        Rarity.COMMON,
-        `A basic expansion chip that provides ${effect} enhancement`,
-        0
-      );
-    }
+    return ExpansionChipFactory.createExpansionChip(
+      effect,
+      `chip_${Date.now()}`,
+      effectNames[effect] || "Unknown Chip",
+      Rarity.COMMON,
+      `A basic expansion chip that provides ${effect} enhancement`,
+      0
+    );
   }
 
   /**
@@ -257,8 +212,8 @@ export class BotAssembler {
   static createBasicBot(name: string): {
     soulChip: SoulChip;
     skeleton: BalancedSkeleton;
-    parts: Part[];
-    expansionChips: ExpansionChip[];
+    parts: IPart[];
+    expansionChips: IExpansionChip[];
     state: BotState;
   } {
     return {
@@ -282,8 +237,8 @@ export class BotAssembler {
    */
   static validateConfiguration(
     skeleton: ISkeleton,
-    parts: Part[],
-    expansionChips: ExpansionChip[]
+    parts: IPart[],
+    expansionChips: IExpansionChip[]
   ): {
     valid: boolean;
     errors: string[];

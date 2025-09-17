@@ -14,3 +14,6 @@ if (process.env.NODE_ENV === "development") {
 
 export { prisma };
 export * from "@prisma/client";
+
+// Export our curated Zod schemas and validation DTOs
+export * from "./schemas";

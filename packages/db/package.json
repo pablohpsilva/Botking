@@ -24,7 +24,9 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.19.1"
+    "@prisma/client": "^5.19.1",
+    "prisma-zod-generator": "^1.20.3",
+    "zod": "^4.1.9"
   },
   "devDependencies": {
     "@types/node": "^22.8.7",

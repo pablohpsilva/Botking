@@ -2,10 +2,17 @@
  * @botking/dto - Data Transfer Objects and database abstraction layer
  *
  * This package provides:
- * - DTO interfaces for all artifact entities
- * - Factory classes for DTO creation and validation
+ * - DTO interfaces for all artifact entities (legacy)
+ * - Factory classes for DTO creation and validation (legacy)
  * - Base service types and validation
  * - Example implementations
+ *
+ * 🚀 NEW: Auto-sync DTOs powered by Prisma + Zod integration!
+ * - Always in sync with database schema
+ * - Runtime validation with Zod
+ * - TypeScript type safety
+ * - Business logic validation
+ * - Zero manual maintenance
  */
 
 // Export DTO interfaces
@@ -20,6 +27,54 @@ export * from "./services";
 
 // Export example
 export * from "./simple-example";
+
+// 🚀 NEW: Export auto-sync DTO factory (Prisma + Zod integration)
+export * from "./auto-sync-dto-factory";
+export * from "./auto-sync-example";
+
+// Re-export database schemas and types for convenience
+export {
+  // Create schemas
+  CreateSoulChipSchema,
+  CreateSkeletonSchema,
+  CreatePartSchema,
+  CreateExpansionChipSchema,
+  CreateBotStateSchema,
+  CreateBotSchema,
+  CreateCollectionSchema,
+
+  // Update schemas
+  UpdateSoulChipSchema,
+  UpdateSkeletonSchema,
+  UpdatePartSchema,
+  UpdateExpansionChipSchema,
+  UpdateBotStateSchema,
+  UpdateBotSchema,
+  UpdateCollectionSchema,
+
+  // Business validation schemas
+  SoulChipStatsSchema,
+  PartStatsSchema,
+  BotAssemblySchema,
+
+  // Enum schemas
+  RaritySchema,
+  SkeletonTypeSchema,
+  MobilityTypeSchema,
+  PartCategorySchema,
+  ExpansionChipEffectSchema,
+  BotLocationSchema,
+  CollectionTypeSchema,
+
+  // Prisma enums
+  type Rarity,
+  type SkeletonType,
+  type MobilityType,
+  type PartCategory,
+  type ExpansionChipEffect,
+  type BotLocation,
+  type CollectionType,
+} from "@botking/db";
 
 // Re-export key types for convenience
 export type {
@@ -92,6 +147,7 @@ import {
 } from "./factories/dto-factory";
 import { DTOExample } from "./simple-example";
 import { BotDTO } from "./interfaces/artifact-dto";
+import { AutoSyncExample } from "./auto-sync-example";
 
 /**
  * DTO Package configuration
@@ -176,5 +232,13 @@ export class DTOPackage {
    */
   public demonstrateValidation(): { valid: any; invalid: any } {
     return DTOExample.demonstrateValidation();
+  }
+
+  /**
+   * 🚀 NEW: Demonstrate auto-sync DTO capabilities
+   * Shows how DTOs stay automatically in sync with database schema
+   */
+  public demonstrateAutoSyncDTOs(): void {
+    AutoSyncExample.runAllExamples();
   }
 }

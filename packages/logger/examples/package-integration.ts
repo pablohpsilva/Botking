@@ -2,12 +2,7 @@
  * Example showing how to integrate @botking/logger with other packages
  */
 
-import {
-  createPackageLogger,
-  LogLevel,
-  MonitoringEventType,
-  LogContext,
-} from "../src";
+import { createPackageLogger, MonitoringEventType, LogContext } from "../src";
 
 // Simulate different package integrations
 

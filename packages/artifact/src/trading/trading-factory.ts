@@ -4,7 +4,6 @@
  * Factory for creating trading events and trade offers
  */
 
-import { TradingEventStatus, TradeOfferStatus } from "@botking/db";
 import { TradingEvent, type TradingEventConfiguration } from "./trading-event";
 import { TradeOffer, type TradeOfferConfiguration } from "./trade-offer";
 import type { ITradingEvent } from "./trading-event-interface";

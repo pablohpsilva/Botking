@@ -1,7 +1,6 @@
 import {
   BaseDTO,
   ValidationResult,
-  PaginationOptions,
   PaginatedResponse,
   SearchOptions,
   FilterOptions,

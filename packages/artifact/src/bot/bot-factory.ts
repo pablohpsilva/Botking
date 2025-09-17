@@ -8,7 +8,6 @@ import { SoulChip } from "../soul-chip";
 import { SkeletonFactory, ISkeleton } from "../skeleton";
 import { PartFactory, IPart } from "../part";
 import { ExpansionChipFactory, IExpansionChip } from "../expansion-chip";
-import { BotStateFactory } from "../bot-state";
 import {
   Rarity,
   SkeletonType,

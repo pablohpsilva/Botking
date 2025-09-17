@@ -2,7 +2,7 @@
  * Trade Offer Implementation
  */
 
-import { TradeOfferStatus, TradeItemType } from "@botking/db";
+import { TradeOfferStatus } from "@botking/db";
 import type { ITradeOffer } from "./trade-offer-interface";
 import type {
   TradeRequirement,

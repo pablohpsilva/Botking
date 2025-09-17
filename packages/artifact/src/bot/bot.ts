@@ -12,19 +12,13 @@ import type {
 import { BotLocation, BotType } from "../types";
 import type { IBotState } from "../bot-state/bot-state-interface";
 import { BotStateFactory } from "../bot-state/bot-state-factory";
-import type {
-  IBot,
-  BotConfiguration,
-  BotAssemblyResult,
-  BotUpgradeResult,
-} from "./bot-interface";
+import type { IBot, BotConfiguration } from "./bot-interface";
 import {
   SlotAssignmentService,
   SlotIdentifier,
   ISkeletonSlotConfiguration,
   ISlotAssignmentCommand,
   SlotAssignmentOperation,
-  getAvailableSlotsForSkeleton,
 } from "@botking/domain";
 import { SkeletonType as DomainSkeletonType } from "@botking/db";
 import { createPackageLogger } from "@botking/logger";

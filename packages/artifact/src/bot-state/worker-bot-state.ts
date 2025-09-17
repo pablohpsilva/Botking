@@ -1,4 +1,4 @@
-import { BotLocation, ActiveStatusEffect, StatusEffect } from "../types";
+import { StatusEffect } from "../types";
 import { BaseBotState } from "./base-bot-state";
 import { IWorkerBotState, BotStateConfig } from "./bot-state-interface";
 

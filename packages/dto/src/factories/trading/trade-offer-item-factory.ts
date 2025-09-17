@@ -2,7 +2,6 @@ import { BaseDTOFactory } from "../base/base-factory";
 import {
   TradeOfferItemDTO,
   CreateTradeOfferItemDTO,
-  UpdateTradeOfferItemDTO,
   TradeItemTypeDTO,
 } from "../../interfaces/artifact-dto";
 import { ValidationResult, ValidationError } from "../../interfaces/base-dto";

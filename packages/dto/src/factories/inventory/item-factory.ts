@@ -5,10 +5,6 @@ import {
   UpdateItemDTO,
   ItemCategoryDTO,
   RarityDTO,
-  SpeedUpTargetDTO,
-  ResourceTypeDTO,
-  EnhancementDurationDTO,
-  GemTypeDTO,
 } from "../../interfaces/artifact-dto";
 import { ValidationResult, ValidationError } from "../../interfaces/base-dto";
 

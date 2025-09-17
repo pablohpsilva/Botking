@@ -1,0 +1,58 @@
+{
+  "name": "@botking/domain",
+  "version": "1.0.0",
+  "description": "Domain logic and business rules for the Botking game",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui"
+  },
+  "keywords": [
+    "botking",
+    "domain",
+    "business-rules",
+    "validation"
+  ],
+  "author": "Botking Team",
+  "license": "MIT",
+  "dependencies": {
+    "@botking/db": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./rules": {
+      "import": "./dist/rules/index.js",
+      "require": "./dist/rules/index.js",
+      "types": "./dist/rules/index.d.ts"
+    },
+    "./validators": {
+      "import": "./dist/validators/index.js",
+      "require": "./dist/validators/index.js",
+      "types": "./dist/validators/index.d.ts"
+    },
+    "./services": {
+      "import": "./dist/services/index.js",
+      "require": "./dist/services/index.js",
+      "types": "./dist/services/index.d.ts"
+    }
+  }
+}

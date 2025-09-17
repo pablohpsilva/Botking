@@ -209,22 +209,8 @@ export class AutoSyncDTOFactory {
    * Validate and create a BotState DTO
    */
   static createBotState(data: unknown): ValidationResult<CreateBotStateDTO> {
-    try {
-      const validated = CreateBotStateSchema.parse(data);
-      return { success: true, data: validated };
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return {
-          success: false,
-          errors: error.issues.map((err: any) => ({
-            field: err.path.join("."),
-            message: err.message,
-            code: err.code,
-          })),
-        };
-      }
-      throw error;
-    }
+    // Use the validateBotState method for consistency
+    return this.validateBotState(data);
   }
 
   /**
@@ -403,6 +389,131 @@ export class AutoSyncDTOFactory {
   static updateBotState(data: unknown): ValidationResult<UpdateBotStateDTO> {
     try {
       const validated = UpdateBotStateSchema.parse(data);
+      return { success: true, data: validated };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return {
+          success: false,
+          errors: error.issues.map((err: any) => ({
+            field: err.path.join("."),
+            message: err.message,
+            code: err.code,
+          })),
+        };
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Validate bot state with business rules
+   */
+  static validateBotState(data: unknown): ValidationResult<any> {
+    try {
+      // First, validate basic schema
+      const validated = CreateBotStateSchema.parse(data);
+
+      // Apply business rules based on state type
+      const errors: ValidationError[] = [];
+
+      if (validated.stateType === "worker") {
+        // Worker bots cannot have certain non-worker fields
+        if ("bondLevel" in validated && validated.bondLevel !== undefined) {
+          errors.push({
+            field: "bondLevel",
+            message: "Worker bots cannot have bond level",
+          });
+        }
+
+        if ("battlesWon" in validated && validated.battlesWon !== undefined) {
+          errors.push({
+            field: "battlesWon",
+            message: "Worker bots cannot have battle statistics",
+          });
+        }
+
+        if ("battlesLost" in validated && validated.battlesLost !== undefined) {
+          errors.push({
+            field: "battlesLost",
+            message: "Worker bots cannot have battle statistics",
+          });
+        }
+
+        if (
+          "totalBattles" in validated &&
+          validated.totalBattles !== undefined
+        ) {
+          errors.push({
+            field: "totalBattles",
+            message: "Worker bots cannot have battle statistics",
+          });
+        }
+      }
+
+      if (validated.stateType === "non-worker") {
+        // Non-worker bots battle statistics validation
+        if (
+          "battlesWon" in validated &&
+          "battlesLost" in validated &&
+          "totalBattles" in validated
+        ) {
+          const won = validated.battlesWon || 0;
+          const lost = validated.battlesLost || 0;
+          const total = validated.totalBattles || 0;
+
+          if (total < won + lost) {
+            errors.push({
+              field: "totalBattles",
+              message:
+                "Total battles must be greater than or equal to won + lost battles",
+            });
+          }
+        }
+
+        // Bond level validation for non-worker bots
+        if ("bondLevel" in validated && validated.bondLevel !== undefined) {
+          if (validated.bondLevel < 0 || validated.bondLevel > 100) {
+            errors.push({
+              field: "bondLevel",
+              message: "Bond level must be between 0 and 100",
+            });
+          }
+        }
+      }
+
+      // Energy level validation
+      if ("energyLevel" in validated && validated.energyLevel !== undefined) {
+        if (validated.energyLevel < 0 || validated.energyLevel > 100) {
+          errors.push({
+            field: "energyLevel",
+            message: "Energy level must be between 0 and 100",
+          });
+        }
+      }
+
+      // Maintenance level validation
+      if (
+        "maintenanceLevel" in validated &&
+        validated.maintenanceLevel !== undefined
+      ) {
+        if (
+          validated.maintenanceLevel < 0 ||
+          validated.maintenanceLevel > 100
+        ) {
+          errors.push({
+            field: "maintenanceLevel",
+            message: "Maintenance level must be between 0 and 100",
+          });
+        }
+      }
+
+      if (errors.length > 0) {
+        return {
+          success: false,
+          errors,
+        };
+      }
+
       return { success: true, data: validated };
     } catch (error) {
       if (error instanceof z.ZodError) {

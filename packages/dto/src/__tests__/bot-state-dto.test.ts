@@ -48,6 +48,8 @@ describe("Bot State DTO System", () => {
 
     it("should validate worker state type rules", () => {
       const workerTypeData = {
+        userId: "company_001",
+        name: "Test Worker",
         stateType: "worker" as const,
         bondLevel: 30, // Invalid for worker
       };
@@ -192,8 +194,9 @@ describe("Bot State DTO System", () => {
       const validation = AutoSyncDTOFactory.validateBotState(invalidBondLevel);
       expect(validation.success).toBe(false);
       if (!validation.success) {
-        const hasBondError = validation.errors?.some((error) =>
-          error.path?.includes("bondLevel")
+        const hasBondError = validation.errors?.some(
+          (error) =>
+            error.field === "bondLevel" || error.message.includes("Bond level")
         );
         expect(hasBondError).toBe(true);
       }
@@ -203,12 +206,16 @@ describe("Bot State DTO System", () => {
   describe("State Type Validation", () => {
     it("should validate state type enum values", () => {
       const validWorkerType = AutoSyncDTOFactory.validateBotState({
+        userId: "test_user",
+        name: "Test Worker",
         stateType: "worker",
         energyLevel: 100,
       });
       expect(validWorkerType.success).toBe(true);
 
       const validNonWorkerType = AutoSyncDTOFactory.validateBotState({
+        userId: "test_user",
+        name: "Test Non-Worker",
         stateType: "non-worker",
         energyLevel: 100,
         bondLevel: 50,
@@ -216,6 +223,8 @@ describe("Bot State DTO System", () => {
       expect(validNonWorkerType.success).toBe(true);
 
       const invalidStateType = AutoSyncDTOFactory.validateBotState({
+        userId: "test_user",
+        name: "Test Invalid",
         stateType: "invalid-type" as any,
         energyLevel: 100,
       });
@@ -225,6 +234,8 @@ describe("Bot State DTO System", () => {
     it("should enforce state type specific rules", () => {
       // Worker cannot have battle stats
       const workerWithBattles = {
+        userId: "test_user",
+        name: "Test Worker",
         stateType: "worker" as const,
         energyLevel: 100,
         battlesWon: 5,
@@ -238,6 +249,8 @@ describe("Bot State DTO System", () => {
 
       // Non-worker can have battle stats
       const nonWorkerWithBattles = {
+        userId: "test_user",
+        name: "Test Non-Worker",
         stateType: "non-worker" as const,
         energyLevel: 100,
         bondLevel: 50,

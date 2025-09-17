@@ -7,6 +7,9 @@
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "clean": "turbo clean",
+    "test": "turbo test",
+    "test:watch": "turbo test:watch",
+    "test:coverage": "turbo test -- --coverage",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {

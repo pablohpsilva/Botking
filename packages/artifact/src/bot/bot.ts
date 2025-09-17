@@ -2,7 +2,14 @@ import type { SoulChip } from "../soul-chip";
 import type { ISkeleton } from "../skeleton";
 import type { IPart } from "../part";
 import type { IExpansionChip } from "../expansion-chip";
-import type { CombatStats, Ability, BotType } from "../types";
+import type {
+  CombatStats,
+  Ability,
+  BotType,
+  CombatRole,
+  UtilitySpecialization,
+  GovernmentType,
+} from "../types";
 import { BotLocation } from "../types";
 import type { IBotState } from "../bot-state/bot-state-interface";
 import { BotStateFactory } from "../bot-state/bot-state-factory";
@@ -41,6 +48,9 @@ export class Bot implements IBot {
   private _name: string;
   private _botType: BotType;
   private _userId: string | null;
+  private _combatRole: CombatRole | null;
+  private _utilitySpec: UtilitySpecialization | null;
+  private _governmentType: GovernmentType | null;
   private _version: string;
   private _soulChip: SoulChip;
   private _skeleton: ISkeleton;
@@ -59,6 +69,9 @@ export class Bot implements IBot {
     this._name = config.name;
     this._botType = config.botType;
     this._userId = config.userId || null;
+    this._combatRole = config.combatRole || null;
+    this._utilitySpec = config.utilitySpec || null;
+    this._governmentType = config.governmentType || null;
     this._version = "1.0.0";
 
     // Validate bot type and ownership rules
@@ -113,6 +126,15 @@ export class Bot implements IBot {
   }
   get userId(): string | null {
     return this._userId;
+  }
+  get combatRole(): CombatRole | null {
+    return this._combatRole;
+  }
+  get utilitySpec(): UtilitySpecialization | null {
+    return this._utilitySpec;
+  }
+  get governmentType(): GovernmentType | null {
+    return this._governmentType;
   }
   get version(): string {
     return this._version;
@@ -689,6 +711,9 @@ export class Bot implements IBot {
       name: this._name,
       botType: this._botType,
       userId: this._userId,
+      combatRole: this._combatRole,
+      utilitySpec: this._utilitySpec,
+      governmentType: this._governmentType,
       version: this._version,
       soulChip: this._soulChip.toJSON(),
       skeleton: this._skeleton.toJSON(),
@@ -714,6 +739,9 @@ export class Bot implements IBot {
       name: `${this._name} (Clone)`,
       botType: this._botType,
       userId: this._userId,
+      combatRole: this._combatRole,
+      utilitySpec: this._utilitySpec,
+      governmentType: this._governmentType,
       soulChip: this._soulChip, // Note: This is a reference, might want deep clone
       skeleton: this._skeleton, // Note: This is a reference, might want deep clone
       parts: Array.from(this._parts.values()),

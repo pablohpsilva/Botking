@@ -64,6 +64,26 @@ export enum BotTypeDTO {
   GOVBOT = "govbot",
 }
 
+export enum CombatRoleDTO {
+  ASSAULT = "assault",
+  TANK = "tank",
+  SNIPER = "sniper",
+  SCOUT = "scout",
+}
+
+export enum UtilitySpecializationDTO {
+  CONSTRUCTION = "construction",
+  MINING = "mining",
+  REPAIR = "repair",
+  TRANSPORT = "transport",
+}
+
+export enum GovernmentTypeDTO {
+  SECURITY = "security",
+  ADMIN = "admin",
+  MAINTENANCE = "maintenance",
+}
+
 /**
  * Combat stats DTO
  */
@@ -218,6 +238,9 @@ export interface BotDTO extends MetadataDTO {
   name: string;
   botType: BotTypeDTO;
   userId: string | null; // User ID - can be null for autonomous bots
+  combatRole: CombatRoleDTO | null; // Combat specialization (null for non-combat bots)
+  utilitySpec: UtilitySpecializationDTO | null; // Utility specialization (null for non-utility bots)
+  governmentType: GovernmentTypeDTO | null; // Government type (null for non-government bots)
   soulChipId: string;
   skeletonId: string;
   partIds: string[];

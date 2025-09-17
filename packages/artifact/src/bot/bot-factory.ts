@@ -17,6 +17,9 @@ import {
   ExpansionChipEffect,
   BotLocation,
   BotType,
+  CombatRole,
+  UtilitySpecialization,
+  GovernmentType,
 } from "../types";
 
 /**
@@ -58,7 +61,7 @@ export class BotFactory {
   static createCombatBot(
     name: string,
     userId: string,
-    combatRole: "assault" | "tank" | "sniper" | "scout" = "assault",
+    combatRole: CombatRole = CombatRole.ASSAULT,
     botType: BotType = BotType.PLAYABLE
   ): IBot {
     let skeletonType: SkeletonType;
@@ -66,7 +69,7 @@ export class BotFactory {
     let chips: IExpansionChip[];
 
     switch (combatRole) {
-      case "tank":
+      case CombatRole.TANK:
         skeletonType = SkeletonType.HEAVY;
         parts = [
           BotFactory.createCombatArmPart("heavy", 120, 40),
@@ -80,7 +83,7 @@ export class BotFactory {
         ];
         break;
 
-      case "sniper":
+      case CombatRole.SNIPER:
         skeletonType = SkeletonType.LIGHT;
         parts = [
           BotFactory.createCombatArmPart("precision", 100, 20),
@@ -93,7 +96,7 @@ export class BotFactory {
         ];
         break;
 
-      case "scout":
+      case CombatRole.SCOUT:
         skeletonType = SkeletonType.LIGHT; // Use light instead of flying for better compatibility
         parts = [
           BotFactory.createCombatArmPart("light", 60, 30),
@@ -123,6 +126,7 @@ export class BotFactory {
       name,
       botType,
       userId,
+      combatRole,
       soulChip: BotFactory.createCombatSoulChip(name, combatRole),
       skeleton: BotFactory.createSkeleton(skeletonType, Rarity.RARE, 8),
       parts,
@@ -144,18 +148,14 @@ export class BotFactory {
   static createUtilityBot(
     name: string,
     userId: string,
-    specialization:
-      | "construction"
-      | "mining"
-      | "repair"
-      | "transport" = "construction",
+    specialization: UtilitySpecialization = UtilitySpecialization.CONSTRUCTION,
     botType: BotType = BotType.WORKER
   ): IBot {
     let parts: IPart[];
     let chips: IExpansionChip[];
 
     switch (specialization) {
-      case "mining":
+      case UtilitySpecialization.MINING:
         parts = [
           BotFactory.createUtilityArmPart("drill", 40, 60),
           BotFactory.createCombatLegPart("heavy", 40, 80),
@@ -167,7 +167,7 @@ export class BotFactory {
         ];
         break;
 
-      case "repair":
+      case UtilitySpecialization.REPAIR:
         parts = [
           BotFactory.createUtilityArmPart("manipulator", 20, 40),
           BotFactory.createCombatLegPart("balanced", 60, 50),
@@ -179,7 +179,7 @@ export class BotFactory {
         ];
         break;
 
-      case "transport":
+      case UtilitySpecialization.TRANSPORT:
         parts = [
           BotFactory.createUtilityArmPart("lifter", 30, 20),
           BotFactory.createCombatLegPart("heavy", 80, 60),
@@ -207,6 +207,7 @@ export class BotFactory {
       name,
       botType,
       userId,
+      utilitySpec: specialization,
       soulChip: BotFactory.createUtilitySoulChip(name, specialization),
       skeleton: BotFactory.createSkeleton(
         SkeletonType.HEAVY,
@@ -437,12 +438,13 @@ export class BotFactory {
    */
   static createGovBot(
     name: string,
-    govType: "security" | "admin" | "maintenance" = "admin"
+    govType: GovernmentType = GovernmentType.ADMIN
   ): IBot {
     const config: BotConfiguration = {
       name,
       botType: BotType.GOVBOT,
       userId: null,
+      governmentType: govType,
       soulChip: BotFactory.createGovSoulChip(name, govType),
       skeleton: BotFactory.createSkeleton(
         SkeletonType.BALANCED,
@@ -494,9 +496,12 @@ export class BotFactory {
     );
   }
 
-  private static createCombatSoulChip(name: string, role: string): SoulChip {
+  private static createCombatSoulChip(
+    name: string,
+    role: CombatRole
+  ): SoulChip {
     const personalities = {
-      assault: {
+      [CombatRole.ASSAULT]: {
         aggressiveness: 80,
         curiosity: 40,
         loyalty: 90,
@@ -504,7 +509,7 @@ export class BotFactory {
         empathy: 30,
         dialogueStyle: "direct",
       },
-      tank: {
+      [CombatRole.TANK]: {
         aggressiveness: 60,
         curiosity: 30,
         loyalty: 95,
@@ -512,7 +517,7 @@ export class BotFactory {
         empathy: 50,
         dialogueStyle: "stoic",
       },
-      sniper: {
+      [CombatRole.SNIPER]: {
         aggressiveness: 40,
         curiosity: 80,
         loyalty: 85,
@@ -520,7 +525,7 @@ export class BotFactory {
         empathy: 20,
         dialogueStyle: "analytical",
       },
-      scout: {
+      [CombatRole.SCOUT]: {
         aggressiveness: 30,
         curiosity: 95,
         loyalty: 70,
@@ -534,8 +539,7 @@ export class BotFactory {
       `soul_${Date.now()}`,
       `${name} Combat AI`,
       Rarity.RARE,
-      personalities[role as keyof typeof personalities] ||
-        personalities.assault,
+      personalities[role] || personalities[CombatRole.ASSAULT],
       {
         intelligence: 20,
         resilience: 18,
@@ -547,7 +551,7 @@ export class BotFactory {
 
   private static createUtilitySoulChip(
     name: string,
-    specialization: string
+    specialization: UtilitySpecialization
   ): SoulChip {
     return new SoulChip(
       `soul_${Date.now()}`,
@@ -625,9 +629,12 @@ export class BotFactory {
     );
   }
 
-  private static createGovSoulChip(name: string, govType: string): SoulChip {
+  private static createGovSoulChip(
+    name: string,
+    govType: GovernmentType
+  ): SoulChip {
     const personalities = {
-      security: {
+      [GovernmentType.SECURITY]: {
         aggressiveness: 60,
         curiosity: 40,
         loyalty: 100,
@@ -635,7 +642,7 @@ export class BotFactory {
         empathy: 25,
         dialogueStyle: "authoritative",
       },
-      admin: {
+      [GovernmentType.ADMIN]: {
         aggressiveness: 20,
         curiosity: 70,
         loyalty: 95,
@@ -643,7 +650,7 @@ export class BotFactory {
         empathy: 60,
         dialogueStyle: "professional",
       },
-      maintenance: {
+      [GovernmentType.MAINTENANCE]: {
         aggressiveness: 10,
         curiosity: 80,
         loyalty: 90,
@@ -657,8 +664,7 @@ export class BotFactory {
       `soul_${Date.now()}`,
       `${name} Gov AI`,
       Rarity.EPIC,
-      personalities[govType as keyof typeof personalities] ||
-        personalities.admin,
+      personalities[govType] || personalities[GovernmentType.ADMIN],
       {
         intelligence: 30,
         resilience: 25,

@@ -138,3 +138,26 @@ export enum BotType {
   ROGUE = "rogue", // Never assigned to players
   GOVBOT = "govbot", // Never assigned to players
 }
+
+// Combat role specializations
+export enum CombatRole {
+  ASSAULT = "assault",
+  TANK = "tank",
+  SNIPER = "sniper",
+  SCOUT = "scout",
+}
+
+// Utility bot specializations
+export enum UtilitySpecialization {
+  CONSTRUCTION = "construction",
+  MINING = "mining",
+  REPAIR = "repair",
+  TRANSPORT = "transport",
+}
+
+// Government bot types
+export enum GovernmentType {
+  SECURITY = "security",
+  ADMIN = "admin",
+  MAINTENANCE = "maintenance",
+}

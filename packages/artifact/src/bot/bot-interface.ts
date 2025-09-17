@@ -2,7 +2,14 @@ import type { SoulChip } from "../soul-chip";
 import type { ISkeleton } from "../skeleton";
 import type { IPart } from "../part";
 import type { IExpansionChip } from "../expansion-chip";
-import type { CombatStats, Ability, BotType } from "../types";
+import type {
+  CombatStats,
+  Ability,
+  BotType,
+  CombatRole,
+  UtilitySpecialization,
+  GovernmentType,
+} from "../types";
 import type { IBotState } from "../bot-state/bot-state-interface";
 
 /**
@@ -15,6 +22,9 @@ export interface IBot {
   readonly name: string;
   readonly botType: BotType;
   readonly userId: string | null; // Can be null for autonomous bots
+  readonly combatRole: CombatRole | null; // Combat specialization (null for non-combat bots)
+  readonly utilitySpec: UtilitySpecialization | null; // Utility specialization (null for non-utility bots)
+  readonly governmentType: GovernmentType | null; // Government type (null for non-government bots)
   readonly version: string;
 
   // Core components
@@ -116,6 +126,9 @@ export interface BotConfiguration {
   name: string;
   botType: BotType;
   userId?: string | null; // Optional for creation, validated based on bot type
+  combatRole?: CombatRole | null; // Combat specialization (optional for creation)
+  utilitySpec?: UtilitySpecialization | null; // Utility specialization (optional for creation)
+  governmentType?: GovernmentType | null; // Government type (optional for creation)
   soulChip: SoulChip;
   skeleton: ISkeleton;
   parts?: IPart[];

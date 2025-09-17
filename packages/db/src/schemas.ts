@@ -87,6 +87,21 @@ export const CollectionTypeSchema = z.enum([
   "MIXED",
 ]);
 
+export const CombatRoleSchema = z.enum(["ASSAULT", "TANK", "SNIPER", "SCOUT"]);
+
+export const UtilitySpecializationSchema = z.enum([
+  "CONSTRUCTION",
+  "MINING",
+  "REPAIR",
+  "TRANSPORT",
+]);
+
+export const GovernmentTypeSchema = z.enum([
+  "SECURITY",
+  "ADMIN",
+  "MAINTENANCE",
+]);
+
 /**
  * Create schemas for DTO validation
  * These are perfect for API validation and form processing
@@ -211,6 +226,9 @@ export const CreateBotSchema = z.object({
   userId: z.string().optional(), // Optional for autonomous bots (ROGUE, GOVBOT)
   name: z.string().min(1).max(100),
   botType: BotTypeSchema.optional().default("WORKER"),
+  combatRole: CombatRoleSchema.optional(), // Combat specialization (null for non-combat bots)
+  utilitySpec: UtilitySpecializationSchema.optional(), // Utility specialization (null for non-utility bots)
+  governmentType: GovernmentTypeSchema.optional(), // Government type (null for non-government bots)
   soulChipId: z.string(),
   skeletonId: z.string(),
   stateId: z.string(),
@@ -277,6 +295,13 @@ export type UpdateBotStateDTO = z.infer<typeof UpdateBotStateSchema>;
 export type UpdateBotDTO = z.infer<typeof UpdateBotSchema>;
 export type UpdateCollectionDTO = z.infer<typeof UpdateCollectionSchema>;
 
+// Enum types for easier usage
+export type CombatRoleDTO = z.infer<typeof CombatRoleSchema>;
+export type UtilitySpecializationDTO = z.infer<
+  typeof UtilitySpecializationSchema
+>;
+export type GovernmentTypeDTO = z.infer<typeof GovernmentTypeSchema>;
+
 // Helper schemas for business logic validation
 export const SoulChipStatsSchema = z
   .object({
@@ -321,6 +346,9 @@ export const BotTypeValidationSchema = z
   .object({
     botType: BotTypeSchema,
     userId: z.string().nullable().optional(),
+    combatRole: CombatRoleSchema.optional(),
+    utilitySpec: UtilitySpecializationSchema.optional(),
+    governmentType: GovernmentTypeSchema.optional(),
   })
   .superRefine((data, ctx) => {
     switch (data.botType) {
@@ -332,6 +360,14 @@ export const BotTypeValidationSchema = z
             code: z.ZodIssueCode.custom,
             message: `${data.botType} bots must have a user assigned`,
             path: ["userId"],
+          });
+        }
+        // PLAYABLE bots should have combat role
+        if (data.botType === "PLAYABLE" && !data.combatRole) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "PLAYABLE bots should have a combat role specified",
+            path: ["combatRole"],
           });
         }
         break;
@@ -346,12 +382,52 @@ export const BotTypeValidationSchema = z
             path: ["userId"],
           });
         }
+        // GOVBOT should have government type
+        if (data.botType === "GOVBOT" && !data.governmentType) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "GOVBOT bots should have a government type specified",
+            path: ["governmentType"],
+          });
+        }
         break;
 
       case "WORKER":
-        // Workers can optionally have users
-        // No specific validation needed - workers can be owned or autonomous
+        // Workers can optionally have users and should have utility specialization
+        if (!data.utilitySpec) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "WORKER bots should have a utility specialization specified",
+            path: ["utilitySpec"],
+          });
+        }
         break;
+    }
+
+    // Ensure specializations are only used with appropriate bot types
+    if (data.combatRole && !["PLAYABLE", "KING"].includes(data.botType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Combat role can only be specified for PLAYABLE and KING bots",
+        path: ["combatRole"],
+      });
+    }
+
+    if (data.utilitySpec && data.botType !== "WORKER") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Utility specialization can only be specified for WORKER bots",
+        path: ["utilitySpec"],
+      });
+    }
+
+    if (data.governmentType && data.botType !== "GOVBOT") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Government type can only be specified for GOVBOT bots",
+        path: ["governmentType"],
+      });
     }
   });
 

@@ -257,6 +257,9 @@ model Bot {
   userId           String?              // User who owns this bot - can be null for autonomous bots
   name             String               @db.VarChar(100)
   botType          BotType              @default(WORKER)
+  combatRole       CombatRole?          // Combat specialization (null for non-combat bots)
+  utilitySpec      UtilitySpecialization? // Utility specialization (null for non-utility bots)
+  governmentType   GovernmentType?      // Government type (null for non-government bots)
   soulChipId       String
   skeletonId       String
   stateId          String               @unique
@@ -407,4 +410,24 @@ enum CollectionType {
   CHIPS
   SKELETONS
   MIXED
+}
+
+enum CombatRole {
+  ASSAULT
+  TANK
+  SNIPER
+  SCOUT
+}
+
+enum UtilitySpecialization {
+  CONSTRUCTION
+  MINING
+  REPAIR
+  TRANSPORT
+}
+
+enum GovernmentType {
+  SECURITY
+  ADMIN
+  MAINTENANCE
 }

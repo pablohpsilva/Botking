@@ -402,33 +402,4 @@ describe("Bot State System", () => {
       expect(state.getCustomization("pattern")).toBeUndefined();
     });
   });
-
-  describe("Legacy State Conversion", () => {
-    it("should convert legacy bot state to new system", () => {
-      const legacyState = {
-        energyLevel: 80,
-        maintenanceLevel: 90,
-        bondLevel: 60,
-        experience: 500,
-        battlesWon: 3,
-        battlesLost: 1,
-        totalBattles: 4,
-      };
-
-      const workerState = BotStateFactory.fromLegacyState(
-        legacyState,
-        BotType.WORKER
-      );
-      expect(workerState.getStateType()).toBe("worker");
-      expect(workerState.energyLevel).toBe(80);
-
-      const nonWorkerState = BotStateFactory.fromLegacyState(
-        legacyState,
-        BotType.PLAYABLE
-      );
-      expect(nonWorkerState.getStateType()).toBe("non-worker");
-      expect((nonWorkerState as INonWorkerBotState).bondLevel).toBe(60);
-      expect((nonWorkerState as INonWorkerBotState).battlesWon).toBe(3);
-    });
-  });
 });

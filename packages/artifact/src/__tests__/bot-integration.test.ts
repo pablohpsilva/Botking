@@ -378,11 +378,7 @@ describe("Bot Integration with Specialized States", () => {
         "assault",
         BotType.PLAYABLE
       );
-      const kingBot = BotFactory.createKingBot(
-        "King",
-        "kingdom_001",
-        "ruler_001"
-      );
+      const kingBot = BotFactory.createKingBot("King", "kingdom_001");
       const rogueBot = BotFactory.createRogueBot("Rogue");
       const govBot = BotFactory.createGovBot("GovBot", "security");
 

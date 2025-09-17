@@ -62,7 +62,7 @@ export class Bot implements IBot {
   private _utilitySpec: UtilitySpecialization | null;
   private _governmentType: GovernmentType | null;
   private _version: string;
-  private _soulChip: SoulChip;
+  private _soulChip: SoulChip | null;
   private _skeleton: ISkeleton;
   private _parts: Map<string, IPart>;
   private _expansionChips: Map<string, IExpansionChip>;
@@ -90,7 +90,10 @@ export class Bot implements IBot {
 
     // Validate bot type and ownership rules
     this._validateBotTypeRules();
-    this._soulChip = config.soulChip;
+
+    // Validate soul chip requirements based on bot type
+    this._validateSoulChipRequirements(config.soulChip);
+    this._soulChip = config.soulChip || null;
     this._skeleton = config.skeleton;
     this._parts = new Map();
     this._expansionChips = new Map();
@@ -106,8 +109,10 @@ export class Bot implements IBot {
         this._convertSkeletonType(this._skeleton.type)
       );
 
-    // Auto-assign soul chip to its designated slot
-    this._assignSoulChipToSlot();
+    // Auto-assign soul chip to its designated slot (if present)
+    if (this._soulChip) {
+      this._assignSoulChipToSlot();
+    }
 
     // Initialize parts with automatic slot assignment
     if (config.parts) {
@@ -165,7 +170,7 @@ export class Bot implements IBot {
   get version(): string {
     return this._version;
   }
-  get soulChip(): SoulChip {
+  get soulChip(): SoulChip | null {
     return this._soulChip;
   }
   get skeleton(): ISkeleton {
@@ -201,7 +206,10 @@ export class Bot implements IBot {
 
   // Computed properties
   get isAssembled(): boolean {
-    return this._parts.size > 0 && !!this._soulChip && !!this._skeleton;
+    // Worker bots don't need soul chips to be considered assembled
+    const hasSoulChipIfRequired =
+      this._botType === BotType.WORKER ? true : !!this._soulChip;
+    return this._parts.size > 0 && hasSoulChipIfRequired && !!this._skeleton;
   }
 
   get isOperational(): boolean {
@@ -323,8 +331,10 @@ export class Bot implements IBot {
   get maxEnergy(): number {
     let baseEnergy = 100;
 
-    // Soul chip intelligence affects energy capacity
-    baseEnergy += this._soulChip.baseStats.intelligence * 0.5;
+    // Soul chip intelligence affects energy capacity (if present)
+    if (this._soulChip) {
+      baseEnergy += this._soulChip.baseStats.intelligence * 0.5;
+    }
 
     // Skeleton may affect energy capacity
     if (this._skeleton.type === "light") {
@@ -346,8 +356,8 @@ export class Bot implements IBot {
   get availableAbilities(): ReadonlyArray<Ability> {
     const abilities: Ability[] = [];
 
-    // Soul chip abilities
-    if (this._soulChip.specialTrait) {
+    // Soul chip abilities (if present)
+    if (this._soulChip && this._soulChip.specialTrait) {
       abilities.push({
         id: `soul_${this._soulChip.id}`,
         name: this._soulChip.specialTrait,
@@ -724,14 +734,53 @@ export class Bot implements IBot {
     }
   }
 
+  private _validateSoulChipRequirements(soulChip?: SoulChip | null): void {
+    const errors: string[] = [];
+
+    switch (this._botType) {
+      case BotType.WORKER:
+        // Worker bots should NOT have soul chips
+        if (soulChip) {
+          errors.push(
+            "Worker bots cannot have soul chips - they operate with basic AI"
+          );
+        }
+        break;
+
+      case BotType.PLAYABLE:
+      case BotType.KING:
+      case BotType.ROGUE:
+      case BotType.GOVBOT:
+        // These types MUST have soul chips
+        if (!soulChip) {
+          errors.push(
+            `${this._botType} bots must have a soul chip for advanced AI capabilities`
+          );
+        }
+        break;
+
+      default:
+        errors.push(`Unknown bot type: ${this._botType}`);
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Soul chip validation failed: ${errors.join(", ")}`);
+    }
+  }
+
   // Validation
   validateAssembly(): { valid: boolean; errors: string[]; warnings: string[] } {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    // Check basic requirements
-    if (!this._soulChip) {
-      errors.push("Bot must have a soul chip");
+    // Check basic requirements - soul chip only required for non-worker bots
+    if (this._botType !== BotType.WORKER && !this._soulChip) {
+      errors.push(`${this._botType} bots must have a soul chip`);
+    }
+
+    // Worker bots should not have soul chips
+    if (this._botType === BotType.WORKER && this._soulChip) {
+      errors.push("Worker bots should not have soul chips");
     }
 
     if (!this._skeleton) {
@@ -800,10 +849,12 @@ export class Bot implements IBot {
   // Combat readiness
   calculateCombatPower(): number {
     const stats = this.aggregatedStats;
-    const soulPower =
-      (this._soulChip.baseStats.intelligence +
-        this._soulChip.baseStats.resilience) /
-      2;
+    // Worker bots don't have soul chips, so use base power
+    const soulPower = this._soulChip
+      ? (this._soulChip.baseStats.intelligence +
+          this._soulChip.baseStats.resilience) /
+        2
+      : 25; // Base power for worker bots
 
     // Weighted combat power calculation
     const combatPower =
@@ -896,6 +947,15 @@ export class Bot implements IBot {
   }
 
   private _assignSoulChipToSlot(): void {
+    if (!this._soulChip) {
+      Bot.logger.warn("Attempted to assign soul chip but none exists", {
+        botId: this._id,
+        botType: this._botType,
+        action: "soul_chip_assignment_failed",
+      });
+      return;
+    }
+
     const command: ISlotAssignmentCommand = {
       operation: SlotAssignmentOperation.ASSIGN,
       slotId: SlotIdentifier.SOUL_CHIP,
@@ -944,11 +1004,12 @@ export class Bot implements IBot {
   }
 
   private _findAvailableSlotForPart(part: IPart): SlotIdentifier | null {
-    // Find available slots that match the part category
+    // Find available slots that match the part category (case-insensitive)
     const availableSlots = this._slotConfiguration.availableSlots.filter(
       (slot) => {
         return (
-          (slot.category as string) === part.category &&
+          (slot.category as string).toLowerCase() ===
+            part.category.toLowerCase() &&
           !this._slotConfiguration.assignments.has(slot.slotId)
         );
       }
@@ -1132,7 +1193,7 @@ export class Bot implements IBot {
       utilitySpec: this._utilitySpec,
       governmentType: this._governmentType,
       version: this._version,
-      soulChip: this._soulChip.toJSON(),
+      soulChip: this._soulChip?.toJSON() || null,
       skeleton: this._skeleton.toJSON(),
       parts: Array.from(this._parts.values()).map((p) => p.toJSON()),
       expansionChips: Array.from(this._expansionChips.values()).map((c) =>

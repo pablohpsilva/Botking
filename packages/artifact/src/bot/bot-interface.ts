@@ -32,7 +32,7 @@ export interface IBot {
   readonly version: string;
 
   // Core components
-  readonly soulChip: SoulChip;
+  readonly soulChip: SoulChip | null; // Optional - Worker bots don't need soul chips
   readonly skeleton: ISkeleton;
   readonly parts: ReadonlyArray<IPart>;
   readonly expansionChips: ReadonlyArray<IExpansionChip>;
@@ -183,7 +183,7 @@ export interface BotConfiguration {
   combatRole?: CombatRole | null; // Combat specialization (optional for creation)
   utilitySpec?: UtilitySpecialization | null; // Utility specialization (optional for creation)
   governmentType?: GovernmentType | null; // Government type (optional for creation)
-  soulChip: SoulChip;
+  soulChip?: SoulChip | null; // Optional - Worker bots don't need soul chips
   skeleton: ISkeleton;
   parts?: IPart[];
   expansionChips?: IExpansionChip[];

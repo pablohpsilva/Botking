@@ -282,7 +282,7 @@ export interface BotDTO extends MetadataDTO {
   combatRole: CombatRoleDTO | null; // Combat specialization (null for non-combat bots)
   utilitySpec: UtilitySpecializationDTO | null; // Utility specialization (null for non-utility bots)
   governmentType: GovernmentTypeDTO | null; // Government type (null for non-government bots)
-  soulChipId: string;
+  soulChipId: string | null; // Optional - Worker bots don't have soul chips
   skeletonId: string;
   partIds: string[];
   expansionChipIds: string[];
@@ -401,6 +401,7 @@ export interface ItemDTO {
   source?: string | null;
   tags: string[];
   effects?: any[] | null; // JSON array of item effects
+  isProtected?: boolean; // Whether the item is protected from deletion/trading
 
   // Item-specific fields based on category
   speedUpTarget?: SpeedUpTargetDTO | null;
@@ -438,6 +439,7 @@ export interface CreateItemDTO {
   source?: string;
   tags?: string[];
   effects?: any[];
+  isProtected?: boolean; // Whether the item is protected from deletion/trading
 
   // Category-specific fields
   speedUpTarget?: SpeedUpTargetDTO;
@@ -467,6 +469,7 @@ export interface UpdateItemDTO {
   source?: string | null;
   tags?: string[];
   effects?: any[] | null;
+  isProtected?: boolean | null; // Whether the item is protected from deletion/trading
 
   // Category-specific fields
   speedUpTarget?: SpeedUpTargetDTO | null;

@@ -263,7 +263,7 @@ model Bot {
   combatRole       CombatRole?          // Combat specialization (null for non-combat bots)
   utilitySpec      UtilitySpecialization? // Utility specialization (null for non-utility bots)
   governmentType   GovernmentType?      // Government type (null for non-government bots)
-  soulChipId       String
+  soulChipId       String?
   skeletonId       String
   stateId          String               @unique
   overallRating    Float?
@@ -281,7 +281,7 @@ model Bot {
   
   // Relations
   user             User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  soulChip         SoulChip             @relation(fields: [soulChipId], references: [id], onDelete: Cascade)
+  soulChip         SoulChip?             @relation(fields: [soulChipId], references: [id], onDelete: Cascade)
   skeleton         Skeleton             @relation(fields: [skeletonId], references: [id], onDelete: Cascade)
   state            BotState             @relation(fields: [stateId], references: [id], onDelete: Cascade)
   parts            BotPart[]
@@ -370,6 +370,7 @@ model Item {
   source              String?
   tags                String[]            @default([])
   effects             Json?               @default("[]") // JSON array of item effects
+  isProtected           Boolean?             @default(false)
   
   // Item-specific fields based on category
   speedUpTarget       SpeedUpTarget?      // For SPEED_UP items

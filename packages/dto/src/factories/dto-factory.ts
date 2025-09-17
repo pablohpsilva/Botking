@@ -1234,6 +1234,7 @@ export class ItemDTOFactory extends BaseDTOFactory<ItemDTO> {
       source: null,
       tags: [],
       effects: null,
+      isProtected: false,
       speedUpTarget: null,
       speedMultiplier: null,
       timeReduction: null,
@@ -1273,6 +1274,7 @@ export class ItemDTOFactory extends BaseDTOFactory<ItemDTO> {
       source: data.source || undefined,
       tags: Array.isArray(data.tags) ? data.tags : [],
       effects: data.effects || null,
+      isProtected: Boolean(data.isProtected || false),
       speedUpTarget: data.speedUpTarget || null,
       speedMultiplier: data.speedMultiplier
         ? Number(data.speedMultiplier)
@@ -1312,6 +1314,7 @@ export class ItemDTOFactory extends BaseDTOFactory<ItemDTO> {
       source: data.source || undefined,
       tags: data.tags || [],
       effects: data.effects || null,
+      isProtected: data.isProtected || false,
       speedUpTarget: data.speedUpTarget || null,
       speedMultiplier: data.speedMultiplier || null,
       timeReduction: data.timeReduction || null,

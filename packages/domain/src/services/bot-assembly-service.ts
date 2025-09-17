@@ -49,7 +49,8 @@ export interface IBotAssemblyConfig {
   skeletonSlots?: ISkeletonSlots; // Optional, will use defaults if not provided
   parts: IAssemblyPart[];
   expansionChips: IAssemblyExpansionChip[];
-  soulChips: IAssemblySoulChip[];
+  soulChips: IAssemblySoulChip[]; // Note: Worker bots should have empty array
+  botType?: string; // Optional - helps determine if soul chip is required
 }
 
 /**

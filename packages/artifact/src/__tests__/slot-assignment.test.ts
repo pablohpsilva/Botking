@@ -14,8 +14,8 @@ describe("Slot Assignment System", () => {
   let testBot: Bot;
 
   beforeEach(() => {
-    // Create a test bot with basic components
-    testBot = BotFactory.createBasicBot("Test Bot", "user_123");
+    // Create a test bot with basic components - use PLAYABLE type so it can have soul chips
+    testBot = BotFactory.createBasicBot("Test Bot", "user_123", "BALANCED" as any, "PLAYABLE" as any);
   });
 
   describe("Basic Slot Assignment", () => {
@@ -180,7 +180,8 @@ describe("Slot Assignment System", () => {
 
         const botConfig = {
           name: `Test Bot ${skeletonType}`,
-          botType: "WORKER" as any,
+          botType: "PLAYABLE" as any, // Use PLAYABLE so it can have soul chips
+          userId: "test_user", // PLAYABLE bots need a user
           soulChip,
           skeleton,
           parts: [],

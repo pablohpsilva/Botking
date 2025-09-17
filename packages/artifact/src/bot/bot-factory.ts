@@ -40,7 +40,11 @@ export class BotFactory {
       name,
       botType,
       userId,
-      soulChip: BotFactory.createBasicSoulChip(name),
+      // Worker bots don't get soul chips
+      soulChip:
+        botType === BotType.WORKER
+          ? null
+          : BotFactory.createBasicSoulChip(name),
       skeleton: BotFactory.createBasicSkeleton(skeletonType),
       parts: [BotFactory.createBasicArmPart(), BotFactory.createBasicLegPart()],
       expansionChips: [],
@@ -208,7 +212,11 @@ export class BotFactory {
       botType,
       userId,
       utilitySpec: specialization,
-      soulChip: BotFactory.createUtilitySoulChip(name, specialization),
+      // Worker bots don't get soul chips
+      soulChip:
+        botType === BotType.WORKER
+          ? null
+          : BotFactory.createUtilitySoulChip(name, specialization),
       skeleton: BotFactory.createSkeleton(
         SkeletonType.HEAVY,
         Rarity.UNCOMMON,

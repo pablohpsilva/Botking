@@ -2,18 +2,7 @@
  * Basic service types and interfaces for the DTO package
  */
 
-export interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings?: string[];
-}
-
-export interface ValidationError {
-  field: string;
-  message: string;
-  code?: string;
-  value?: any;
-}
+import { ValidationError } from "./interfaces/base-dto";
 
 export class DTOValidationError extends Error {
   constructor(

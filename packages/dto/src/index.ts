@@ -34,7 +34,7 @@ export * from "./auto-sync-example";
 
 // Re-export database schemas and types for convenience
 export {
-  // Create schemas
+  // Create schemas (verified available)
   CreateSoulChipSchema,
   CreateSkeletonSchema,
   CreatePartSchema,
@@ -42,8 +42,9 @@ export {
   CreateBotStateSchema,
   CreateBotSchema,
   CreateCollectionSchema,
+  CreateItemSchema,
 
-  // Update schemas
+  // Update schemas (verified available)
   UpdateSoulChipSchema,
   UpdateSkeletonSchema,
   UpdatePartSchema,
@@ -52,12 +53,13 @@ export {
   UpdateBotSchema,
   UpdateCollectionSchema,
 
-  // Business validation schemas
+  // Business validation schemas (verified available)
   SoulChipStatsSchema,
   PartStatsSchema,
   BotAssemblySchema,
+  BotTypeValidationSchema,
 
-  // Enum schemas
+  // Enum schemas (verified available)
   RaritySchema,
   SkeletonTypeSchema,
   MobilityTypeSchema,
@@ -65,6 +67,15 @@ export {
   ExpansionChipEffectSchema,
   BotLocationSchema,
   CollectionTypeSchema,
+  BotTypeSchema,
+  CombatRoleSchema,
+  UtilitySpecializationSchema,
+  GovernmentTypeSchema,
+  ItemCategorySchema,
+  ResourceTypeSchema,
+  EnhancementDurationSchema,
+  SpeedUpTargetSchema,
+  GemTypeSchema,
 
   // Prisma enums
   type Rarity,
@@ -74,29 +85,56 @@ export {
   type ExpansionChipEffect,
   type BotLocation,
   type CollectionType,
+  type BotType,
+  type CombatRole,
+  type UtilitySpecialization,
+  type GovernmentType,
+  type ItemCategory,
+  type ResourceType,
+  type EnhancementDuration,
+  type SpeedUpTarget,
+  type GemType,
 } from "@botking/db";
 
 // Re-export key types for convenience
 export type {
-  // Artifact DTOs
+  // Core Artifact DTOs (with factories)
   SoulChipDTO,
   SkeletonDTO,
   PartDTO,
+  BotDTO,
+
+  // Additional Artifact DTOs (no factories but still used)
   ExpansionChipDTO,
   BotStateDTO,
-  BotDTO,
   BotTemplateDTO,
   CollectionDTO,
   CombatStatsDTO,
   AbilityDTO,
 
-  // Enums
+  // New DTOs (with factories)
+  UserInventoryDTO,
+  CreateUserInventoryDTO,
+  UpdateUserInventoryDTO,
+  UserInventoryWithItemDTO,
+  UserInventoryWithUserDTO,
+  ItemDTO,
+  CreateItemDTO,
+  UpdateItemDTO,
+  ItemWithUserInventoriesDTO,
+
+  // Enums (commonly used)
   RarityDTO,
   SkeletonTypeDTO,
   MobilityTypeDTO,
   PartCategoryDTO,
   ExpansionChipEffectDTO,
   BotLocationDTO,
+  ItemCategoryDTO,
+  ResourceTypeDTO,
+  EnhancementDurationDTO,
+  SpeedUpTargetDTO,
+  GemTypeDTO,
 } from "./interfaces/artifact-dto";
 
 export type {
@@ -129,6 +167,8 @@ export {
   SkeletonDTOFactory,
   PartDTOFactory,
   BotDTOFactory,
+  UserInventoryDTOFactory,
+  ItemDTOFactory,
   DTOFactoryRegistry,
 } from "./factories/dto-factory";
 
@@ -143,6 +183,8 @@ import {
   SkeletonDTOFactory,
   PartDTOFactory,
   BotDTOFactory,
+  UserInventoryDTOFactory,
+  ItemDTOFactory,
   DTOFactoryRegistry,
 } from "./factories/dto-factory";
 import { DTOExample } from "./simple-example";
@@ -173,6 +215,8 @@ export class DTOPackage {
     skeleton: SkeletonDTOFactory;
     part: PartDTOFactory;
     bot: BotDTOFactory;
+    userInventory: UserInventoryDTOFactory;
+    item: ItemDTOFactory;
   };
 
   constructor(config: DTOPackageConfig = {}) {
@@ -187,6 +231,8 @@ export class DTOPackage {
       skeleton: new SkeletonDTOFactory(),
       part: new PartDTOFactory(),
       bot: new BotDTOFactory(),
+      userInventory: new UserInventoryDTOFactory(),
+      item: new ItemDTOFactory(),
     };
   }
 

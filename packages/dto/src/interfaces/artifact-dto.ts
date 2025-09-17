@@ -84,6 +84,45 @@ export enum GovernmentTypeDTO {
   MAINTENANCE = "maintenance",
 }
 
+export enum ItemCategoryDTO {
+  SPEED_UP = "SPEED_UP",
+  RESOURCE = "RESOURCE",
+  TRADEABLE = "TRADEABLE",
+  GEMS = "GEMS",
+}
+
+export enum ResourceTypeDTO {
+  ENERGY = "ENERGY",
+  SCRAP_PARTS = "SCRAP_PARTS",
+  MICROCHIPS = "MICROCHIPS",
+  STAMINA = "STAMINA",
+  PARTS_ENHANCER = "PARTS_ENHANCER",
+  BOT_ENHANCER = "BOT_ENHANCER",
+  SKELETON_ENHANCER = "SKELETON_ENHANCER",
+  EXPANSION_CHIP_ENHANCER = "EXPANSION_CHIP_ENHANCER",
+}
+
+export enum EnhancementDurationDTO {
+  TEMPORARY = "TEMPORARY",
+  PERMANENT = "PERMANENT",
+}
+
+export enum SpeedUpTargetDTO {
+  BOT_CONSTRUCTION = "BOT_CONSTRUCTION",
+  PART_MANUFACTURING = "PART_MANUFACTURING",
+  TRAINING = "TRAINING",
+  MISSION = "MISSION",
+  RESEARCH = "RESEARCH",
+  REPAIR = "REPAIR",
+}
+
+export enum GemTypeDTO {
+  COMMON = "COMMON",
+  RARE = "RARE",
+  EPIC = "EPIC",
+  LEGENDARY = "LEGENDARY",
+}
+
 /**
  * Combat stats DTO
  */
@@ -297,4 +336,152 @@ export interface CollectionDTO extends UserOwnedDTO, MetadataDTO {
   isPublic: boolean;
   shareCode?: string;
   metadata?: Record<string, any>;
+}
+
+/**
+ * UserInventory DTO interfaces
+ */
+export interface UserInventoryDTO {
+  id: string;
+  userId: string;
+  itemId: string;
+  quantity: number;
+  acquiredAt: Date;
+  expiresAt?: Date | null;
+  metadata?: Record<string, any> | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateUserInventoryDTO {
+  userId: string;
+  itemId: string;
+  quantity?: number;
+  expiresAt?: Date;
+  metadata?: Record<string, any>;
+}
+
+export interface UpdateUserInventoryDTO {
+  quantity?: number;
+  expiresAt?: Date | null;
+  metadata?: Record<string, any> | null;
+}
+
+export interface UserInventoryWithItemDTO extends UserInventoryDTO {
+  item: ItemDTO;
+}
+
+export interface UserInventoryWithUserDTO extends UserInventoryDTO {
+  user: {
+    id: string;
+    name?: string;
+    email: string;
+  };
+}
+
+/**
+ * Item DTO interfaces
+ */
+export interface ItemDTO {
+  id: string;
+  userId?: string | null;
+  name: string;
+  category: ItemCategoryDTO;
+  rarity: RarityDTO;
+  description: string;
+  consumable: boolean;
+  tradeable: boolean;
+  stackable: boolean;
+  maxStackSize: number;
+  value: number;
+  cooldownTime: number;
+  requirements: string[];
+  source?: string | null;
+  tags: string[];
+  effects?: any[] | null; // JSON array of item effects
+
+  // Item-specific fields based on category
+  speedUpTarget?: SpeedUpTargetDTO | null;
+  speedMultiplier?: number | null;
+  timeReduction?: number | null;
+  resourceType?: ResourceTypeDTO | null;
+  resourceAmount?: number | null;
+  enhancementType?: ResourceTypeDTO | null;
+  enhancementDuration?: EnhancementDurationDTO | null;
+  statModifiers?: Record<string, any> | null;
+  gemType?: GemTypeDTO | null;
+  gemValue?: number | null;
+  tradeHistory?: any[] | null;
+
+  // Metadata
+  version: number;
+  metadata?: Record<string, any> | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateItemDTO {
+  userId?: string;
+  name: string;
+  category: ItemCategoryDTO;
+  rarity?: RarityDTO;
+  description: string;
+  consumable?: boolean;
+  tradeable?: boolean;
+  stackable?: boolean;
+  maxStackSize?: number;
+  value?: number;
+  cooldownTime?: number;
+  requirements?: string[];
+  source?: string;
+  tags?: string[];
+  effects?: any[];
+
+  // Category-specific fields
+  speedUpTarget?: SpeedUpTargetDTO;
+  speedMultiplier?: number;
+  timeReduction?: number;
+  resourceType?: ResourceTypeDTO;
+  resourceAmount?: number;
+  enhancementType?: ResourceTypeDTO;
+  enhancementDuration?: EnhancementDurationDTO;
+  statModifiers?: Record<string, any>;
+  gemType?: GemTypeDTO;
+  gemValue?: number;
+
+  metadata?: Record<string, any>;
+}
+
+export interface UpdateItemDTO {
+  name?: string;
+  description?: string;
+  consumable?: boolean;
+  tradeable?: boolean;
+  stackable?: boolean;
+  maxStackSize?: number;
+  value?: number;
+  cooldownTime?: number;
+  requirements?: string[];
+  source?: string | null;
+  tags?: string[];
+  effects?: any[] | null;
+
+  // Category-specific fields
+  speedUpTarget?: SpeedUpTargetDTO | null;
+  speedMultiplier?: number | null;
+  timeReduction?: number | null;
+  resourceType?: ResourceTypeDTO | null;
+  resourceAmount?: number | null;
+  enhancementType?: ResourceTypeDTO | null;
+  enhancementDuration?: EnhancementDurationDTO | null;
+  statModifiers?: Record<string, any> | null;
+  gemType?: GemTypeDTO | null;
+  gemValue?: number | null;
+  tradeHistory?: any[] | null;
+
+  metadata?: Record<string, any> | null;
+}
+
+export interface ItemWithUserInventoriesDTO extends ItemDTO {
+  userInventories: UserInventoryDTO[];
 }

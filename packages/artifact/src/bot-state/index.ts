@@ -1,38 +1,123 @@
 /**
- * Bot State System
- *
- * Specialized bot states based on bot types:
- * - Worker bots: Simple state for utility and work functions
- * - Non-worker bots: Extended state with social and combat features
+ * User artifact implementation based on schema.prisma User model
  */
 
-// Export interfaces and types
-export type {
-  IBotState,
-  IWorkerBotState,
-  INonWorkerBotState,
-  BotStateConfig,
-  BotStateFactory as IBotStateFactory,
-} from "./bot-state-interface";
+import { type BotLocation, type BotState as PrismaBotState } from "@botking/db";
+import { IGenericArtifact } from "../types";
 
-// Export base class
-export { BaseBotState } from "./base-bot-state";
+export interface IBotState
+  extends PrismaBotState,
+    IGenericArtifact<IBotState, Record<string, any>> {}
 
-// Export concrete implementations
-export { WorkerBotState } from "./worker-bot-state";
-export { NonWorkerBotState } from "./non-worker-bot-state";
+export abstract class BaseBotState {
+  public readonly id: string;
+  public readonly userId: string;
+  public readonly botId: string;
+  public readonly energyLevel: number;
+  public readonly healthLevel: number;
+  public readonly currentLocation: BotLocation;
+  public readonly experience: number;
+  public readonly bondLevel: number | null;
+  public readonly energy: number;
+  public readonly maxEnergy: number;
+  public readonly health: number;
+  public readonly maxHealth: number;
+  public readonly level: number;
+  public readonly createdAt: Date;
+  public readonly updatedAt: Date;
 
-// Export factory
-export { BotStateFactory } from "./bot-state-factory";
+  constructor(prismaBotState: PrismaBotState) {
+    this.id = prismaBotState.id;
+    this.userId = prismaBotState.userId;
+    this.botId = prismaBotState.botId;
+    //
+    this.energyLevel = prismaBotState.energyLevel;
+    this.healthLevel = prismaBotState.healthLevel;
+    this.currentLocation = prismaBotState.currentLocation;
+    this.experience = prismaBotState.experience;
+    this.bondLevel = prismaBotState.bondLevel;
+    this.level = prismaBotState.level;
+    //
+    this.energy = prismaBotState.energy;
+    this.maxEnergy = prismaBotState.maxEnergy;
+    this.health = prismaBotState.health;
+    this.maxHealth = prismaBotState.maxHealth;
+    //
+    this.createdAt = prismaBotState.createdAt;
+    this.updatedAt = prismaBotState.updatedAt;
+  }
+}
 
-// Import interfaces for type aliases
-import type {
-  IBotState,
-  IWorkerBotState,
-  INonWorkerBotState,
-} from "./bot-state-interface";
+/**
+ * User artifact implementation - directly based on database schema
+ */
+export class BotState extends BaseBotState implements IBotState {
+  constructor(prismaBotState: PrismaBotState) {
+    super(prismaBotState);
+  }
 
-// Type aliases for convenience
-export type AnyBotState = IBotState;
-export type WorkerState = IWorkerBotState;
-export type NonWorkerState = INonWorkerBotState;
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      id: this.id,
+      userId: this.userId,
+      botId: this.botId,
+      //
+      energyLevel: this.energyLevel,
+      healthLevel: this.healthLevel,
+      currentLocation: this.currentLocation,
+      experience: this.experience,
+      bondLevel: this.bondLevel,
+      level: this.level,
+      //
+      energy: this.energy,
+      maxEnergy: this.maxEnergy,
+      health: this.health,
+      maxHealth: this.maxHealth,
+      //
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IBotState {
+    const prismaBotStateData: PrismaBotState = {
+      id: this.id,
+      userId: this.userId,
+      botId: this.botId,
+      //
+      energyLevel: this.energyLevel,
+      healthLevel: this.healthLevel,
+      currentLocation: this.currentLocation,
+      experience: this.experience,
+      bondLevel: this.bondLevel,
+      level: this.level,
+      //
+      energy: this.energy,
+      maxEnergy: this.maxEnergy,
+      health: this.health,
+      maxHealth: this.maxHealth,
+      //
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+    };
+
+    return new BotState(prismaBotStateData);
+  }
+
+  validate(): boolean {
+    return true;
+  }
+
+  validateCreation(prismaBotState: PrismaBotState | BotState): boolean {
+    return CreateBotStateSchema.safeParse(prismaBotState).success;
+  }
+
+  validateUpdate(prismaBotState: PrismaBotState | BotState): boolean {
+    return UpdateBotStateSchema.safeParse(prismaBotState).success;
+  }
+}

@@ -8,7 +8,13 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { LoggerFactory } from "@botking/logger";
 import { BotDTOFactory } from "@botking/dto";
-import { BotTypeSchema, SkeletonTypeSchema } from "@botking/db";
+import {
+  BotTypeSchema,
+  CombatRole,
+  GovernmentType,
+  SkeletonTypeSchema,
+  UtilitySpecialization,
+} from "@botking/db";
 import { dtoService } from "../services/dto-service";
 import { BotValidator, SkeletonType } from "@botking/artifact";
 
@@ -28,9 +34,12 @@ const botRoutes = new Hono();
 // Validation schemas
 const createBotSchema = z.object({
   name: z.string().min(1).max(100),
-  userId: z.string().uuid(),
+  userId: z.cuid(),
   botType: BotTypeSchema,
   skeletonType: SkeletonTypeSchema.optional(),
+  combatRole: z.enum(CombatRole).optional(),
+  utilitySpec: z.enum(UtilitySpecialization).optional(),
+  governmentType: z.enum(GovernmentType).optional(),
   autoConfig: z.boolean().optional().default(true),
 });
 
@@ -53,7 +62,7 @@ const querySchema = z.object({
     .optional()
     .default(10),
   botType: BotTypeSchema.optional(),
-  userId: z.string().uuid().optional(),
+  userId: z.cuid().optional(),
 });
 
 // GET /api/v1/bots - List bots with pagination
@@ -142,11 +151,18 @@ botRoutes.post("/", zValidator("json", createBotSchema), async (c) => {
         body.userId,
         "GENERAL" // Default specialization
       );
+    } else if (body.botType === "KING") {
+      bot = botFactory.createKingArtifact(body.name, body.userId);
     } else {
+      // Convert database skeleton type to artifact skeleton type for PLAYABLE bots
+      const artifactSkeletonType = body.skeletonType
+        ? (body.skeletonType.toLowerCase() as SkeletonType)
+        : SkeletonType.BALANCED;
+
       bot = botFactory.createPlayableArtifact(
         body.name,
         body.userId,
-        (body.skeletonType as SkeletonType) || SkeletonType.BALANCED
+        artifactSkeletonType
       );
     }
 

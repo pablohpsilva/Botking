@@ -9,10 +9,20 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./schemas": {
+      "types": "./dist/generated/zod/schemas/index.d.ts",
+      "default": "./dist/generated/zod/schemas/index.js"
+    },
+    "./schemas/helpers": {
+      "types": "./dist/generated/zod/helpers/json-helpers.d.ts",
+      "default": "./dist/generated/zod/helpers/json-helpers.js"
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:main && npm run build:schemas",
+    "build:main": "tsc",
+    "build:schemas": "tsc --project tsconfig.schemas.json || exit 0",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",

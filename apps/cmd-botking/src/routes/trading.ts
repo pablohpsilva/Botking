@@ -40,14 +40,14 @@ const createTradingEventSchema = z.object({
 });
 
 const createTradeOfferSchema = z.object({
-  tradingEventId: z.string().uuid(),
-  fromUserId: z.string().uuid(),
-  toUserId: z.string().uuid().optional(),
+  tradingEventId: z.cuid(),
+  fromUserId: z.cuid(),
+  toUserId: z.cuid().optional(),
   offerItems: z
     .array(
       z.object({
         itemType: z.enum(TradeItemType),
-        itemId: z.string().uuid(),
+        itemId: z.cuid(),
         quantity: z.number().positive(),
       })
     )
@@ -56,7 +56,7 @@ const createTradeOfferSchema = z.object({
     .array(
       z.object({
         itemType: z.enum(TradeItemType),
-        itemId: z.string().uuid(),
+        itemId: z.cuid(),
         quantity: z.number().positive(),
       })
     )
@@ -78,7 +78,7 @@ const querySchema = z.object({
     .optional()
     .default(10),
   status: z.enum(TradingEventStatus).optional(),
-  userId: z.string().uuid().optional(),
+  userId: z.cuid().optional(),
 });
 
 // GET /api/v1/trading/events - List trading events

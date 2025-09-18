@@ -1,36 +1,45 @@
 {
   "name": "@botking/dto",
   "version": "1.0.0",
-  "description": "Data Transfer Objects and database abstraction layer for Botking artifacts",
+  "description": "TypeScript DTOs for CRUD operations on Botking artifacts using database repositories",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist",
-    "test": "vitest run",
-    "test:watch": "vitest --watch"
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "botking",
     "dto",
     "database",
+    "crud",
     "artifacts",
-    "persistence"
+    "botking"
   ],
-  "author": "",
-  "license": "MIT",
   "dependencies": {
-    "@botking/artifact": "workspace:*",
     "@botking/db": "workspace:*",
-    "@botking/logger": "workspace:*",
-    "zod": "^4.1.9"
+    "@botking/artifact": "workspace:*",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0"
   },
-  "peerDependencies": {
-    "@prisma/client": "*"
-  }
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ]
 }

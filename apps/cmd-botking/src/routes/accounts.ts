@@ -38,7 +38,7 @@ const querySchema = z.object({
     .pipe(z.number().min(1).max(100))
     .optional()
     .default(20),
-  userId: z.string().uuid().optional(),
+  userId: z.cuid().optional(),
   providerId: z.string().optional(),
   tokenType: z.enum(["access", "refresh"]).optional(),
   expired: z
@@ -67,7 +67,7 @@ const updateTokensSchema = z.object({
 });
 
 const createOAuthAccountSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.cuid(),
   providerId: z.string().min(1),
   accountId: z.string().min(1),
   accessToken: z.string().optional(),
@@ -86,7 +86,7 @@ const createOAuthAccountSchema = z.object({
 });
 
 const createCredentialAccountSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.cuid(),
   accountId: z.string().min(1),
   password: z.string().min(1),
 });

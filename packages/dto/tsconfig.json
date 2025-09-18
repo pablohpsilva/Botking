@@ -1,24 +1,23 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
-    "lib": ["ES2020", "DOM"],
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "noEmit": false,
     "composite": true,
-    "incremental": true
+    "incremental": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"],
+  "references": [
+    {
+      "path": "../db"
+    },
+    {
+      "path": "../artifact"
+    }
+  ]
 }

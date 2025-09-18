@@ -1,70 +1,48 @@
 /**
- * @botking/dto - Lean Data Transfer Objects and database abstraction layer
+ * Botking Artifact System - Enhanced Object-Oriented Architecture
  *
- * LEAN ARCHITECTURE: Artifact-First Approach
- * - Artifacts are primary objects (from @botking/artifact)
- * - DTOs only for database persistence
- * - Auto-sync DTOs powered by Prisma + Zod integration
- * - Clean, modern, artifact-first approach
+ * A comprehensive OOP system for managing bot components including:
+ * - Soul Chips: Core personality and AI traits
+ * - Skeletons: Structural frames with slots and mobility
+ * - Parts: Modular equipment for combat roles
+ * - Expansion Chips: Slot-based enhancers
+ * - Bot State: Dynamic runtime state management
+ * - Items: Consumable objects for game mechanics
+ * - Trading: Event-based item exchange system
+ *
+ * Enhanced OOP features:
+ * - ArtifactManager: Centralized artifact lifecycle management
+ * - Builder Patterns: Fluent interfaces for complex artifact creation
+ * - Template Method: Structured validation with extensible rules
+ * - Strategy Pattern: Flexible assembly strategies for different bot types
+ * - Validation Framework: Comprehensive artifact validation with scoring
  */
 
-// Export DTO interfaces (avoiding conflicts)
-export type { ValidationResult, ValidationError } from "./interfaces/base-dto";
-export * from "./interfaces/artifact-dto";
-export * from "./interfaces/slot-assignment-dto";
+// Main OOP Management Classes
+export * from "./artifact-manager";
 
-// Export core factories (lean approach)
-export * from "./factories";
+// Builder Patterns
+export * from "./bot/bot-builder";
+export * from "./item/item-builder";
 
-// Direct artifact integration - no separate bridge needed
+// Validation Framework (Template Method Pattern)
+export * from "./validation/artifact-validator";
+export * from "./validation/bot-validator";
 
-// Export auto-sync DTO factory (Prisma + Zod integration)
-export * from "./auto-sync-dto-factory";
+// Assembly Framework (Strategy Pattern)
+export * from "./assembly/assembly-strategy";
 
-// Export example
-export * from "./simple-example";
+// Export all types and enums
+export * from "./types";
 
-// Re-export essential database schemas for convenience
-export {
-  // Bot-related schemas
-  CreateBotSchema,
-  UpdateBotSchema,
-} from "@botking/db";
-
-// Re-export database enums for convenience
-export {
-  BotType,
-  CombatRole,
-  UtilitySpecialization,
-  GovernmentType,
-  ItemCategory,
-  ResourceType,
-  GemType,
-  CollectionType,
-  TradingEventStatus,
-  TradeOfferStatus,
-  TradeItemType,
-  Rarity,
-} from "@botking/db";
-
-// Re-export backwards-compatible enums with DTO suffix
-export {
-  RarityDTO,
-  SkeletonTypeDTO,
-  MobilityTypeDTO,
-  PartCategoryDTO,
-  ExpansionChipEffectDTO,
-  BotLocationDTO,
-  ItemCategoryDTO,
-  ResourceTypeDTO,
-  EnhancementDurationDTO,
-  SpeedUpTargetDTO,
-  GemTypeDTO,
-  TradingEventStatusDTO,
-  TradeOfferStatusDTO,
-  TradeItemTypeDTO,
-} from "./interfaces/artifact-dto";
-
-// Export User and Account DTO modules
-export * from "./user-dto";
-export * from "./account-dto";
+// Export all artifact classes
+export * from "./bot";
+export * from "./bot-state";
+export * from "./expansion-chip";
+export * from "./item";
+export * from "./part";
+export * from "./skeleton";
+export * from "./soul-chip";
+export * from "./trading";
+export * from "./user";
+export * from "./account";

@@ -6,18 +6,16 @@
  * - ConnectionManager: Connection lifecycle management
  * - SchemaValidator: Type-safe validation
  * - BaseRepository: CRUD operations with caching
+ * - Generated Zod schemas: Type-safe validation schemas
  */
 
 // Export main OOP classes
-export * from "./database-manager";
 export * from "./connection-manager";
-export * from "./schema-validator";
-
-// Export repository base classes
-export * from "./repositories/base-repository";
 
 // Export Prisma types and client (for advanced usage)
 export * from "@prisma/client";
 
-// Export our curated Zod schemas and validation DTOs
-export * from "./schemas";
+// Note: Zod schemas and helpers are available via separate export paths in package.json
+// Import them using:
+// - import { ... } from '@botking/db/schemas' for Zod schemas
+// - import { ... } from '@botking/db/schemas/helpers' for JSON helpers

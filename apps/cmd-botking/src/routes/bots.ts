@@ -10,7 +10,7 @@ import { LoggerFactory } from "@botking/logger";
 import { BotDTOFactory } from "@botking/dto";
 import { BotTypeSchema, SkeletonTypeSchema } from "@botking/db";
 import { dtoService } from "@/services/dto-service";
-import { BotValidator } from "@botking/artifact";
+import { BotValidator, SkeletonType } from "@botking/artifact";
 
 // Type declaration for Hono context to fix requestId typing
 declare module "hono" {
@@ -72,16 +72,21 @@ botRoutes.get("/", zValidator("query", querySchema), async (c) => {
     await dtoService.initialize();
     const repositories = dtoService.getPrismaClient();
 
-    // Use repository pattern for database operations
+    // Build the where clause for filtering
+    const where: any = {};
+    if (botType) where.botType = botType;
+    if (userId) where.userId = userId;
+
+    // Use repository pattern for database operations with proper Prisma parameters
     const bots = await repositories.bot.findMany({
-      page,
-      limit,
-      filters: { botType, userId },
+      where,
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { createdAt: "desc" },
     });
 
     const total = await repositories.bot.count({
-      botType,
-      userId,
+      where,
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -131,7 +136,7 @@ botRoutes.post("/", zValidator("json", createBotSchema), async (c) => {
     const botFactory = new BotDTOFactory();
 
     let bot;
-    if (body.botType === BotType.WORKER) {
+    if (body.botType === "WORKER") {
       bot = botFactory.createWorkerArtifact(
         body.name,
         body.userId,
@@ -141,7 +146,7 @@ botRoutes.post("/", zValidator("json", createBotSchema), async (c) => {
       bot = botFactory.createPlayableArtifact(
         body.name,
         body.userId,
-        body.skeletonType || SkeletonType.BALANCED
+        (body.skeletonType as SkeletonType) || SkeletonType.BALANCED
       );
     }
 
@@ -316,7 +321,9 @@ botRoutes.delete("/:id", async (c) => {
     const repositories = dtoService.getPrismaClient();
 
     // Check if bot exists
-    const existingBot = await repositories.bot.findById(botId);
+    const existingBot = await repositories.bot.findUnique({
+      where: { id: botId },
+    });
     if (!existingBot) {
       return c.json(
         {
@@ -332,7 +339,9 @@ botRoutes.delete("/:id", async (c) => {
     }
 
     // Delete bot
-    await repositories.bot.delete(botId);
+    await repositories.bot.delete({
+      where: { id: botId },
+    });
 
     logger.info("Bot deleted successfully", { requestId, botId });
 

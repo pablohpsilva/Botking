@@ -1,5 +1,5 @@
 import { SkeletonType, PartCategory } from "@botking/db";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 import {
   ISlotInfo,
   ISlotCompatibility,
@@ -41,7 +41,7 @@ export interface SlotValidationResult {
  */
 export class SkeletonConfigurationService {
   private static instance: SkeletonConfigurationService;
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   private configCache: Map<SkeletonType, SkeletonConfigurationResult> =
     new Map();
   private slotInfoCache: Map<SlotIdentifier, ISlotInfo> = new Map();
@@ -49,7 +49,7 @@ export class SkeletonConfigurationService {
     new Map();
 
   private constructor() {
-    this.logger = createPackageLogger("domain", {
+    this.logger = LoggerFactory.createPackageLogger("domain", {
       service: "skeleton-configuration",
     });
     this.preloadCaches();

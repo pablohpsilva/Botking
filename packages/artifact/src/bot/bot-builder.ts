@@ -24,7 +24,7 @@ import { PartFactory } from "../part/part-factory";
 import { ExpansionChipFactory } from "../expansion-chip/expansion-chip-factory";
 import { BotStateFactory } from "../bot-state/bot-state-factory";
 import { SoulChip as SoulChipClass } from "../soul-chip";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * Builder validation result
@@ -52,13 +52,15 @@ export interface IBotBuildingStep {
  * Implements Builder pattern with validation and step-by-step guidance
  */
 export class BotBuilder {
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   private config: Partial<BotConfiguration> = {};
   private buildSteps: IBotBuildingStep[] = [];
   private currentStep: number = 0;
 
   constructor(name: string, userId?: string) {
-    this.logger = createPackageLogger("artifact", { service: "bot-builder" });
+    this.logger = LoggerFactory.createPackageLogger("artifact", {
+      service: "bot-builder",
+    });
     this.config.name = name;
     this.config.userId = userId;
     this.initializeBuildSteps();

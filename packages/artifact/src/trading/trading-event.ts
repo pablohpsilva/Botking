@@ -5,7 +5,7 @@
 import { TradingEventStatus } from "@botking/db";
 import type { ITradingEvent } from "./trading-event-interface";
 import type { ITradeOffer } from "./trade-offer-interface";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * Configuration for creating a Trading Event
@@ -31,7 +31,7 @@ export interface TradingEventConfiguration {
  * Trading Event implementation
  */
 export class TradingEvent implements ITradingEvent {
-  private static logger = createPackageLogger("artifact");
+  private static logger = LoggerFactory.createPackageLogger("artifact");
 
   private readonly _id: string;
   private readonly _name: string;

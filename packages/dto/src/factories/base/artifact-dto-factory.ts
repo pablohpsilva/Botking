@@ -7,7 +7,7 @@
 
 import { BaseDTOFactory } from "./base-factory";
 import { ValidationResult } from "../../interfaces/base-dto";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * Base class for artifact-first DTO factories
@@ -16,11 +16,13 @@ export abstract class ArtifactDTOFactory<
   TArtifact,
   TDTO,
 > extends BaseDTOFactory<TDTO> {
-  protected logger: ReturnType<typeof createPackageLogger>;
+  protected logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
 
   constructor(factoryName: string) {
     super();
-    this.logger = createPackageLogger("dto", { service: factoryName });
+    this.logger = LoggerFactory.createPackageLogger("dto", {
+      service: factoryName,
+    });
   }
 
   // ==========================================

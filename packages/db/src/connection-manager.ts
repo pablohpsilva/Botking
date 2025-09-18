@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * ConnectionManager - Singleton class for managing database connections
@@ -8,14 +8,16 @@ import { createPackageLogger } from "@botking/logger";
 export class ConnectionManager {
   private static instance: ConnectionManager;
   private prisma: PrismaClient | null = null;
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   private isConnectedFlag: boolean = false;
   private connectionAttempts: number = 0;
   private maxRetries: number = 3;
   private retryDelay: number = 1000; // 1 second
 
   private constructor() {
-    this.logger = createPackageLogger("db", { service: "connection-manager" });
+    this.logger = LoggerFactory.createPackageLogger("db", {
+      service: "connection-manager",
+    });
   }
 
   /**

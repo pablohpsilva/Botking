@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { createPackageLogger } from "@botking/logger";
+import { ILogger, LoggerFactory } from "@botking/logger";
 import type { SchemaValidator, ValidationResult } from "../schema-validator";
 
 /**
@@ -43,7 +43,7 @@ export interface RepositoryConfig {
 export abstract class BaseRepository<T> implements IRepository<T> {
   protected prisma: PrismaClient;
   protected validator: SchemaValidator;
-  protected logger: ReturnType<typeof createPackageLogger>;
+  protected logger: ILogger;
   protected config: RepositoryConfig;
   protected cache: Map<string, { data: T; expiry: number }> = new Map();
 
@@ -55,7 +55,7 @@ export abstract class BaseRepository<T> implements IRepository<T> {
   ) {
     this.prisma = prisma;
     this.validator = validator;
-    this.logger = createPackageLogger("db", {
+    this.logger = LoggerFactory.createPackageLogger("db", {
       service: `${entityName}-repository`,
     });
     this.config = {

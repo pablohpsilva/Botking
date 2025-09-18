@@ -1,5 +1,5 @@
 import { PartCategory, SkeletonType } from "@botking/db";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 import { ISlotInfo, ISlotCompatibility, SlotIdentifier } from "../types";
 import { skeletonConfigurationService } from "./skeleton-configuration-service";
 
@@ -36,11 +36,11 @@ export interface SkeletonCompatibilityAnalysis {
  */
 export class SlotCompatibilityService {
   private static instance: SlotCompatibilityService;
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   private compatibilityCache: Map<string, PartCompatibilityResult> = new Map();
 
   private constructor() {
-    this.logger = createPackageLogger("domain", {
+    this.logger = LoggerFactory.createPackageLogger("domain", {
       service: "slot-compatibility",
     });
   }

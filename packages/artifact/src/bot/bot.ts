@@ -21,7 +21,7 @@ import {
   SlotAssignmentOperation,
 } from "@botking/domain";
 import { SkeletonType as DomainSkeletonType } from "@botking/db";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * Bot state interface for partial updates
@@ -47,7 +47,7 @@ interface BotStateUpdate {
  * Represents a fully assembled robot with all components
  */
 export class Bot implements IBot {
-  private static logger = createPackageLogger("artifact");
+  private static logger = LoggerFactory.createPackageLogger("artifact");
   private _id: string;
   private _name: string;
   private _botType: BotType;

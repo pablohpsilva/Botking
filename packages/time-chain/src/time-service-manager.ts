@@ -1,6 +1,6 @@
 import { TimeChainService } from "./time-service";
 import type { TimeServiceConfig, TimeDrift } from "./types";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * TimeServiceManager - Object-oriented manager for TimeChain services
@@ -10,10 +10,10 @@ export class TimeServiceManager {
   private static instance: TimeServiceManager;
   private services: Map<string, TimeChainService> = new Map();
   private globalService: TimeChainService | null = null;
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
 
   private constructor() {
-    this.logger = createPackageLogger("time-chain", {
+    this.logger = LoggerFactory.createPackageLogger("time-chain", {
       service: "time-service-manager",
     });
   }

@@ -11,7 +11,7 @@ import type {
   TradeExecutionResult,
   UserTradeEligibility,
 } from "./trading-types";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * Configuration for creating a Trade Offer
@@ -38,7 +38,7 @@ export interface TradeOfferConfiguration {
  * Trade Offer implementation
  */
 export class TradeOffer implements ITradeOffer {
-  private static logger = createPackageLogger("artifact");
+  private static logger = LoggerFactory.createPackageLogger("artifact");
 
   private readonly _id: string;
   private readonly _tradingEventId: string;

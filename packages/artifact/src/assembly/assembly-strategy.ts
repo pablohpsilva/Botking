@@ -1,4 +1,4 @@
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 import type { IBot } from "../bot/bot-interface";
 import type { ISkeleton } from "../skeleton/skeleton-interface";
 import type { IPart } from "../part/part-interface";
@@ -47,11 +47,11 @@ export interface PartAssignmentResult {
  * Implements Strategy pattern for different assembly approaches
  */
 export abstract class AssemblyStrategy {
-  protected logger: ReturnType<typeof createPackageLogger>;
+  protected logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   protected context: AssemblyContext;
 
   constructor(context: AssemblyContext) {
-    this.logger = createPackageLogger("artifact", {
+    this.logger = LoggerFactory.createPackageLogger("artifact", {
       service: "assembly-strategy",
     });
     this.context = context;

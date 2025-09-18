@@ -1,4 +1,4 @@
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 import { BotFactory } from "./bot/bot-factory";
 import { ItemFactory } from "./item/item-factory";
 import { SkeletonFactory } from "./skeleton/skeleton-factory";
@@ -48,7 +48,7 @@ export interface ArtifactRegistry {
  */
 export class ArtifactManager {
   private static instance: ArtifactManager;
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   private registry: ArtifactRegistry;
   private stats: ArtifactStats;
   private factories: {
@@ -62,7 +62,7 @@ export class ArtifactManager {
   };
 
   private constructor() {
-    this.logger = createPackageLogger("artifact", {
+    this.logger = LoggerFactory.createPackageLogger("artifact", {
       service: "artifact-manager",
     });
 

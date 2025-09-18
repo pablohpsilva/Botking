@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 import * as schemas from "./schemas";
 
 /**
@@ -36,12 +36,14 @@ export interface ValidationWarning {
  * Provides type-safe validation for all database entities
  */
 export class SchemaValidator {
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   private validationCache: Map<string, ValidationResult> = new Map();
   private cacheEnabled: boolean = false;
 
   constructor() {
-    this.logger = createPackageLogger("db", { service: "schema-validator" });
+    this.logger = LoggerFactory.createPackageLogger("db", {
+      service: "schema-validator",
+    });
   }
 
   /**

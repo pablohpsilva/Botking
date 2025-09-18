@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 import { SchemaValidator } from "./schema-validator";
 import { ConnectionManager } from "./connection-manager";
 import type { BaseRepository } from "./repositories/base-repository";
@@ -13,11 +13,13 @@ export class DatabaseManager {
   private prisma: PrismaClient;
   private schemaValidator: SchemaValidator;
   private connectionManager: ConnectionManager;
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   private repositories: Map<string, BaseRepository<any>> = new Map();
 
   private constructor() {
-    this.logger = createPackageLogger("db", { service: "database-manager" });
+    this.logger = LoggerFactory.createPackageLogger("db", {
+      service: "database-manager",
+    });
     this.connectionManager = ConnectionManager.getInstance();
     this.prisma = this.connectionManager.getClient();
     this.schemaValidator = new SchemaValidator();

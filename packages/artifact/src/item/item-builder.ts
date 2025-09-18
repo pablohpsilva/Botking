@@ -12,7 +12,7 @@ import {
   GemType,
   ItemEffect,
 } from "../types";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * Item builder validation result
@@ -29,12 +29,14 @@ export interface ItemBuilderValidationResult {
  * Implements Builder pattern with category-specific configurations
  */
 export class ItemBuilder {
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   private config: Partial<ItemConfiguration> = {};
   private effects: ItemEffect[] = [];
 
   constructor(name: string, category: ItemCategory) {
-    this.logger = createPackageLogger("artifact", { service: "item-builder" });
+    this.logger = LoggerFactory.createPackageLogger("artifact", {
+      service: "item-builder",
+    });
     this.config.name = name;
     this.config.category = category;
     this.config.effects = [];

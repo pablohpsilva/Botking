@@ -1,4 +1,4 @@
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 import type { IBot } from "../bot/bot-interface";
 import type { IItem } from "../item/item-interface";
 import type { ISkeleton } from "../skeleton/skeleton-interface";
@@ -66,7 +66,7 @@ export interface ValidationRule {
  * Defines the validation algorithm structure while allowing specific implementations
  */
 export abstract class ArtifactValidator<T> {
-  protected logger: ReturnType<typeof createPackageLogger>;
+  protected logger: ReturnType<typeof LoggerFactory.createPackageLogger>;
   protected context: ValidationContext;
 
   constructor(
@@ -76,7 +76,9 @@ export abstract class ArtifactValidator<T> {
       checkCompatibility: true,
     }
   ) {
-    this.logger = createPackageLogger("artifact", { service: "validator" });
+    this.logger = LoggerFactory.createPackageLogger("artifact", {
+      service: "validator",
+    });
     this.context = context;
   }
 

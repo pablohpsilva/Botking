@@ -1,12 +1,12 @@
 import type { SystemTime, TimeServiceConfig, TimeDrift } from "./types";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory } from "@botking/logger";
 
 /**
  * TimeChain Service - Authoritative time source for the entire system
  * Provides consistent UTC time regardless of where it's running
  */
 export class TimeChainService {
-  private static logger = createPackageLogger("time-chain");
+  private static logger = LoggerFactory.createPackageLogger("time-chain");
   private config: Required<TimeServiceConfig>;
   private timeOffset: number = 0; // Difference from server time
   private lastSyncTime: number = 0;

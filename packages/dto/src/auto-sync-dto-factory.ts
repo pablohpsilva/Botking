@@ -4,7 +4,7 @@
  */
 
 import { z } from "zod";
-import { createPackageLogger } from "@botking/logger";
+import { LoggerFactory, ILogger } from "@botking/logger";
 import type { PrismaClient } from "@botking/db";
 import type {
   IBot,
@@ -86,11 +86,13 @@ export type { BotTypeValidationDTO };
  */
 export class AutoSyncDTOFactory {
   private db: PrismaClient;
-  private logger: ReturnType<typeof createPackageLogger>;
+  private logger: ILogger;
 
   constructor(prismaClient: PrismaClient) {
     this.db = prismaClient;
-    this.logger = createPackageLogger("dto", { service: "auto-sync-factory" });
+    this.logger = LoggerFactory.createPackageLogger("dto", {
+      service: "auto-sync-factory",
+    });
     this.logger.info(
       "AutoSyncDTOFactory initialized with artifact integration"
     );

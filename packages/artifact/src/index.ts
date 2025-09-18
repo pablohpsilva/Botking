@@ -19,53 +19,18 @@
  */
 
 // Main OOP Management Classes
-export { ArtifactManager, artifactManager } from "./artifact-manager";
-export type { ArtifactStats, ArtifactRegistry } from "./artifact-manager";
+export * from "./artifact-manager";
 
 // Builder Patterns
-export { BotBuilder, createBotBuilder } from "./bot/bot-builder";
-export type {
-  BuilderValidationResult,
-  IBotBuildingStep,
-} from "./bot/bot-builder";
-export {
-  ItemBuilder,
-  createSpeedUpItemBuilder,
-  createResourceItemBuilder,
-  createTradeableItemBuilder,
-  createGemItemBuilder,
-} from "./item/item-builder";
-export type { ItemBuilderValidationResult } from "./item/item-builder";
+export * from "./bot/bot-builder";
+export * from "./item/item-builder";
 
 // Validation Framework (Template Method Pattern)
-export {
-  ArtifactValidator,
-  ValidationSeverity,
-  ValidationRuleFactory,
-} from "./validation/artifact-validator";
-export type {
-  ValidationIssue,
-  ValidationResult,
-  ValidationContext,
-  ValidationRule,
-} from "./validation/artifact-validator";
-export { BotValidator } from "./validation/bot-validator";
+export * from "./validation/artifact-validator";
+export * from "./validation/bot-validator";
 
 // Assembly Framework (Strategy Pattern)
-export {
-  AssemblyStrategy,
-  BalancedAssemblyStrategy,
-  PerformanceAssemblyStrategy,
-  AssemblyStrategyFactory,
-} from "./assembly/assembly-strategy";
-export type {
-  AssemblyResult,
-  AssemblyContext,
-  PartAssignmentResult,
-  AssemblyPlan,
-  AssemblyStep,
-  CompatibilityCheck,
-} from "./assembly/assembly-strategy";
+export * from "./assembly/assembly-strategy";
 
 // Export all types and enums
 export * from "./types";

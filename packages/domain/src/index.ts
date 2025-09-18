@@ -1,22 +1,34 @@
 /**
  * Botking Domain Package
- * 
- * Pure business logic and domain rules for the Botking game.
- * This package contains validation rules, domain services, and business logic
- * without any infrastructure dependencies.
+ *
+ * Object-Oriented business logic and domain rules for the Botking game.
+ * Enhanced OOP architecture with:
+ * - SkeletonConfigurationService: Centralized skeleton slot management
+ * - SlotCompatibilityService: Advanced compatibility checking and analysis
+ * - Service-based architecture replacing utility functions
  */
 
-// Export all types
-export * from './types';
+// Main OOP services
+export {
+  SkeletonConfigurationService,
+  skeletonConfigurationService,
+} from "./services/skeleton-configuration-service";
+export {
+  SlotCompatibilityService,
+  slotCompatibilityService,
+} from "./services/slot-compatibility-service";
 
-// Export all rules
-export * from './rules';
+// Export all types
+export * from "./types";
+
+// Export all rules (now with deprecated utility functions)
+export * from "./rules";
 
 // Export all validators
-export * from './validators';
+export * from "./validators";
 
 // Export all services
-export * from './services';
+export * from "./services";
 
 // Main domain package class for easy initialization
 export class DomainPackage {
@@ -45,13 +57,18 @@ export class DomainPackage {
   /**
    * Package description
    */
-  public readonly description = "Domain logic and business rules for the Botking game";
+  public readonly description =
+    "Domain logic and business rules for the Botking game";
 
   /**
    * Available domain services
    */
   public readonly services = {
     botAssembly: "BotAssemblyService - Validates bot assembly configurations",
+    skeletonConfiguration:
+      "SkeletonConfigurationService - Manages skeleton slot configurations",
+    slotCompatibility:
+      "SlotCompatibilityService - Advanced compatibility checking and analysis",
   };
 
   /**
@@ -82,12 +99,15 @@ export class DomainPackage {
       version: this.version,
       description: this.description,
       features: [
+        "OOP-based skeleton configuration service",
+        "Advanced slot compatibility analysis",
         "Skeleton slot validation",
         "Bot assembly validation",
         "Domain rule engine",
         "Business logic validation",
-        "Type-safe domain rules"
-      ]
+        "Type-safe domain rules",
+        "Service-based architecture",
+      ],
     };
   }
 }

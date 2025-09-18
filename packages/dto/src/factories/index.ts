@@ -16,6 +16,7 @@ export { ArtifactDTOFactory } from "./base/artifact-dto-factory";
 
 // Core artifact factories (lean, artifact-first approach)
 export { BotDTOFactory } from "./artifact/bot-factory";
+export { SoulChipDTOFactory } from "./artifact/soul-chip-factory";
 
 // Inventory factories
 export { ItemDTOFactory } from "./inventory/item-factory";

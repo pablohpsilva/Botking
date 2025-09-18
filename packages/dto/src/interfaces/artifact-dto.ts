@@ -103,20 +103,16 @@ export interface AbilityDTO {
 
 /**
  * Soul Chip DTO - Database representation
+ * Uses SoulChip artifact as the source of truth
  */
 export interface SoulChipDTO extends UserOwnedDTO, MetadataDTO {
   id: string;
   name: string;
   userId: string;
-  personality: string;
+  personality: string; // JSON serialized PersonalityTraits from artifact
   rarity: Rarity;
-  baseStats: {
-    intelligence: number;
-    resilience: number;
-    adaptability: number;
-  };
+  baseStats: string; // JSON serialized BaseStats from artifact
   specialTrait: string;
-  learningRate: number;
   createdAt: Date;
   updatedAt: Date;
   version: number;

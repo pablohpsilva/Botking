@@ -3,8 +3,8 @@
  * This demonstrates creating artifacts and converting to DTOs for persistence
  */
 
-import { BotDTO, ItemDTO } from "./interfaces/artifact-dto";
-import { BotDTOFactory, ItemDTOFactory } from "./factories";
+import { BotDTO, ItemDTO, SoulChipDTO } from "./interfaces/artifact-dto";
+import { BotDTOFactory, ItemDTOFactory, SoulChipDTOFactory } from "./factories";
 import {
   BotType,
   SkeletonType,
@@ -125,17 +125,55 @@ export class DTOExample {
   }
 
   /**
+   * Create SoulChip artifacts using new factory
+   */
+  public static createSoulChipComponents(): {
+    soulChip: SoulChipDTO;
+  } {
+    // Create SoulChip artifact
+    const soulChipFactory = new SoulChipDTOFactory();
+    const soulChip = soulChipFactory.createEmpatheticArtifact(
+      "Companion Soul",
+      Rarity.UNCOMMON
+    );
+
+    // Validate artifacts
+    console.log("🔍 Validating SoulChip artifact...");
+
+    const soulChipValidation = soulChipFactory.validateArtifact(soulChip);
+
+    if (!soulChipValidation.isValid) {
+      console.warn("⚠️ SoulChip validation issues:", soulChipValidation.errors);
+    }
+
+    // Convert to DTOs for persistence
+    return {
+      soulChip: soulChipFactory.artifactToDTO(soulChip),
+    };
+  }
+
+  /**
    * Demonstrate the complete workflow
    */
   public static demonstrateWorkflow(): void {
-    console.log("🚀 Lean Artifact-First DTO Example");
+    console.log("🚀 Artifact-First DTO Example");
 
     try {
-      // Create bots
+      // Create SoulChip components
+      const components = this.createSoulChipComponents();
+
+      console.log("✅ SoulChip artifact created:", {
+        soulChip: {
+          name: components.soulChip.specialTrait,
+          rarity: components.soulChip.rarity,
+        },
+      });
+
+      // Create complete bots
       const workerBot = this.createWorkerBot();
       const playableBot = this.createPlayableBot();
 
-      console.log("✅ Bots created:", {
+      console.log("✅ Complete bots created:", {
         worker: { name: workerBot.name, type: workerBot.botType },
         playable: { name: playableBot.name, type: playableBot.botType },
       });
@@ -152,7 +190,12 @@ export class DTOExample {
         }))
       );
 
-      console.log("🎯 Artifact-first architecture working perfectly!");
+      console.log(
+        "🎯 Artifact-first architecture working with core components!"
+      );
+      console.log(
+        "📊 Bot, Item, and SoulChip objects created through packages/artifacts!"
+      );
     } catch (error) {
       console.error("❌ Example failed:", (error as Error).message);
     }

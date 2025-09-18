@@ -483,47 +483,51 @@ export const SLOT_COMPATIBILITY: Record<SlotIdentifier, ISlotCompatibility> = {
   },
 };
 
+import { skeletonConfigurationService } from "../services/skeleton-configuration-service";
+
 /**
+ * @deprecated Use SkeletonConfigurationService.getInstance().getAvailableSlots() instead
  * Get available slots for a skeleton type
  */
 export function getAvailableSlotsForSkeleton(
   skeletonType: SkeletonType
 ): ISlotInfo[] {
-  const slotIds = SKELETON_SLOT_LAYOUTS[skeletonType];
-  return slotIds.map((slotId) => SLOT_INFO_REGISTRY[slotId]);
+  return skeletonConfigurationService.getAvailableSlots(skeletonType);
 }
 
 /**
+ * @deprecated Use SkeletonConfigurationService.getInstance().getSlotInfo() instead
  * Get slot information by slot ID
  */
 export function getSlotInfo(slotId: SlotIdentifier): ISlotInfo {
-  const info = SLOT_INFO_REGISTRY[slotId];
-  if (!info) {
-    throw new Error(`Unknown slot identifier: ${slotId}`);
-  }
-  return info;
+  return skeletonConfigurationService.getSlotInfo(slotId);
 }
 
 /**
+ * @deprecated Use SkeletonConfigurationService.getInstance().getSlotCompatibility() instead
  * Get slot compatibility rules
  */
 export function getSlotCompatibility(
   slotId: SlotIdentifier
 ): ISlotCompatibility {
-  const compatibility = SLOT_COMPATIBILITY[slotId];
-  if (!compatibility) {
-    throw new Error(`No compatibility rules found for slot: ${slotId}`);
-  }
-  return compatibility;
+  return skeletonConfigurationService.getSlotCompatibility(slotId);
 }
 
 /**
+ * @deprecated Use SlotCompatibilityService.getInstance().isPartCompatibleWithSlot() instead
  * Check if a part category is compatible with a slot
  */
 export function isPartCompatibleWithSlot(
   slotId: SlotIdentifier,
   partCategory: PartCategory | "expansionChip" | "soulChip"
 ): boolean {
-  const compatibility = getSlotCompatibility(slotId);
-  return compatibility.compatibleCategories.includes(partCategory);
+  // For backward compatibility, handle the extended types
+  if (partCategory === "expansionChip" || partCategory === "soulChip") {
+    const compatibility = getSlotCompatibility(slotId);
+    return compatibility.compatibleCategories.includes(partCategory);
+  }
+  return skeletonConfigurationService.isPartCompatibleWithSlot(
+    slotId,
+    partCategory as PartCategory
+  );
 }

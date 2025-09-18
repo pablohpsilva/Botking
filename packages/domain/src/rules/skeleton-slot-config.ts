@@ -243,31 +243,30 @@ SWIMMER: {
 },
 */
 
+import { skeletonConfigurationService } from "../services/skeleton-configuration-service";
+
 /**
+ * @deprecated Use SkeletonConfigurationService.getInstance().getSlotConstraints() instead
  * Helper function to get slot constraints for a skeleton type
  */
 export function getSkeletonSlotConstraints(
   skeletonType: SkeletonType
 ): ISkeletonTypeConstraints {
-  const config = SKELETON_SLOT_CONFIG[skeletonType];
-  if (!config) {
-    throw new Error(`Unknown skeleton type: ${skeletonType}`);
-  }
-  return config;
+  return skeletonConfigurationService.getSlotConstraints(skeletonType);
 }
 
 /**
+ * @deprecated Use SkeletonConfigurationService.getInstance().getDefaultSlots() instead
  * Helper function to get default slots for a skeleton type
  */
 export function getDefaultSlotsForSkeleton(skeletonType: SkeletonType) {
+  // For backward compatibility, get base slots and add extension slots
+  const baseSlots = skeletonConfigurationService.getDefaultSlots(skeletonType);
   const constraints = getSkeletonSlotConstraints(skeletonType);
+
   return {
-    headSlots: constraints[PartCategory.HEAD].default,
-    torsoSlots: constraints[PartCategory.TORSO].default,
-    armSlots: constraints[PartCategory.ARM].default,
-    legSlots: constraints[PartCategory.LEG].default,
-    accessorySlots: constraints[PartCategory.ACCESSORY].default,
-    expansionSlots: constraints.expansionChips.default,
-    soulChipSlots: constraints.soulChips.default,
+    ...baseSlots,
+    expansionSlots: (constraints as any).expansionChips?.default || 0,
+    soulChipSlots: (constraints as any).soulChips?.default || 0,
   };
 }

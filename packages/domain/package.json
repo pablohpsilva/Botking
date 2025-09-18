@@ -21,7 +21,8 @@
   "author": "Botking Team",
   "license": "MIT",
   "dependencies": {
-    "@botking/db": "workspace:*"
+    "@botking/db": "workspace:*",
+    "@botking/logger": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

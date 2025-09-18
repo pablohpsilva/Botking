@@ -324,6 +324,93 @@ export const CreateCollectionSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
 });
 
+// User schemas
+export const UserPreferencesSchema = z.object({
+  theme: z.enum(["light", "dark", "auto"]).default("auto"),
+  language: z.string().default("en"),
+  timezone: z.string().default("UTC"),
+  notifications: z.object({
+    email: z.boolean().default(true),
+    push: z.boolean().default(true),
+    inApp: z.boolean().default(true),
+    marketing: z.boolean().default(false),
+  }),
+  privacy: z.object({
+    profileVisibility: z
+      .enum(["public", "friends", "private"])
+      .default("public"),
+    showOnlineStatus: z.boolean().default(true),
+    allowDirectMessages: z.boolean().default(true),
+  }),
+  gameplay: z.object({
+    autoSave: z.boolean().default(true),
+    quickActions: z.boolean().default(true),
+    animationSpeed: z.enum(["slow", "normal", "fast"]).default("normal"),
+    soundEffects: z.boolean().default(true),
+    backgroundMusic: z.boolean().default(true),
+  }),
+});
+
+export const UserSettingsSchema = z.object({
+  security: z.object({
+    twoFactorEnabled: z.boolean().default(false),
+    sessionTimeout: z.number().int().min(30).max(1440).default(480), // 30 minutes to 24 hours, default 8 hours
+    allowMultipleSessions: z.boolean().default(true),
+  }),
+  communication: z.object({
+    allowFriendRequests: z.boolean().default(true),
+    allowTradeRequests: z.boolean().default(true),
+    blockedUsers: z.array(z.string()).default([]),
+  }),
+  display: z.object({
+    itemsPerPage: z.number().int().min(10).max(100).default(20),
+    defaultSortOrder: z.enum(["asc", "desc"]).default("desc"),
+    showTutorials: z.boolean().default(true),
+    compactMode: z.boolean().default(false),
+  }),
+});
+
+export const CreateUserSchema = z.object({
+  email: z.string().email().max(255),
+  emailVerified: z.boolean().optional().default(false),
+  name: z.string().min(1).max(100).optional(),
+  image: z.string().url().optional(),
+  preferences: UserPreferencesSchema.optional(),
+  settings: UserSettingsSchema.optional(),
+});
+
+export const UpdateUserSchema = CreateUserSchema.partial().omit({
+  email: true, // Email updates require special handling
+});
+
+export const UpdateUserEmailSchema = z.object({
+  email: z.string().email().max(255),
+});
+
+export const UserProfileUpdateSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  image: z.string().url().optional(),
+});
+
+// Account schemas
+export const CreateAccountSchema = z.object({
+  userId: z.string(),
+  providerId: z.string().min(1),
+  accountId: z.string().min(1),
+  password: z.string().optional(),
+  accessToken: z.string().optional(),
+  refreshToken: z.string().optional(),
+  idToken: z.string().optional(),
+  accessTokenExpiresAt: z.date().optional(),
+  refreshTokenExpiresAt: z.date().optional(),
+});
+
+export const UpdateAccountSchema = CreateAccountSchema.partial().omit({
+  userId: true,
+  providerId: true,
+  accountId: true,
+});
+
 // Update schemas (partial)
 export const UpdateSoulChipSchema = CreateSoulChipSchema.partial().omit({
   userId: true,
@@ -361,6 +448,18 @@ export type UpdateExpansionChipDTO = z.infer<typeof UpdateExpansionChipSchema>;
 export type UpdateBotStateDTO = z.infer<typeof UpdateBotStateSchema>;
 export type UpdateBotDTO = z.infer<typeof UpdateBotSchema>;
 export type UpdateCollectionDTO = z.infer<typeof UpdateCollectionSchema>;
+
+// User type exports
+export type UserPreferencesDTO = z.infer<typeof UserPreferencesSchema>;
+export type UserSettingsDTO = z.infer<typeof UserSettingsSchema>;
+export type CreateUserDTO = z.infer<typeof CreateUserSchema>;
+export type UpdateUserDTO = z.infer<typeof UpdateUserSchema>;
+export type UpdateUserEmailDTO = z.infer<typeof UpdateUserEmailSchema>;
+export type UserProfileUpdateDTO = z.infer<typeof UserProfileUpdateSchema>;
+
+// Account type exports
+export type CreateAccountDTO = z.infer<typeof CreateAccountSchema>;
+export type UpdateAccountDTO = z.infer<typeof UpdateAccountSchema>;
 
 // Enum types for easier usage
 export type CombatRoleDTO = z.infer<typeof CombatRoleSchema>;

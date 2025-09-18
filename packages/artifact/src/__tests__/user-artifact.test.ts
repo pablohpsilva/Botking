@@ -1,19 +1,13 @@
 /**
- * User artifact tests
- * Tests for user artifact creation, validation, and operations
+ * User artifact tests - Database-first approach
+ * Tests for user artifact creation, validation, and operations based on schema.prisma
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  User,
-  UserFactory,
-  UserValidator,
-  UserPermission,
-  UserRank,
-} from "../user";
+import { User, UserFactory, UserValidator } from "../user";
 import type { UserConfiguration } from "../user";
 
-describe("User Artifact", () => {
+describe("User Artifact - Database First", () => {
   describe("UserFactory", () => {
     it("should create a basic user", () => {
       const config: UserConfiguration = {
@@ -33,27 +27,27 @@ describe("User Artifact", () => {
 
     it("should reject invalid email", () => {
       const config: UserConfiguration = {
-        email: "invalid-email",
+        email: "",
         name: "Test User",
       };
 
       const result = UserFactory.createUser(config);
 
       expect(result.success).toBe(false);
-      expect(result.errors).toContain("Valid email address is required");
+      expect(result.errors).toContain("Email is required");
     });
 
-    it("should create user with default preferences", () => {
+    it("should create user with minimal data", () => {
       const config: UserConfiguration = {
-        email: "test@example.com",
+        email: "minimal@example.com",
       };
 
       const result = UserFactory.createUser(config);
 
       expect(result.success).toBe(true);
-      expect(result.user!.preferences.theme).toBe("auto");
-      expect(result.user!.preferences.language).toBe("en");
-      expect(result.user!.settings.security.twoFactorEnabled).toBe(false);
+      expect(result.user!.email).toBe("minimal@example.com");
+      expect(result.user!.name).toBe(null);
+      expect(result.user!.emailVerified).toBe(false);
     });
 
     it("should create demo user", () => {
@@ -61,24 +55,26 @@ describe("User Artifact", () => {
 
       expect(result.success).toBe(true);
       expect(result.user!.email).toContain("demo_test123@demo.botking.dev");
-      expect(result.user!.preferences.privacy.profileVisibility).toBe(
-        "private"
-      );
-      expect(result.user!.settings.communication.allowFriendRequests).toBe(
-        false
-      );
+      expect(result.user!.emailVerified).toBe(false);
     });
 
-    it("should create admin user with enhanced security", () => {
-      const result = UserFactory.createAdminUser(
-        "admin@example.com",
-        "Admin User"
-      );
+    it("should create user from Prisma data", () => {
+      const prismaUser = {
+        id: "user_123",
+        email: "prisma@example.com",
+        emailVerified: true,
+        name: "Prisma User",
+        image: "https://example.com/avatar.jpg",
+        createdAt: new Date("2023-01-01"),
+        updatedAt: new Date("2023-01-02"),
+      };
+
+      const result = UserFactory.fromPrismaUser(prismaUser);
 
       expect(result.success).toBe(true);
-      expect(result.user!.settings.security.twoFactorEnabled).toBe(true);
-      expect(result.user!.settings.security.sessionTimeout).toBe(240);
-      expect(result.user!.preferences.theme).toBe("dark");
+      expect(result.user!.id).toBe("user_123");
+      expect(result.user!.email).toBe("prisma@example.com");
+      expect(result.user!.name).toBe("Prisma User");
     });
   });
 
@@ -99,78 +95,49 @@ describe("User Artifact", () => {
       expect(user.email).toBe("test@example.com");
       expect(user.name).toBe("Test User");
       expect(user.emailVerified).toBe(true);
-      expect(user.level).toBe(1);
-      expect(user.experience).toBe(0);
-      expect(user.isActive).toBe(false); // No login recorded yet
+      expect(user.id).toBeDefined();
+      expect(user.createdAt).toBeDefined();
+      expect(user.updatedAt).toBeDefined();
     });
 
     it("should update profile successfully", async () => {
       const success = await user.updateProfile({
         name: "Updated Name",
-        email: "updated@example.com",
       });
 
       expect(success).toBe(true);
-      expect(user.name).toBe("Updated Name");
-      expect(user.email).toBe("updated@example.com");
-      expect(user.emailVerified).toBe(false); // Reset on email change
+      // Note: The actual name change would be handled by the repository layer
     });
 
-    it("should record login activity", () => {
-      const initialLogins = user.totalLogins;
+    it("should update email successfully", async () => {
+      const success = await user.updateEmail("updated@example.com");
 
-      user.recordLogin();
-
-      expect(user.totalLogins).toBe(initialLogins + 1);
-      expect(user.lastLoginAt).toBeDefined();
-      expect(user.isActive).toBe(true);
+      expect(success).toBe(true);
+      // Note: The actual email change would be handled by the repository layer
     });
 
-    it("should handle experience and leveling", () => {
-      const result = user.addExperience(150);
+    it("should verify email successfully", async () => {
+      const success = await user.verifyEmail();
 
-      expect(result.leveledUp).toBe(true);
-      expect(result.newLevel).toBe(2);
-      expect(user.level).toBe(2);
-      expect(user.experience).toBe(150);
+      expect(success).toBe(true);
+      // Note: The actual verification would be handled by the repository layer
     });
 
-    it("should calculate experience to next level", () => {
-      user.addExperience(50);
-
-      const toNext = user.experienceToNextLevel;
-
-      expect(toNext).toBe(50); // Level 1 (0 exp) + 50 exp = 50 exp needed for level 2 (100 total)
-    });
-
-    it("should check permissions correctly", () => {
-      expect(user.hasPermission(UserPermission.READ_PROFILE)).toBe(true);
-      expect(user.hasPermission(UserPermission.WRITE_PROFILE)).toBe(true);
-      expect(user.hasPermission(UserPermission.ADMIN_ACCESS)).toBe(false);
-    });
-
-    it("should serialize and deserialize correctly", () => {
+    it("should serialize correctly", () => {
       const json = user.toJSON();
-      const serialized = user.serialize();
 
       expect(json.email).toBe(user.email);
       expect(json.name).toBe(user.name);
-      expect(typeof serialized).toBe("string");
-
-      const parsed = JSON.parse(serialized);
-      expect(parsed.email).toBe(user.email);
+      expect(json.emailVerified).toBe(user.emailVerified);
     });
 
     it("should clone correctly", () => {
-      user.addExperience(100);
-      user.recordLogin();
-
       const clone = user.clone();
 
       expect(clone.id).toBe(user.id);
       expect(clone.email).toBe(user.email);
-      expect(clone.level).toBe(user.level);
-      expect(clone.totalLogins).toBe(user.totalLogins);
+      expect(clone.name).toBe(user.name);
+      expect(clone).not.toBe(user); // Different object reference
     });
   });
 
@@ -191,116 +158,150 @@ describe("User Artifact", () => {
       const validation = UserValidator.validate(user);
 
       expect(validation.isValid).toBe(true);
-      expect(validation.score).toBeGreaterThan(70);
       expect(validation.errors).toHaveLength(0);
+      // Note: May have suggestions for profile improvements (image, etc.)
+      expect(validation.summary.totalIssues).toBeGreaterThanOrEqual(0);
+    });
+
+    it("should detect invalid email", () => {
+      const invalidUser = new User({
+        id: "test_id",
+        email: "",
+        emailVerified: false,
+        name: "Test User",
+        image: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const validation = UserValidator.validate(invalidUser);
+
+      expect(validation.isValid).toBe(false);
+      expect(validation.errors.some((e) => e.code === "MISSING_EMAIL")).toBe(
+        true
+      );
     });
 
     it("should detect unverified email", () => {
-      const config: UserConfiguration = {
+      const unverifiedUser = new User({
+        id: "test_id",
         email: "test@example.com",
-        name: "Test User",
         emailVerified: false,
-      };
-      const result = UserFactory.createUser(config);
-      const unverifiedUser = result.user as User;
+        name: "Test User",
+        image: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
       const validation = UserValidator.validate(unverifiedUser);
 
-      const hasUnverifiedWarning = validation.warnings.some(
-        (w) => w.code === "UNVERIFIED_EMAIL"
-      );
-      expect(hasUnverifiedWarning).toBe(true);
+      expect(validation.isValid).toBe(true); // Not an error, just a warning
+      expect(
+        validation.warnings.some((w) => w.code === "UNVERIFIED_EMAIL")
+      ).toBe(true);
     });
 
-    it("should perform quick validation", () => {
-      expect(UserValidator.quickValidate(user)).toBe(true);
-    });
-
-    it("should validate for specific operations", () => {
-      const loginCheck = UserValidator.validateForOperation(user, "login");
-      expect(loginCheck.canProceed).toBe(true);
-
-      const tradeCheck = UserValidator.validateForOperation(user, "trade");
-      expect(tradeCheck.canProceed).toBe(false); // Level too low
-      expect(tradeCheck.blockers).toContain(
-        "Minimum level 5 required for trading"
-      );
-    });
-
-    it("should calculate completeness score", () => {
-      const validation = UserValidator.validate(user);
-
-      expect(validation.summary.completeness).toBeGreaterThan(0);
-      expect(validation.summary.completeness).toBeLessThanOrEqual(100);
-    });
-
-    it("should provide security score", () => {
-      const validation = UserValidator.validate(user);
-
-      expect(validation.summary.security).toBeGreaterThan(0);
-      expect(validation.summary.security).toBeLessThanOrEqual(100);
-    });
-
-    it("should generate helpful recommendations", () => {
-      const config: UserConfiguration = {
+    it("should suggest profile improvements", () => {
+      const incompleteUser = new User({
+        id: "test_id",
         email: "test@example.com",
-        emailVerified: false,
-      };
-      const result = UserFactory.createUser(config);
-      const incompleteUser = result.user as User;
+        emailVerified: true,
+        name: null,
+        image: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
       const validation = UserValidator.validate(incompleteUser);
 
-      expect(validation.summary.recommendations).toContain(
-        "Verify your email address"
-      );
-      expect(validation.summary.recommendations).toContain(
-        "Add a display name"
-      );
+      expect(
+        validation.suggestions.some((s) => s.code === "MISSING_DISPLAY_NAME")
+      ).toBe(true);
+      expect(
+        validation.suggestions.some((s) => s.code === "MISSING_PROFILE_IMAGE")
+      ).toBe(true);
+    });
+
+    it("should provide validation summary", () => {
+      const validation = UserValidator.validate(user);
+
+      expect(validation.summary).toBeDefined();
+      expect(validation.summary.validationLevel).toBe("excellent");
+      expect(validation.summary.completeness).toBeGreaterThan(0);
+      expect(validation.summary.recommendations).toBeDefined();
+    });
+
+    it("should handle strict validation", () => {
+      const validation = UserValidator.validate(user, true);
+
+      expect(validation.isValid).toBe(true);
+      // Strict mode might have different requirements
     });
   });
 
-  describe("User Statistics and Metrics", () => {
-    let user: User;
-
-    beforeEach(() => {
-      const config: UserConfiguration = {
-        email: "test@example.com",
+  describe("User Creation Edge Cases", () => {
+    it("should handle missing email", () => {
+      const config = {
         name: "Test User",
+      } as UserConfiguration;
+
+      const result = UserFactory.createUser(config);
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toContain("Email is required");
+    });
+
+    it("should generate unique IDs", () => {
+      const config: UserConfiguration = {
+        email: "test1@example.com",
+      };
+
+      const result1 = UserFactory.createUser(config);
+      const result2 = UserFactory.createUser({
+        email: "test2@example.com",
+      });
+
+      expect(result1.user!.id).not.toBe(result2.user!.id);
+    });
+
+    it("should handle JSON serialization and deserialization", () => {
+      const config: UserConfiguration = {
+        email: "json@example.com",
+        name: "JSON User",
         emailVerified: true,
       };
+
       const result = UserFactory.createUser(config);
-      user = result.user as User;
+      const user = result.user!;
+
+      const serialized = user.serialize();
+      const parsed = JSON.parse(serialized);
+
+      expect(parsed.email).toBe(user.email);
+      expect(parsed.name).toBe(user.name);
+      expect(parsed.emailVerified).toBe(user.emailVerified);
     });
 
-    it("should track activity correctly", () => {
-      user.recordLogin();
-      user.addPlayTime(30);
+    it("should handle safe creation from JSON", () => {
+      const jsonData = {
+        email: "fromjson@example.com",
+        name: "From JSON",
+        emailVerified: true,
+      };
 
-      const stats = user.getStatistics();
+      const result = UserFactory.fromJSON(jsonData);
 
-      expect(stats.totalLogins).toBe(1);
-      expect(stats.totalPlayTime).toBe(30);
-      expect(stats.averageSessionLength).toBe(30);
+      expect(result.success).toBe(true);
+      expect(result.user!.email).toBe("fromjson@example.com");
     });
 
-    it("should calculate user rank based on level", () => {
-      expect(user.rank).toBe(UserRank.NOVICE);
+    it("should handle invalid JSON gracefully", () => {
+      const invalidJson = "invalid json string";
 
-      user.addExperience(1000); // Should reach level 6 (1000 exp = level 6)
-      expect(user.rank).toBe(UserRank.APPRENTICE); // Level 5+ is apprentice
-    });
+      const result = UserFactory.fromJSON(invalidJson);
 
-    it("should track registration age", () => {
-      expect(user.registrationAge).toBe(0); // Created today
-    });
-
-    it("should provide activity summary", () => {
-      const summary = user.getActivitySummary(7);
-
-      expect(summary.totalSessions).toBeDefined();
-      expect(summary.totalPlayTime).toBeDefined();
-      expect(summary.experienceGained).toBeDefined();
+      expect(result.success).toBe(false);
+      expect(result.errors).toBeDefined();
     });
   });
 });

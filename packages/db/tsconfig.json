@@ -16,6 +16,6 @@
     "module": "CommonJS",
     "moduleResolution": "node"
   },
-  "include": ["src/index.ts", "src/schemas.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "prisma/seed.ts", "src/generated/**/*"]
 }

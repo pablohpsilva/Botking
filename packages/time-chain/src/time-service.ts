@@ -193,34 +193,30 @@ export class TimeChainService {
   }
 }
 
-// Global singleton instance
-let globalTimeService: TimeChainService | null = null;
+import { timeServiceManager } from "./time-service-manager";
 
 /**
+ * @deprecated Use TimeServiceManager.getInstance().getGlobalService() instead
  * Gets the global TimeChain service instance
  */
 export function getTimeService(config?: TimeServiceConfig): TimeChainService {
-  if (!globalTimeService) {
-    globalTimeService = new TimeChainService(config);
-  }
-  return globalTimeService;
+  return timeServiceManager.getGlobalService(config);
 }
 
 /**
+ * @deprecated Use TimeServiceManager.getInstance().createIsolatedService() instead
  * Creates a new isolated TimeChain service instance
  */
 export function createTimeService(
   config?: TimeServiceConfig
 ): TimeChainService {
-  return new TimeChainService(config);
+  return timeServiceManager.createIsolatedService(config);
 }
 
 /**
+ * @deprecated Use TimeServiceManager.getInstance().destroyGlobalService() instead
  * Destroys the global time service instance
  */
 export function destroyGlobalTimeService(): void {
-  if (globalTimeService) {
-    globalTimeService.stop();
-    globalTimeService = null;
-  }
+  timeServiceManager.destroyGlobalService();
 }

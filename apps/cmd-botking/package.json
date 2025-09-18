@@ -1,0 +1,45 @@
+{
+  "name": "cmd-botking",
+  "version": "1.0.0",
+  "description": "Production Hono-based application demonstrating Botking system usage",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "tsx src/scripts/seed.ts",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "dependencies": {
+    "@botking/artifact": "workspace:*",
+    "@botking/dto": "workspace:*",
+    "@botking/logger": "workspace:*",
+    "@hono/node-server": "^1.8.0",
+    "@hono/zod-validator": "^0.7.3",
+    "hono": "^4.0.0",
+    "zod": "^4.1.9"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "prisma": "^5.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "keywords": [
+    "botking",
+    "hono",
+    "typescript",
+    "production",
+    "api",
+    "bot-management"
+  ],
+  "author": "Botking Team",
+  "license": "MIT"
+}

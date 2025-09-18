@@ -7,7 +7,8 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { LoggerFactory } from "@botking/logger";
-import { BotDTOFactory, BotType, SkeletonType } from "@botking/dto";
+import { BotDTOFactory } from "@botking/dto";
+import { BotTypeSchema, SkeletonTypeSchema } from "@botking/db";
 import { dtoService } from "@/services/dto-service";
 import { BotValidator } from "@botking/artifact";
 
@@ -28,8 +29,8 @@ const botRoutes = new Hono();
 const createBotSchema = z.object({
   name: z.string().min(1).max(100),
   userId: z.string().uuid(),
-  botType: z.nativeEnum(BotType),
-  skeletonType: z.nativeEnum(SkeletonType).optional(),
+  botType: BotTypeSchema,
+  skeletonType: SkeletonTypeSchema.optional(),
   autoConfig: z.boolean().optional().default(true),
 });
 
@@ -51,7 +52,7 @@ const querySchema = z.object({
     .pipe(z.number().min(1).max(100))
     .optional()
     .default(10),
-  botType: z.nativeEnum(BotType).optional(),
+  botType: BotTypeSchema.optional(),
   userId: z.string().uuid().optional(),
 });
 

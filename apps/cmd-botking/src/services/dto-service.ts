@@ -4,13 +4,11 @@
  */
 
 import { AutoSyncDTOFactory } from "@botking/dto";
-// @ts-ignore - Prisma client import issue in development
-import type { PrismaClient } from "@prisma/client";
 
 class DTOService {
   private static instance: DTOService;
   private autoSyncFactory: AutoSyncDTOFactory | null = null;
-  private prisma: PrismaClient | null = null;
+  private prisma: any | null = null;
 
   private constructor() {}
 
@@ -41,7 +39,7 @@ class DTOService {
     return this.autoSyncFactory;
   }
 
-  getPrismaClient(): PrismaClient {
+  getPrismaClient(): any {
     if (!this.prisma) {
       throw new Error("DTOService not initialized. Call initialize() first.");
     }

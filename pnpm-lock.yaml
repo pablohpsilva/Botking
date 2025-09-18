@@ -26,6 +26,9 @@ importers:
       '@botking/artifact':
         specifier: workspace:*
         version: link:../../packages/artifact
+      '@botking/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@botking/dto':
         specifier: workspace:*
         version: link:../../packages/dto
@@ -38,6 +41,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.7.3
         version: 0.7.3(hono@4.9.7)(zod@4.1.9)
+      '@prisma/client':
+        specifier: ^5.19.1
+        version: 5.22.0(prisma@5.22.0)
       hono:
         specifier: ^4.0.0
         version: 4.9.7

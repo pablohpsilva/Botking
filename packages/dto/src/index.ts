@@ -64,3 +64,7 @@ export {
   TradeOfferStatusDTO,
   TradeItemTypeDTO,
 } from "./interfaces/artifact-dto";
+
+// Export User and Account DTO modules
+export * from "./user-dto";
+export * from "./account-dto";

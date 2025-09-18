@@ -5,8 +5,8 @@
 
 import { Hono } from "hono";
 import { LoggerFactory } from "@botking/logger";
-import { dtoService } from "@/services/dto-service";
-import { ApplicationService } from "@/services/application-service";
+import { dtoService } from "../services/dto-service";
+import { ApplicationService } from "../services/application-service";
 
 const logger = LoggerFactory.createPackageLogger("cmd-botking", {
   service: "health-routes",

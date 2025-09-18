@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import {
-  SoulChipDTO,
+  // SoulChipDTO, // TODO: Define this interface
   SkeletonDTO,
   PartDTO,
   ExpansionChipDTO,
@@ -122,69 +122,70 @@ abstract class BasePrismaRepository<T extends BaseDTO>
 
 /**
  * Soul Chip Repository
+ * TODO: Uncomment when SoulChipDTO interface is properly defined
  */
-export class SoulChipRepository extends BasePrismaRepository<SoulChipDTO> {
-  getTableName(): string {
-    return "soulChips";
-  }
+// export class SoulChipRepository extends BasePrismaRepository<SoulChipDTO> {
+//   getTableName(): string {
+//     return "soulChips";
+//   }
 
-  async create(
-    data: Omit<SoulChipDTO, "id" | "createdAt" | "updatedAt">
-  ): Promise<SoulChipDTO> {
-    // Note: This would require the Prisma schema to be updated with SoulChip model
-    // For now, this is a placeholder implementation
+//   async create(
+//     data: Omit<SoulChipDTO, "id" | "createdAt" | "updatedAt">
+//   ): Promise<SoulChipDTO> {
+//     // Note: This would require the Prisma schema to be updated with SoulChip model
+//     // For now, this is a placeholder implementation
 
-    const result = await this.prisma.$executeRaw`
-      INSERT INTO soul_chips (
-        id, user_id, name, personality, rarity, base_stats, 
-        special_trait, experiences, learning_rate, version, metadata
-      ) VALUES (
-        gen_random_uuid(), ${data.userId}, ${data.name}, ${data.personality}, 
-        ${data.rarity}, ${JSON.stringify(data.baseStats)}, ${data.specialTrait}, 
-        ${JSON.stringify(data.experiences)}, ${data.learningRate}, ${data.version}, 
-        ${JSON.stringify(data.metadata)}
-      ) RETURNING *
-    `;
+//     const result = await this.prisma.$executeRaw`
+//       INSERT INTO soul_chips (
+//         id, user_id, name, personality, rarity, base_stats,
+//         special_trait, experiences, learning_rate, version, metadata
+//       ) VALUES (
+//         gen_random_uuid(), ${data.userId}, ${data.name}, ${data.personality},
+//         ${data.rarity}, ${JSON.stringify(data.baseStats)}, ${data.specialTrait},
+//         ${JSON.stringify(data.experiences)}, ${data.learningRate}, ${data.version},
+//         ${JSON.stringify(data.metadata)}
+//       ) RETURNING *
+//     `;
 
-    // This is simplified - would return properly typed result
-    return result as SoulChipDTO;
-  }
+//     // This is simplified - would return properly typed result
+//     return result as SoulChipDTO;
+//   }
 
-  async findById(id: string): Promise<SoulChipDTO | null> {
-    // Placeholder implementation
-    const result = await this.prisma.$queryRaw`
-      SELECT * FROM soul_chips WHERE id = ${id}
-    `;
+//   async findById(id: string): Promise<SoulChipDTO | null> {
+//     // Placeholder implementation
+//     const result = await this.prisma.$queryRaw`
+//       SELECT * FROM soul_chips WHERE id = ${id}
+//     `;
 
-    return Array.isArray(result) && result.length > 0
-      ? (result[0] as SoulChipDTO)
-      : null;
-  }
+//     return Array.isArray(result) && result.length > 0
+//       ? (result[0] as SoulChipDTO)
+//       : null;
+//   }
 
-  async update(id: string, data: Partial<SoulChipDTO>): Promise<SoulChipDTO> {
-    // Placeholder implementation
-    const updateFields = Object.keys(data)
-      .filter((key) => key !== "id" && key !== "createdAt")
-      .map((key) => `${key} = ${JSON.stringify((data as any)[key])}`)
-      .join(", ");
+//   async update(id: string, data: Partial<SoulChipDTO>): Promise<SoulChipDTO> {
+//     // Placeholder implementation
+//     const updateFields = Object.keys(data)
+//       .filter((key) => key !== "id" && key !== "createdAt")
+//       .map((key) => `${key} = ${JSON.stringify((data as any)[key])}`)
+//       .join(", ");
 
-    const result = await this.prisma.$executeRaw`
-      UPDATE soul_chips SET ${updateFields}, updated_at = NOW() 
-      WHERE id = ${id} RETURNING *
-    `;
+//     const result = await this.prisma.$executeRaw`
+//       UPDATE soul_chips SET ${updateFields}, updated_at = NOW()
+//       WHERE id = ${id} RETURNING *
+//     `;
 
-    return result as SoulChipDTO;
-  }
+//     return result as SoulChipDTO;
+//   }
 
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.$executeRaw`DELETE FROM soul_chips WHERE id = ${id}`;
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-}
+//   async delete(id: string): Promise<boolean> {
+//     try {
+//       await this.prisma.$executeRaw`DELETE FROM soul_chips WHERE id = ${id}`;
+//       return true;
+//     } catch (error) {
+//       return false;
+//     }
+//   }
+// }
 
 /**
  * Skeleton Repository
@@ -350,7 +351,7 @@ export class BotRepository extends BasePrismaRepository<BotDTO> {
 export class RepositoryFactory {
   public static createRepositories(prisma: PrismaClient) {
     return {
-      soulChip: new SoulChipRepository(prisma),
+      // soulChip: new SoulChipRepository(prisma), // TODO: Uncomment when SoulChipRepository is fixed
       skeleton: new SkeletonRepository(prisma),
       part: new PartRepository(prisma),
       expansionChip: new ExpansionChipRepository(prisma),

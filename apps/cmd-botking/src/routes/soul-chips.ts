@@ -8,7 +8,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { LoggerFactory } from "@botking/logger";
 import { Rarity } from "@botking/dto";
-import { dtoService } from "@/services/dto-service";
+import { dtoService } from "../services/dto-service";
 
 // Type declaration for Hono context to fix requestId typing
 declare module "hono" {

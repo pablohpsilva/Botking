@@ -14,7 +14,7 @@ import {
   SpeedUpTarget,
   GemType,
 } from "@botking/dto";
-import { dtoService } from "@/services/dto-service";
+import { dtoService } from "../services/dto-service";
 
 // Type declaration for Hono context to fix requestId typing
 declare module "hono" {

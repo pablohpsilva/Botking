@@ -9,7 +9,7 @@ import { z } from "zod";
 import { LoggerFactory } from "@botking/logger";
 import { BotDTOFactory } from "@botking/dto";
 import { BotTypeSchema, SkeletonTypeSchema } from "@botking/db";
-import { dtoService } from "@/services/dto-service";
+import { dtoService } from "../services/dto-service";
 import { BotValidator, SkeletonType } from "@botking/artifact";
 
 // Type declaration for Hono context to fix requestId typing

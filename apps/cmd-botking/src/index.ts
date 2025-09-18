@@ -33,6 +33,8 @@ import { botRoutes } from "./routes/bots";
 import { itemRoutes } from "./routes/items";
 import { soulChipRoutes } from "./routes/soul-chips";
 import { tradingRoutes } from "./routes/trading";
+import { userRoutes } from "./routes/users";
+import { accountRoutes } from "./routes/accounts";
 import { healthRoutes } from "./routes/health";
 import { docsRoutes } from "./routes/docs";
 
@@ -77,6 +79,8 @@ app.get("/", (c) => {
       "/api/v1/items": "Item management CRUD",
       "/api/v1/soul-chips": "Soul chip management CRUD",
       "/api/v1/trading": "Trading system CRUD",
+      "/api/v1/users": "User management CRUD",
+      "/api/v1/accounts": "Account management CRUD",
       "/demo/bot": "Create demo bot using artifacts",
       "/demo/item": "Create demo item using artifacts",
       "/demo/soul-chip": "Create demo soul chip using artifacts",
@@ -91,6 +95,8 @@ app.route("/api/v1/bots", botRoutes);
 app.route("/api/v1/items", itemRoutes);
 app.route("/api/v1/soul-chips", soulChipRoutes);
 app.route("/api/v1/trading", tradingRoutes);
+app.route("/api/v1/users", userRoutes);
+app.route("/api/v1/accounts", accountRoutes);
 
 // Mount health and docs routes
 app.route("/health", healthRoutes);
@@ -315,6 +321,8 @@ app.notFound((c) => {
           "/api/v1/items",
           "/api/v1/soul-chips",
           "/api/v1/trading",
+          "/api/v1/users",
+          "/api/v1/accounts",
           "/demo/bot",
           "/demo/item",
           "/demo/soul-chip",
@@ -358,6 +366,12 @@ async function startServer() {
     );
     console.log(
       `   • CRUD http://localhost:${port}/api/v1/trading - Trading system`
+    );
+    console.log(
+      `   • CRUD http://localhost:${port}/api/v1/users   - User management`
+    );
+    console.log(
+      `   • CRUD http://localhost:${port}/api/v1/accounts - Account management`
     );
     console.log(`🧪 Demo Endpoints:`);
     console.log(

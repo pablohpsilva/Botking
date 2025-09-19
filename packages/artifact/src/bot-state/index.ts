@@ -3,6 +3,8 @@
  */
 
 import { type BotLocation, type BotState as PrismaBotState } from "@botking/db";
+import { BotStateCreateInputObjectSchema } from "@botking/db/src/generated/zod/schemas/objects/BotStateCreateInput.schema";
+import { BotStateUpdateInputObjectSchema } from "@botking/db/src/generated/zod/schemas/objects/BotStateUpdateInput.schema";
 import { IGenericArtifact } from "../types";
 
 export interface IBotState
@@ -114,10 +116,10 @@ export class BotState extends BaseBotState implements IBotState {
   }
 
   validateCreation(prismaBotState: PrismaBotState | BotState): boolean {
-    return CreateBotStateSchema.safeParse(prismaBotState).success;
+    return BotStateCreateInputObjectSchema.safeParse(prismaBotState).success;
   }
 
   validateUpdate(prismaBotState: PrismaBotState | BotState): boolean {
-    return UpdateBotStateSchema.safeParse(prismaBotState).success;
+    return BotStateUpdateInputObjectSchema.safeParse(prismaBotState).success;
   }
 }

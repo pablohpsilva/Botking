@@ -9,14 +9,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./schemas": {
-      "types": "./dist/generated/zod/schemas/index.d.ts",
-      "default": "./dist/generated/zod/schemas/index.js"
-    },
-    "./schemas/helpers": {
-      "types": "./dist/generated/zod/helpers/json-helpers.d.ts",
-      "default": "./dist/generated/zod/helpers/json-helpers.js"
     }
   },
   "scripts": {

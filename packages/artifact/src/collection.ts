@@ -44,42 +44,9 @@ export abstract class BaseCollection {
     this.createdAt = prismaCollection.createdAt;
     this.updatedAt = prismaCollection.updatedAt;
   }
-}
 
-/**
- * Collection artifact implementation - directly based on database schema
- */
-export class Collection extends BaseCollection implements ICollection {
-  constructor(prismaCollection: PrismaCollection) {
-    super(prismaCollection);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaCollection {
     return {
-      id: this.id,
-      userId: this.userId,
-      name: this.name,
-      description: this.description,
-      type: this.type,
-      itemIds: this.itemIds,
-      isPublic: this.isPublic,
-      shareCode: this.shareCode,
-      version: this.version,
-      source: this.source,
-      tags: this.tags,
-      metadata: this.metadata,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): ICollection {
-    const prismaCollectionData: PrismaCollection = {
       id: this.id,
       userId: this.userId,
       name: this.name,
@@ -95,7 +62,31 @@ export class Collection extends BaseCollection implements ICollection {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
+  }
 
-    return new Collection(prismaCollectionData);
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): ICollection {
+    return new Collection(this._shalowClone());
+  }
+}
+
+/**
+ * Collection artifact implementation - directly based on database schema
+ */
+export class Collection extends BaseCollection implements ICollection {
+  constructor(prismaCollection: PrismaCollection) {
+    super(prismaCollection);
   }
 }

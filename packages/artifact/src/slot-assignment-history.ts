@@ -48,21 +48,8 @@ export abstract class BaseSlotAssignmentHistory {
     > | null;
     this.createdAt = prismaSlotAssignmentHistory.createdAt;
   }
-}
 
-/**
- * SlotAssignmentHistory artifact implementation - directly based on database schema
- */
-export class SlotAssignmentHistory
-  extends BaseSlotAssignmentHistory
-  implements ISlotAssignmentHistory
-{
-  constructor(prismaSlotAssignmentHistory: PrismaSlotAssignmentHistory) {
-    super(prismaSlotAssignmentHistory);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaSlotAssignmentHistory {
     return {
       id: this.id,
       botId: this.botId,
@@ -74,8 +61,17 @@ export class SlotAssignmentHistory
       previousState: this.previousState,
       newState: this.newState,
       userId: this.userId,
-      timestamp: this.timestamp.toISOString(),
       metadata: this.metadata,
+      timestamp: new Date(this.timestamp),
+      createdAt: new Date(this.createdAt),
+    };
+  }
+
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      timestamp: this.timestamp.toISOString(),
       createdAt: this.createdAt.toISOString(),
     };
   }
@@ -85,22 +81,18 @@ export class SlotAssignmentHistory
   }
 
   clone(): ISlotAssignmentHistory {
-    const prismaSlotAssignmentHistoryData: PrismaSlotAssignmentHistory = {
-      id: this.id,
-      botId: this.botId,
-      operation: this.operation,
-      slotId: this.slotId,
-      partId: this.partId,
-      targetSlotId: this.targetSlotId,
-      swapWithSlotId: this.swapWithSlotId,
-      previousState: this.previousState,
-      newState: this.newState,
-      userId: this.userId,
-      timestamp: this.timestamp,
-      metadata: this.metadata,
-      createdAt: this.createdAt,
-    };
+    return new SlotAssignmentHistory(this._shalowClone());
+  }
+}
 
-    return new SlotAssignmentHistory(prismaSlotAssignmentHistoryData);
+/**
+ * SlotAssignmentHistory artifact implementation - directly based on database schema
+ */
+export class SlotAssignmentHistory
+  extends BaseSlotAssignmentHistory
+  implements ISlotAssignmentHistory
+{
+  constructor(prismaSlotAssignmentHistory: PrismaSlotAssignmentHistory) {
+    super(prismaSlotAssignmentHistory);
   }
 }

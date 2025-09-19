@@ -25,22 +25,22 @@ export abstract class BaseVerification {
     this.createdAt = prismaVerification.createdAt;
     this.updatedAt = prismaVerification.updatedAt;
   }
-}
 
-/**
- * Verification artifact implementation - directly based on database schema
- */
-export class Verification extends BaseVerification implements IVerification {
-  constructor(prismaVerification: PrismaVerification) {
-    super(prismaVerification);
+  protected _shalowClone(): PrismaVerification {
+    return {
+      id: this.id,
+      identifier: this.identifier,
+      value: this.value,
+      expiresAt: this.expiresAt,
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+    };
   }
 
   // Serialization
   toJSON(): Record<string, any> {
     return {
-      id: this.id,
-      identifier: this.identifier,
-      value: this.value,
+      ...this._shalowClone(),
       expiresAt: this.expiresAt.toISOString(),
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
@@ -52,15 +52,15 @@ export class Verification extends BaseVerification implements IVerification {
   }
 
   clone(): IVerification {
-    const prismaVerificationData: PrismaVerification = {
-      id: this.id,
-      identifier: this.identifier,
-      value: this.value,
-      expiresAt: this.expiresAt,
-      createdAt: new Date(this.createdAt),
-      updatedAt: new Date(this.updatedAt),
-    };
+    return new Verification(this._shalowClone());
+  }
+}
 
-    return new Verification(prismaVerificationData);
+/**
+ * Verification artifact implementation - directly based on database schema
+ */
+export class Verification extends BaseVerification implements IVerification {
+  constructor(prismaVerification: PrismaVerification) {
+    super(prismaVerification);
   }
 }

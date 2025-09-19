@@ -8,17 +8,17 @@ import { CreateBotSchema } from "./types";
  */
 
 const WorkerBotBaseSchema = CreateBotSchema.safeExtend({
-  botType: BotType.WORKER,
-  userId: z.string().min(1, "User ID is required").optional(),
+  botType: z.literal(BotType.WORKER),
+  userId: z.string().min(1, "User ID is required").nullable().optional(),
   skeletonId: z.string().min(1, "Skeleton ID is required"),
-  soulChipId: z.string().min(1, "Soul chip ID is required"),
+  soulChipId: z.null().optional(),
   name: z
     .string()
     .min(1, "Name is required")
     .max(100, "Name must be 100 characters or less"),
   combatRole: z.null().optional(),
-  governmentType: z.enum(GovernmentType).optional(),
-  description: z.string().optional(),
+  governmentType: z.null().or(z.enum(GovernmentType)),
+  description: z.string().nullable().optional(),
   utilitySpec: z.enum(UtilitySpecialization),
 });
 

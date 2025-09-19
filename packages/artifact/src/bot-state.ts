@@ -1,11 +1,7 @@
-/**
- * User artifact implementation based on schema.prisma User model
- */
-
 import { type BotLocation, type BotState as PrismaBotState } from "@botking/db";
-import { BotStateCreateInputObjectSchema } from "@botking/db/src/generated/zod/schemas/objects/BotStateCreateInput.schema";
-import { BotStateUpdateInputObjectSchema } from "@botking/db/src/generated/zod/schemas/objects/BotStateUpdateInput.schema";
-import { IGenericArtifact } from "../types";
+import { CreateBotStateSchema, UpdateBotStateSchema } from "@botking/validator";
+
+import { IGenericArtifact } from "./types";
 
 export interface IBotState
   extends PrismaBotState,
@@ -48,46 +44,9 @@ export abstract class BaseBotState {
     this.createdAt = prismaBotState.createdAt;
     this.updatedAt = prismaBotState.updatedAt;
   }
-}
 
-/**
- * User artifact implementation - directly based on database schema
- */
-export class BotState extends BaseBotState implements IBotState {
-  constructor(prismaBotState: PrismaBotState) {
-    super(prismaBotState);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaBotState {
     return {
-      id: this.id,
-      userId: this.userId,
-      botId: this.botId,
-      //
-      energyLevel: this.energyLevel,
-      healthLevel: this.healthLevel,
-      currentLocation: this.currentLocation,
-      experience: this.experience,
-      bondLevel: this.bondLevel,
-      level: this.level,
-      //
-      energy: this.energy,
-      maxEnergy: this.maxEnergy,
-      health: this.health,
-      maxHealth: this.maxHealth,
-      //
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): IBotState {
-    const prismaBotStateData: PrismaBotState = {
       id: this.id,
       userId: this.userId,
       botId: this.botId,
@@ -107,8 +66,33 @@ export class BotState extends BaseBotState implements IBotState {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
+  }
 
-    return new BotState(prismaBotStateData);
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      //
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IBotState {
+    return new BotState(this._shalowClone());
+  }
+}
+
+/**
+ * User artifact implementation - directly based on database schema
+ */
+export class BotState extends BaseBotState implements IBotState {
+  constructor(prismaBotState: PrismaBotState) {
+    super(prismaBotState);
   }
 
   validate(): boolean {
@@ -116,10 +100,10 @@ export class BotState extends BaseBotState implements IBotState {
   }
 
   validateCreation(prismaBotState: PrismaBotState | BotState): boolean {
-    return BotStateCreateInputObjectSchema.safeParse(prismaBotState).success;
+    return CreateBotStateSchema.safeParse(prismaBotState).success;
   }
 
   validateUpdate(prismaBotState: PrismaBotState | BotState): boolean {
-    return BotStateUpdateInputObjectSchema.safeParse(prismaBotState).success;
+    return UpdateBotStateSchema.safeParse(prismaBotState).success;
   }
 }

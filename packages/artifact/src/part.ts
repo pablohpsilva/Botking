@@ -55,48 +55,9 @@ export abstract class BasePart {
     this.createdAt = prismaPart.createdAt;
     this.updatedAt = prismaPart.updatedAt;
   }
-}
 
-/**
- * User artifact implementation - directly based on database schema
- */
-export class Part extends BasePart implements IPart {
-  constructor(prismaPart: PrismaPart) {
-    super(prismaPart);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaPart {
     return {
-      id: this.id,
-      userId: this.userId,
-      category: this.category,
-      rarity: this.rarity,
-      attack: this.attack,
-      defense: this.defense,
-      speed: this.speed,
-      perception: this.perception,
-      energyConsumption: this.energyConsumption,
-      upgradeLevel: this.upgradeLevel,
-      currentDurability: this.currentDurability,
-      maxDurability: this.maxDurability,
-      abilities: this.abilities,
-      version: this.version,
-      source: this.source,
-      tags: this.tags,
-      description: this.description,
-      metadata: this.metadata,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): IPart {
-    const prismaPartData: PrismaPart = {
       name: this.name,
       userId: this.userId,
       id: this.id,
@@ -119,7 +80,31 @@ export class Part extends BasePart implements IPart {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
+  }
 
-    return new Part(prismaPartData);
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IPart {
+    return new Part(this._shalowClone());
+  }
+}
+
+/**
+ * User artifact implementation - directly based on database schema
+ */
+export class Part extends BasePart implements IPart {
+  constructor(prismaPart: PrismaPart) {
+    super(prismaPart);
   }
 }

@@ -10,26 +10,20 @@ export class PlayableBot extends Bot {
   constructor(prismaBot: PrismaBot) {
     super({
       ...prismaBot,
-      /**
-       * Business rules
-       * - Playable bots don't have a utility specialization
-       * - Playable bots must have a combat role
-       * - Playable bots must have a soul chip
-       * - Playable bots must have a user id
-       */
+      utilitySpec: null,
       botType: BotType.PLAYABLE,
     });
   }
 
-  override validate(prismaBot: PrismaBot | Bot): boolean {
-    return CreatePlayableBotSchema.safeParse(prismaBot).success;
+  validate(): boolean {
+    return CreatePlayableBotSchema.safeParse(this._shalowClone()).success;
   }
 
-  override validateCreation(prismaBot: PrismaBot | Bot): boolean {
-    return this.validate(prismaBot);
+  validateCreation(): boolean {
+    return this.validate();
   }
 
-  override validateUpdate(prismaBot: PrismaBot | Bot): boolean {
-    return UpdatePlayableBotSchema.safeParse(prismaBot).success;
+  validateUpdate(): boolean {
+    return UpdatePlayableBotSchema.safeParse(this._shalowClone()).success;
   }
 }

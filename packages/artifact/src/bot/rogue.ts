@@ -7,23 +7,20 @@ export class RogueBot extends Bot {
   constructor(prismaBot: PrismaBot) {
     super({
       ...prismaBot,
-      /**
-       * Business rules
-       * - Rogue bots don't have a utility specialization
-       */
+      utilitySpec: null,
       botType: BotType.ROGUE,
     });
   }
 
-  override validate(prismaBot: PrismaBot | Bot): boolean {
-    return CreateRogueBotSchema.safeParse(prismaBot).success;
+  validate(): boolean {
+    return CreateRogueBotSchema.safeParse(this._shalowClone()).success;
   }
 
-  override validateCreation(prismaBot: PrismaBot | Bot): boolean {
-    return this.validate(prismaBot);
+  validateCreation(): boolean {
+    return this.validate();
   }
 
-  override validateUpdate(prismaBot: PrismaBot | Bot): boolean {
-    return UpdateRogueBotSchema.safeParse(prismaBot).success;
+  validateUpdate(): boolean {
+    return UpdateRogueBotSchema.safeParse(this._shalowClone()).success;
   }
 }

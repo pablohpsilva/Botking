@@ -31,23 +31,25 @@ export abstract class BaseUserInventory {
     this.createdAt = prismaUserInventory.createdAt;
     this.updatedAt = prismaUserInventory.updatedAt;
   }
-}
 
-/**
- * UserInventory artifact implementation - directly based on database schema
- */
-export class UserInventory extends BaseUserInventory implements IUserInventory {
-  constructor(prismaUserInventory: PrismaUserInventory) {
-    super(prismaUserInventory);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaUserInventory {
     return {
       id: this.id,
       userId: this.userId,
       itemId: this.itemId,
       quantity: this.quantity,
+      acquiredAt: new Date(this.acquiredAt),
+      metadata: this.metadata,
+      expiresAt: this.expiresAt ? new Date(this.expiresAt) : null,
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+    };
+  }
+
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
       acquiredAt: this.acquiredAt.toISOString(),
       expiresAt: this.expiresAt?.toISOString(),
       createdAt: this.createdAt.toISOString(),
@@ -60,18 +62,15 @@ export class UserInventory extends BaseUserInventory implements IUserInventory {
   }
 
   clone(): IUserInventory {
-    const prismaUserInventoryData: PrismaUserInventory = {
-      id: this.id,
-      userId: this.userId,
-      itemId: this.itemId,
-      quantity: this.quantity,
-      acquiredAt: this.acquiredAt,
-      expiresAt: this.expiresAt,
-      metadata: this.metadata,
-      createdAt: new Date(this.createdAt),
-      updatedAt: new Date(this.updatedAt),
-    };
+    return new UserInventory(this._shalowClone());
+  }
+}
 
-    return new UserInventory(prismaUserInventoryData);
+/**
+ * UserInventory artifact implementation - directly based on database schema
+ */
+export class UserInventory extends BaseUserInventory implements IUserInventory {
+  constructor(prismaUserInventory: PrismaUserInventory) {
+    super(prismaUserInventory);
   }
 }

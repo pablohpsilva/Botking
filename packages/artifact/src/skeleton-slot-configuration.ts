@@ -30,6 +30,33 @@ export abstract class BaseSkeletonSlotConfiguration {
     this.createdAt = prismaSkeletonSlotConfiguration.createdAt;
     this.updatedAt = prismaSkeletonSlotConfiguration.updatedAt;
   }
+
+  protected _shalowClone(): PrismaSkeletonSlotConfiguration {
+    return {
+      id: this.id,
+      botId: this.botId,
+      skeletonType: this.skeletonType,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
+  }
+
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): ISkeletonSlotConfiguration {
+    return new SkeletonSlotConfiguration(this._shalowClone());
+  }
 }
 
 /**
@@ -43,35 +70,5 @@ export class SkeletonSlotConfiguration
     prismaSkeletonSlotConfiguration: PrismaSkeletonSlotConfiguration
   ) {
     super(prismaSkeletonSlotConfiguration);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
-    return {
-      id: this.id,
-      botId: this.botId,
-      skeletonType: this.skeletonType,
-      lastModified: this.lastModified.toISOString(),
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): ISkeletonSlotConfiguration {
-    const prismaSkeletonSlotConfigurationData: PrismaSkeletonSlotConfiguration =
-      {
-        id: this.id,
-        botId: this.botId,
-        skeletonType: this.skeletonType,
-        lastModified: this.lastModified,
-        createdAt: this.createdAt,
-        updatedAt: this.updatedAt,
-      };
-
-    return new SkeletonSlotConfiguration(prismaSkeletonSlotConfigurationData);
   }
 }

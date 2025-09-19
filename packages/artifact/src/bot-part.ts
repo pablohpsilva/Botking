@@ -3,6 +3,8 @@
  */
 
 import type { BotPart as PrismaBotPart } from "@botking/db";
+import { CreateBotPartSchema, UpdateBotPartSchema } from "@botking/validator";
+
 import { IGenericArtifact } from "./types";
 
 export interface IBotPart
@@ -23,6 +25,32 @@ export abstract class BaseBotPart {
     this.slotIndex = prismaBotPart.slotIndex;
     this.createdAt = prismaBotPart.createdAt;
   }
+
+  protected _shalowClone(): PrismaBotPart {
+    return {
+      id: this.id,
+      botId: this.botId,
+      partId: this.partId,
+      slotIndex: this.slotIndex,
+      createdAt: new Date(this.createdAt),
+    };
+  }
+
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IBotPart {
+    return new BotPart(this._shalowClone());
+  }
 }
 
 /**
@@ -33,30 +61,15 @@ export class BotPart extends BaseBotPart implements IBotPart {
     super(prismaBotPart);
   }
 
-  // Serialization
-  toJSON(): Record<string, any> {
-    return {
-      id: this.id,
-      botId: this.botId,
-      partId: this.partId,
-      slotIndex: this.slotIndex,
-      createdAt: this.createdAt.toISOString(),
-    };
+  validate(): boolean {
+    return true;
   }
 
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
+  validateCreation(): boolean {
+    return CreateBotPartSchema.safeParse(this._shalowClone()).success;
   }
 
-  clone(): IBotPart {
-    const prismaBotPartData: PrismaBotPart = {
-      id: this.id,
-      botId: this.botId,
-      partId: this.partId,
-      slotIndex: this.slotIndex,
-      createdAt: new Date(this.createdAt),
-    };
-
-    return new BotPart(prismaBotPartData);
+  validateUpdate(): boolean {
+    return UpdateBotPartSchema.safeParse(this._shalowClone()).success;
   }
 }

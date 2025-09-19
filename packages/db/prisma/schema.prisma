@@ -321,7 +321,6 @@ model SkeletonSlotConfiguration {
   id           String       @id @default(cuid())
   botId        String       @unique // One-to-one with Bot
   skeletonType SkeletonType
-  lastModified DateTime     @default(now())
 
   // Relations
   bot             Bot              @relation(fields: [botId], references: [id], onDelete: Cascade)

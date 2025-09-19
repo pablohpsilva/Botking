@@ -9,7 +9,6 @@ import {
   type Bot as PrismaBot,
   type UtilitySpecialization,
 } from "@botking/db";
-import { CreateBotSchema, UpdateBotSchema } from "@botking/validator";
 import { IGenericArtifact } from "../types";
 export interface IBot
   extends PrismaBot,
@@ -55,32 +54,8 @@ export class Bot extends BaseBot implements IBot {
     super(prismaBot);
   }
 
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaBot {
     return {
-      id: this.id,
-      userId: this.userId,
-      soulChipId: this.soulChipId,
-      skeletonId: this.skeletonId,
-      stateId: this.stateId,
-      // Non-ID fields
-      name: this.name,
-      botType: this.botType,
-      combatRole: this.combatRole,
-      utilitySpec: this.utilitySpec,
-      governmentType: this.governmentType,
-      description: this.description,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): IBot {
-    const prismaBotData: PrismaBot = {
       id: this.id,
       userId: this.userId,
       soulChipId: this.soulChipId,
@@ -95,19 +70,22 @@ export class Bot extends BaseBot implements IBot {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
-
-    return new Bot(prismaBotData);
   }
 
-  validate(_prismaBot: PrismaBot | Bot): boolean {
-    return true;
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
   }
 
-  validateCreation(prismaBot: PrismaBot | Bot): boolean {
-    return CreateBotSchema.safeParse(prismaBot).success;
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
   }
 
-  validateUpdate(prismaBot: PrismaBot | Bot): boolean {
-    return UpdateBotSchema.safeParse(prismaBot).success;
+  clone(): IBot {
+    return new Bot(this._shalowClone());
   }
 }

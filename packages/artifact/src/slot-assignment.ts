@@ -33,6 +33,39 @@ export abstract class BaseSlotAssignment {
     this.createdAt = prismaSlotAssignment.createdAt;
     this.updatedAt = prismaSlotAssignment.updatedAt;
   }
+
+  protected _shalowClone(): PrismaSlotAssignment {
+    return {
+      id: this.id,
+      slotId: this.slotId,
+      partId: this.partId,
+      partName: this.partName,
+      partCategory: this.partCategory,
+      metadata: this.metadata,
+      configurationId: this.configurationId,
+      assignedAt: new Date(this.assignedAt),
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+    };
+  }
+
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      assignedAt: this.assignedAt.toISOString(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): ISlotAssignment {
+    return new SlotAssignment(this._shalowClone());
+  }
 }
 
 /**
@@ -44,42 +77,5 @@ export class SlotAssignment
 {
   constructor(prismaSlotAssignment: PrismaSlotAssignment) {
     super(prismaSlotAssignment);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
-    return {
-      id: this.id,
-      slotId: this.slotId,
-      partId: this.partId,
-      partName: this.partName,
-      partCategory: this.partCategory,
-      assignedAt: this.assignedAt.toISOString(),
-      metadata: this.metadata,
-      configurationId: this.configurationId,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): ISlotAssignment {
-    const prismaSlotAssignmentData: PrismaSlotAssignment = {
-      id: this.id,
-      slotId: this.slotId,
-      partId: this.partId,
-      partName: this.partName,
-      partCategory: this.partCategory,
-      assignedAt: this.assignedAt,
-      metadata: this.metadata,
-      configurationId: this.configurationId,
-      createdAt: new Date(this.createdAt),
-      updatedAt: new Date(this.updatedAt),
-    };
-
-    return new SlotAssignment(prismaSlotAssignmentData);
   }
 }

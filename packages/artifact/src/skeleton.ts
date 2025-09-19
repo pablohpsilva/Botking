@@ -52,18 +52,12 @@ export abstract class BaseSkeleton {
     this.createdAt = prismaSkeleton.createdAt;
     this.updatedAt = prismaSkeleton.updatedAt;
   }
-}
 
-export class Skeleton extends BaseSkeleton implements ISkeleton {
-  constructor(prismaSkeleton: PrismaSkeleton) {
-    super(prismaSkeleton);
-  }
-
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaSkeleton {
     return {
-      name: this.name,
       id: this.id,
       userId: this.userId,
+      name: this.name,
       type: this.type,
       rarity: this.rarity,
       slots: this.slots,
@@ -78,8 +72,16 @@ export class Skeleton extends BaseSkeleton implements ISkeleton {
       tags: this.tags,
       description: this.description,
       metadata: this.metadata,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+    };
+  }
+
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
     };
   }
 
@@ -88,28 +90,12 @@ export class Skeleton extends BaseSkeleton implements ISkeleton {
   }
 
   clone(): ISkeleton {
-    const prismaSkeleton: PrismaSkeleton = {
-      id: this.id,
-      userId: this.userId,
-      name: this.name,
-      type: this.type,
-      rarity: this.rarity,
-      slots: this.slots,
-      baseDurability: this.baseDurability,
-      currentDurability: this.currentDurability,
-      maxDurability: this.maxDurability,
-      mobilityType: this.mobilityType,
-      upgradeLevel: this.upgradeLevel,
-      specialAbilities: this.specialAbilities,
-      version: this.version,
-      source: this.source,
-      tags: this.tags,
-      description: this.description,
-      metadata: this.metadata,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
+    return new Skeleton(this._shalowClone());
+  }
+}
 
-    return new Skeleton(prismaSkeleton);
+export class Skeleton extends BaseSkeleton implements ISkeleton {
+  constructor(prismaSkeleton: PrismaSkeleton) {
+    super(prismaSkeleton);
   }
 }

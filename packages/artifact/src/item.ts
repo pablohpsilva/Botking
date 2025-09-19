@@ -85,60 +85,9 @@ export abstract class BaseItem {
     this.createdAt = prismaItem.createdAt;
     this.updatedAt = prismaItem.updatedAt;
   }
-}
 
-/**
- * User artifact implementation - directly based on database schema
- */
-export class Item extends BaseItem implements IItem {
-  constructor(prismaItem: PrismaItem) {
-    super(prismaItem);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaItem {
     return {
-      id: this.id,
-      userId: this.userId,
-      name: this.name,
-      category: this.category,
-      rarity: this.rarity,
-      description: this.description,
-      consumable: this.consumable,
-      tradeable: this.tradeable,
-      stackable: this.stackable,
-      maxStackSize: this.maxStackSize,
-      value: this.value,
-      cooldownTime: this.cooldownTime,
-      requirements: this.requirements,
-      source: this.source,
-      tags: this.tags,
-      effects: this.effects,
-      isProtected: this.isProtected,
-      speedUpTarget: this.speedUpTarget,
-      speedMultiplier: this.speedMultiplier,
-      timeReduction: this.timeReduction,
-      resourceType: this.resourceType,
-      resourceAmount: this.resourceAmount,
-      enhancementType: this.enhancementType,
-      enhancementDuration: this.enhancementDuration,
-      statModifiers: this.statModifiers,
-      gemType: this.gemType,
-      gemValue: this.gemValue,
-      tradeHistory: this.tradeHistory,
-      version: this.version,
-      metadata: this.metadata,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): IItem {
-    const prismaItemData: PrismaItem = {
       name: this.name,
       userId: this.userId,
       id: this.id,
@@ -172,7 +121,31 @@ export class Item extends BaseItem implements IItem {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
+  }
 
-    return new Item(prismaItemData);
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IItem {
+    return new Item(this._shalowClone());
+  }
+}
+
+/**
+ * User artifact implementation - directly based on database schema
+ */
+export class Item extends BaseItem implements IItem {
+  constructor(prismaItem: PrismaItem) {
+    super(prismaItem);
   }
 }

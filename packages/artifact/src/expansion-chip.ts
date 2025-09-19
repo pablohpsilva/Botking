@@ -47,42 +47,9 @@ export abstract class BaseExpansionChip {
     this.createdAt = prismaExpansionChip.createdAt;
     this.updatedAt = prismaExpansionChip.updatedAt;
   }
-}
 
-/**
- * User artifact implementation - directly based on database schema
- */
-export class ExpansionChip extends BaseExpansionChip implements IExpansionChip {
-  constructor(prismaExpansionChip: PrismaExpansionChip) {
-    super(prismaExpansionChip);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaExpansionChip {
     return {
-      id: this.id,
-      userId: this.userId,
-      effect: this.effect,
-      rarity: this.rarity,
-      upgradeLevel: this.upgradeLevel,
-      effectMagnitude: this.effectMagnitude,
-      energyCost: this.energyCost,
-      version: this.version,
-      source: this.source,
-      tags: this.tags,
-      description: this.description,
-      metadata: this.metadata,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): IExpansionChip {
-    const prismaExpansionChipData: PrismaExpansionChip = {
       name: this.name,
       userId: this.userId,
       id: this.id,
@@ -99,7 +66,31 @@ export class ExpansionChip extends BaseExpansionChip implements IExpansionChip {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
+  }
 
-    return new ExpansionChip(prismaExpansionChipData);
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IExpansionChip {
+    return new ExpansionChip(this._shalowClone());
+  }
+}
+
+/**
+ * User artifact implementation - directly based on database schema
+ */
+export class ExpansionChip extends BaseExpansionChip implements IExpansionChip {
+  constructor(prismaExpansionChip: PrismaExpansionChip) {
+    super(prismaExpansionChip);
   }
 }

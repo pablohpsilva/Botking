@@ -45,50 +45,9 @@ export abstract class BaseSoulChip {
     this.createdAt = prismaSoulChip.createdAt;
     this.updatedAt = prismaSoulChip.updatedAt;
   }
-}
 
-/**
- * Soul Chip - The core of the bot that defines individuality and emotional connection
- */
-export class SoulChip extends BaseSoulChip implements ISoulChip {
-  constructor(prismaSoulChip: PrismaSoulChip) {
-    super(prismaSoulChip);
-  }
-
-  /**
-   * Serialize the soul chip to JSON
-   */
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaSoulChip {
     return {
-      id: this.id,
-      name: this.name,
-      rarity: this.rarity,
-      personality: this.personality,
-      intelligence: this.intelligence,
-      resilience: this.resilience,
-      adaptability: this.adaptability,
-      experiences: this.experiences,
-      learningRate: this.learningRate,
-      version: this.version,
-      source: this.source,
-      tags: this.tags,
-      description: this.description,
-      metadata: this.metadata,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      specialTrait: this.specialTrait,
-    };
-  }
-
-  /**
-   * Create a SoulChip from JSON data
-   */
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): ISoulChip {
-    const prismaSoulChip: PrismaSoulChip = {
       id: this.id,
       userId: this.userId,
       name: this.name,
@@ -105,10 +64,39 @@ export class SoulChip extends BaseSoulChip implements ISoulChip {
       source: this.source,
       description: this.description,
       metadata: this.metadata,
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+    };
+  }
+
+  /**
+   * Serialize the soul chip to JSON
+   */
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
+  }
 
-    return new SoulChip(prismaSoulChip);
+  /**
+   * Create a SoulChip from JSON data
+   */
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): ISoulChip {
+    return new SoulChip(this._shalowClone());
+  }
+}
+
+/**
+ * Soul Chip - The core of the bot that defines individuality and emotional connection
+ */
+export class SoulChip extends BaseSoulChip implements ISoulChip {
+  constructor(prismaSoulChip: PrismaSoulChip) {
+    super(prismaSoulChip);
   }
 }

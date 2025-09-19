@@ -1,4 +1,4 @@
-import { BotType } from "@botking/db";
+import { BotType, CombatRole, GovernmentType } from "@botking/db";
 import {
   CreateBotSchema,
   CombatRoleSchema,
@@ -11,7 +11,7 @@ import z from "zod";
  */
 
 const GovBotBaseSchema = CreateBotSchema.safeExtend({
-  botType: BotType.GOVBOT,
+  botType: z.literal(BotType.GOVBOT),
   userId: z.null().optional(),
   skeletonId: z.string().min(1, "Skeleton ID is required"),
   soulChipId: z.string().min(1, "Soul chip ID is required").optional(),
@@ -19,8 +19,8 @@ const GovBotBaseSchema = CreateBotSchema.safeExtend({
     .string()
     .min(1, "Name is required")
     .max(100, "Name must be 100 characters or less"),
-  combatRole: CombatRoleSchema.optional(),
-  governmentType: GovernmentTypeSchema,
+  combatRole: z.nativeEnum(CombatRole).optional(),
+  governmentType: z.nativeEnum(GovernmentType),
   description: z.string().optional(),
   utilitySpec: z.null().optional(),
 });

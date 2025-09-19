@@ -51,30 +51,8 @@ export class Account extends BaseAccount implements IAccount {
     super(prismaAccount);
   }
 
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaAccount {
     return {
-      id: this.id,
-      userId: this.userId,
-      providerId: this.providerId,
-      accountId: this.accountId,
-      password: this.password ? "[REDACTED]" : null, // Don't expose password
-      accessToken: this.accessToken ? "[REDACTED]" : null, // Don't expose tokens
-      refreshToken: this.refreshToken ? "[REDACTED]" : null,
-      idToken: this.idToken ? "[REDACTED]" : null,
-      accessTokenExpiresAt: this.accessTokenExpiresAt?.toISOString() || null,
-      refreshTokenExpiresAt: this.refreshTokenExpiresAt?.toISOString() || null,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): IAccount {
-    const prismaAccountData: PrismaAccount = {
       id: this.id,
       userId: this.userId,
       providerId: this.providerId,
@@ -92,7 +70,28 @@ export class Account extends BaseAccount implements IAccount {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
+  }
 
-    return new Account(prismaAccountData);
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      // password: this.password ? "[REDACTED]" : null, // Don't expose password
+      // accessToken: this.accessToken ? "[REDACTED]" : null, // Don't expose tokens
+      // refreshToken: this.refreshToken ? "[REDACTED]" : null,
+      // idToken: this.idToken ? "[REDACTED]" : null,
+      accessTokenExpiresAt: this.accessTokenExpiresAt?.toISOString() || null,
+      refreshTokenExpiresAt: this.refreshTokenExpiresAt?.toISOString() || null,
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IAccount {
+    return new Account(this._shalowClone());
   }
 }

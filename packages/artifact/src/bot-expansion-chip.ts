@@ -1,9 +1,10 @@
-/**
- * BotExpansionChip artifact implementation based on schema.prisma BotExpansionChip model
- */
-
 import type { BotExpansionChip as PrismaBotExpansionChip } from "@botking/db";
+
 import { IGenericArtifact } from "./types";
+import {
+  CreateBotExpansionChipSchema,
+  UpdateBotExpansionChipSchema,
+} from "@botking/validator";
 
 export interface IBotExpansionChip
   extends PrismaBotExpansionChip,
@@ -23,6 +24,32 @@ export abstract class BaseBotExpansionChip {
     this.slotIndex = prismaBotExpansionChip.slotIndex;
     this.createdAt = prismaBotExpansionChip.createdAt;
   }
+
+  protected _shalowClone(): PrismaBotExpansionChip {
+    return {
+      id: this.id,
+      botId: this.botId,
+      expansionChipId: this.expansionChipId,
+      slotIndex: this.slotIndex,
+      createdAt: new Date(this.createdAt),
+    };
+  }
+
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IBotExpansionChip {
+    return new BotExpansionChip(this._shalowClone());
+  }
 }
 
 /**
@@ -36,30 +63,15 @@ export class BotExpansionChip
     super(prismaBotExpansionChip);
   }
 
-  // Serialization
-  toJSON(): Record<string, any> {
-    return {
-      id: this.id,
-      botId: this.botId,
-      expansionChipId: this.expansionChipId,
-      slotIndex: this.slotIndex,
-      createdAt: this.createdAt.toISOString(),
-    };
+  validate(): boolean {
+    return true;
   }
 
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
+  validateCreation(): boolean {
+    return CreateBotExpansionChipSchema.safeParse(this._shalowClone()).success;
   }
 
-  clone(): IBotExpansionChip {
-    const prismaBotExpansionChipData: PrismaBotExpansionChip = {
-      id: this.id,
-      botId: this.botId,
-      expansionChipId: this.expansionChipId,
-      slotIndex: this.slotIndex,
-      createdAt: new Date(this.createdAt),
-    };
-
-    return new BotExpansionChip(prismaBotExpansionChipData);
+  validateUpdate(): boolean {
+    return UpdateBotExpansionChipSchema.safeParse(this._shalowClone()).success;
   }
 }

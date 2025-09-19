@@ -25,23 +25,23 @@ export abstract class BaseSession {
     this.createdAt = prismaSession.createdAt;
     this.updatedAt = prismaSession.updatedAt;
   }
-}
 
-/**
- * Session artifact implementation - directly based on database schema
- */
-export class Session extends BaseSession implements ISession {
-  constructor(prismaSession: PrismaSession) {
-    super(prismaSession);
+  protected _shalowClone(): PrismaSession {
+    return {
+      id: this.id,
+      token: this.token,
+      expiresAt: this.expiresAt,
+      userId: this.userId,
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+    };
   }
 
   // Serialization
   toJSON(): Record<string, any> {
     return {
-      id: this.id,
-      token: this.token,
+      ...this._shalowClone(),
       expiresAt: this.expiresAt.toISOString(),
-      userId: this.userId,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
     };
@@ -52,15 +52,15 @@ export class Session extends BaseSession implements ISession {
   }
 
   clone(): ISession {
-    const prismaSessionData: PrismaSession = {
-      id: this.id,
-      token: this.token,
-      expiresAt: this.expiresAt,
-      userId: this.userId,
-      createdAt: new Date(this.createdAt),
-      updatedAt: new Date(this.updatedAt),
-    };
+    return new Session(this._shalowClone());
+  }
+}
 
-    return new Session(prismaSessionData);
+/**
+ * Session artifact implementation - directly based on database schema
+ */
+export class Session extends BaseSession implements ISession {
+  constructor(prismaSession: PrismaSession) {
+    super(prismaSession);
   }
 }

@@ -28,24 +28,23 @@ export abstract class BaseUser {
     this.createdAt = prismaUser.createdAt;
     this.updatedAt = prismaUser.updatedAt;
   }
-}
 
-/**
- * User artifact implementation - directly based on database schema
- */
-export class User extends BaseUser implements IUser {
-  constructor(prismaUser: PrismaUser) {
-    super(prismaUser);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaUser {
     return {
       id: this.id,
       email: this.email,
       emailVerified: this.emailVerified,
       name: this.name,
       image: this.image,
+      createdAt: new Date(this.createdAt),
+      updatedAt: new Date(this.updatedAt),
+    };
+  }
+
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
     };
@@ -56,16 +55,15 @@ export class User extends BaseUser implements IUser {
   }
 
   clone(): IUser {
-    const prismaUserData: PrismaUser = {
-      id: this.id,
-      email: this.email,
-      emailVerified: this.emailVerified,
-      name: this.name,
-      image: this.image,
-      createdAt: new Date(this.createdAt),
-      updatedAt: new Date(this.updatedAt),
-    };
+    return new User(this._shalowClone());
+  }
+}
 
-    return new User(prismaUserData);
+/**
+ * User artifact implementation - directly based on database schema
+ */
+export class User extends BaseUser implements IUser {
+  constructor(prismaUser: PrismaUser) {
+    super(prismaUser);
   }
 }

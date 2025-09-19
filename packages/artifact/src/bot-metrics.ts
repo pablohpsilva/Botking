@@ -1,13 +1,10 @@
-/**
- * User artifact implementation based on schema.prisma User model
- */
-
+import { type BotMetric as PrismaBotMetric } from "@botking/db";
 import {
   CreateBotMetricSchema,
   UpdateBotMetricSchema,
-  type BotMetric as PrismaBotMetric,
-} from "@botking/db";
-import { IGenericArtifact } from "../types";
+} from "@botking/validator";
+
+import { IGenericArtifact } from "./types";
 
 export interface IBotMetric
   extends PrismaBotMetric,
@@ -46,45 +43,9 @@ export abstract class BaseBotMetric {
     this.createdAt = prismaBotMetrics.createdAt;
     this.updatedAt = prismaBotMetrics.updatedAt;
   }
-}
 
-/**
- * User artifact implementation - directly based on database schema
- */
-export class BotMetric extends BaseBotMetric implements IBotMetric {
-  constructor(prismaBotMetrics: PrismaBotMetric) {
-    super(prismaBotMetrics);
-  }
-
-  // Serialization
-  toJSON(): Record<string, any> {
+  protected _shalowClone(): PrismaBotMetric {
     return {
-      id: this.id,
-      userId: this.userId,
-      botId: this.botId,
-      //
-      battlesWon: this.battlesWon,
-      battlesLost: this.battlesLost,
-      totalBattles: this.totalBattles,
-      //
-      missionsCompleted: this.missionsCompleted,
-      successRate: this.successRate,
-      totalCombatTime: this.totalCombatTime,
-      damageDealt: this.damageDealt,
-      damageTaken: this.damageTaken,
-      //
-      //
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
-  }
-
-  serialize(): string {
-    return JSON.stringify(this.toJSON());
-  }
-
-  clone(): IBotMetric {
-    const prismaBotMetricsData: PrismaBotMetric = {
       id: this.id,
       userId: this.userId,
       botId: this.botId,
@@ -102,8 +63,32 @@ export class BotMetric extends BaseBotMetric implements IBotMetric {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
+  }
 
-    return new BotMetric(prismaBotMetricsData);
+  // Serialization
+  toJSON(): Record<string, any> {
+    return {
+      ...this._shalowClone(),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
+    };
+  }
+
+  serialize(): string {
+    return JSON.stringify(this.toJSON());
+  }
+
+  clone(): IBotMetric {
+    return new BotMetric(this._shalowClone());
+  }
+}
+
+/**
+ * User artifact implementation - directly based on database schema
+ */
+export class BotMetric extends BaseBotMetric implements IBotMetric {
+  constructor(prismaBotMetrics: PrismaBotMetric) {
+    super(prismaBotMetrics);
   }
 
   validate(): boolean {

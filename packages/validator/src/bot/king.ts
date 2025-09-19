@@ -7,7 +7,7 @@ import z from "zod";
  */
 
 const KingBotBaseSchema = CreateBotSchema.safeExtend({
-  botType: BotType.KING,
+  botType: z.literal(BotType.KING),
   userId: z.string().min(1, "User ID is required").optional(),
   skeletonId: z.string().min(1, "Skeleton ID is required"),
   soulChipId: z.string().min(1, "Soul chip ID is required"),

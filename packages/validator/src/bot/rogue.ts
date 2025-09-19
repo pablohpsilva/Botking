@@ -8,7 +8,7 @@ import { CombatRoleSchema, CreateBotSchema } from "./types";
  */
 
 const RogueBotBaseSchema = CreateBotSchema.safeExtend({
-  botType: BotType.ROGUE,
+  botType: z.literal(BotType.ROGUE),
   userId: z.string().min(1, "User ID is required").optional(),
   skeletonId: z.string().min(1, "Skeleton ID is required"),
   soulChipId: z.string().min(1, "Soul chip ID is required"),

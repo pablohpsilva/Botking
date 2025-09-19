@@ -13,14 +13,14 @@ export class KingBot extends Bot {
   }
 
   validate(): boolean {
-    return CreateKingBotSchema.safeParse(this._shalowClone()).success;
+    return this._validate(CreateKingBotSchema, UpdateKingBotSchema);
   }
 
-  validateCreation(): boolean {
-    return this.validate();
+  validateCreation(): void {
+    this._validateCreation(CreateKingBotSchema);
   }
 
-  validateUpdate(): boolean {
-    return UpdateKingBotSchema.safeParse(this._shalowClone()).success;
+  validateUpdate(): void {
+    this._validateUpdate(UpdateKingBotSchema);
   }
 }

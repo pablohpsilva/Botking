@@ -13,14 +13,14 @@ export class RogueBot extends Bot {
   }
 
   validate(): boolean {
-    return CreateRogueBotSchema.safeParse(this._shalowClone()).success;
+    return this._validate(CreateRogueBotSchema, UpdateRogueBotSchema);
   }
 
-  validateCreation(): boolean {
-    return this.validate();
+  validateCreation(): void {
+    this._validateCreation(CreateRogueBotSchema);
   }
 
-  validateUpdate(): boolean {
-    return UpdateRogueBotSchema.safeParse(this._shalowClone()).success;
+  validateUpdate(): void {
+    this._validateUpdate(UpdateRogueBotSchema);
   }
 }

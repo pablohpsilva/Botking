@@ -17,14 +17,14 @@ export class WorkerBot extends Bot {
   }
 
   validate(): boolean {
-    return CreateWorkerBotSchema.safeParse(this._shalowClone()).success;
+    return this._validate(CreateWorkerBotSchema, UpdateWorkerBotSchema);
   }
 
-  validateCreation(): boolean {
-    return this.validate();
+  validateCreation(): void {
+    this._validateCreation(CreateWorkerBotSchema);
   }
 
-  validateUpdate(): boolean {
-    return UpdateWorkerBotSchema.safeParse(this._shalowClone()).success;
+  validateUpdate(): void {
+    this._validateUpdate(UpdateWorkerBotSchema);
   }
 }

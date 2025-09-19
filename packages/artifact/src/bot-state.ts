@@ -1,5 +1,9 @@
 import { type BotLocation, type BotState as PrismaBotState } from "@botking/db";
-import { CreateBotStateSchema, UpdateBotStateSchema } from "@botking/validator";
+import {
+  CreateBotStateSchema,
+  UpdateBotStateSchema,
+  ZodSchema,
+} from "@botking/validator";
 
 import { IGenericArtifact } from "./types";
 
@@ -68,6 +72,32 @@ export abstract class BaseBotState {
     };
   }
 
+  protected _validate(
+    createSchema: ZodSchema,
+    updateSchema: ZodSchema
+  ): boolean {
+    return (
+      createSchema.safeParse(this._shalowClone()).success ||
+      updateSchema.safeParse(this._shalowClone()).success
+    );
+  }
+
+  protected _validateCreation(createSchema: ZodSchema): void {
+    const validation = createSchema.safeParse(this._shalowClone());
+
+    if (!validation.success) {
+      throw new Error(validation.error.issues.join(", "));
+    }
+  }
+
+  protected _validateUpdate(updateSchema: ZodSchema): void {
+    const validation = updateSchema.safeParse(this._shalowClone());
+
+    if (!validation.success) {
+      throw new Error(validation.error.issues.join(", "));
+    }
+  }
+
   // Serialization
   toJSON(): Record<string, any> {
     return {
@@ -96,14 +126,14 @@ export class BotState extends BaseBotState implements IBotState {
   }
 
   validate(): boolean {
-    return true;
+    return this._validate(CreateBotStateSchema, UpdateBotStateSchema);
   }
 
-  validateCreation(prismaBotState: PrismaBotState | BotState): boolean {
-    return CreateBotStateSchema.safeParse(prismaBotState).success;
+  validateCreation(): void {
+    this._validateCreation(CreateBotStateSchema);
   }
 
-  validateUpdate(prismaBotState: PrismaBotState | BotState): boolean {
-    return UpdateBotStateSchema.safeParse(prismaBotState).success;
+  validateUpdate(): void {
+    this._validateUpdate(UpdateBotStateSchema);
   }
 }

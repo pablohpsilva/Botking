@@ -14,14 +14,14 @@ export class GovBot extends Bot {
   }
 
   validate(): boolean {
-    return CreateGovBotSchema.safeParse(this._shalowClone()).success;
+    return this._validate(CreateGovBotSchema, UpdateGovBotSchema);
   }
 
-  validateCreation(): boolean {
-    return this.validate();
+  validateCreation(): void {
+    this._validateCreation(CreateGovBotSchema);
   }
 
-  validateUpdate(): boolean {
-    return UpdateGovBotSchema.safeParse(this._shalowClone()).success;
+  validateUpdate(): void {
+    this._validateUpdate(UpdateGovBotSchema);
   }
 }

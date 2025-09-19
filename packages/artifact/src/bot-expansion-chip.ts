@@ -4,6 +4,7 @@ import { IGenericArtifact } from "./types";
 import {
   CreateBotExpansionChipSchema,
   UpdateBotExpansionChipSchema,
+  ZodSchema,
 } from "@botking/validator";
 
 export interface IBotExpansionChip
@@ -35,6 +36,32 @@ export abstract class BaseBotExpansionChip {
     };
   }
 
+  protected _validate(
+    createSchema: ZodSchema,
+    updateSchema: ZodSchema
+  ): boolean {
+    return (
+      createSchema.safeParse(this._shalowClone()).success ||
+      updateSchema.safeParse(this._shalowClone()).success
+    );
+  }
+
+  protected _validateCreation(createSchema: ZodSchema): void {
+    const validation = createSchema.safeParse(this._shalowClone());
+
+    if (!validation.success) {
+      throw new Error(validation.error.issues.join(", "));
+    }
+  }
+
+  protected _validateUpdate(updateSchema: ZodSchema): void {
+    const validation = updateSchema.safeParse(this._shalowClone());
+
+    if (!validation.success) {
+      throw new Error(validation.error.issues.join(", "));
+    }
+  }
+
   // Serialization
   toJSON(): Record<string, any> {
     return {
@@ -64,14 +91,17 @@ export class BotExpansionChip
   }
 
   validate(): boolean {
-    return true;
+    return this._validate(
+      CreateBotExpansionChipSchema,
+      UpdateBotExpansionChipSchema
+    );
   }
 
-  validateCreation(): boolean {
-    return CreateBotExpansionChipSchema.safeParse(this._shalowClone()).success;
+  validateCreation(): void {
+    this._validateCreation(CreateBotExpansionChipSchema);
   }
 
-  validateUpdate(): boolean {
-    return UpdateBotExpansionChipSchema.safeParse(this._shalowClone()).success;
+  validateUpdate(): void {
+    this._validateUpdate(UpdateBotExpansionChipSchema);
   }
 }

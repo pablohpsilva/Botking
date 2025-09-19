@@ -16,14 +16,14 @@ export class PlayableBot extends Bot {
   }
 
   validate(): boolean {
-    return CreatePlayableBotSchema.safeParse(this._shalowClone()).success;
+    return this._validate(CreatePlayableBotSchema, UpdatePlayableBotSchema);
   }
 
-  validateCreation(): boolean {
-    return this.validate();
+  validateCreation(): void {
+    this._validateCreation(CreatePlayableBotSchema);
   }
 
-  validateUpdate(): boolean {
-    return UpdatePlayableBotSchema.safeParse(this._shalowClone()).success;
+  validateUpdate(): void {
+    this._validateUpdate(UpdatePlayableBotSchema);
   }
 }

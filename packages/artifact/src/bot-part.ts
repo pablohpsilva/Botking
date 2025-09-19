@@ -3,7 +3,11 @@
  */
 
 import type { BotPart as PrismaBotPart } from "@botking/db";
-import { CreateBotPartSchema, UpdateBotPartSchema } from "@botking/validator";
+import {
+  CreateBotPartSchema,
+  UpdateBotPartSchema,
+  ZodSchema,
+} from "@botking/validator";
 
 import { IGenericArtifact } from "./types";
 
@@ -36,6 +40,32 @@ export abstract class BaseBotPart {
     };
   }
 
+  protected _validate(
+    createSchema: ZodSchema,
+    updateSchema: ZodSchema
+  ): boolean {
+    return (
+      createSchema.safeParse(this._shalowClone()).success ||
+      updateSchema.safeParse(this._shalowClone()).success
+    );
+  }
+
+  protected _validateCreation(createSchema: ZodSchema): void {
+    const validation = createSchema.safeParse(this._shalowClone());
+
+    if (!validation.success) {
+      throw new Error(validation.error.issues.join(", "));
+    }
+  }
+
+  protected _validateUpdate(updateSchema: ZodSchema): void {
+    const validation = updateSchema.safeParse(this._shalowClone());
+
+    if (!validation.success) {
+      throw new Error(validation.error.issues.join(", "));
+    }
+  }
+
   // Serialization
   toJSON(): Record<string, any> {
     return {
@@ -62,14 +92,14 @@ export class BotPart extends BaseBotPart implements IBotPart {
   }
 
   validate(): boolean {
-    return true;
+    return this._validate(CreateBotPartSchema, UpdateBotPartSchema);
   }
 
-  validateCreation(): boolean {
-    return CreateBotPartSchema.safeParse(this._shalowClone()).success;
+  validateCreation(): void {
+    this._validateCreation(CreateBotPartSchema);
   }
 
-  validateUpdate(): boolean {
-    return UpdateBotPartSchema.safeParse(this._shalowClone()).success;
+  validateUpdate(): void {
+    this._validateUpdate(UpdateBotPartSchema);
   }
 }

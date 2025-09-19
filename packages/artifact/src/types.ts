@@ -1,3 +1,5 @@
+import { ZodSchema } from "@botking/validator";
+
 export interface IGenericArtifactLight<Y> {
   toJSON(): Y;
   serialize(): string;

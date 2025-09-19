@@ -41,15 +41,6 @@ export abstract class BaseAccount {
     this.createdAt = prismaAccount.createdAt;
     this.updatedAt = prismaAccount.updatedAt;
   }
-}
-
-/**
- * Account artifact implementation - directly based on database schema
- */
-export class Account extends BaseAccount implements IAccount {
-  constructor(prismaAccount: PrismaAccount) {
-    super(prismaAccount);
-  }
 
   protected _shalowClone(): PrismaAccount {
     return {
@@ -93,5 +84,14 @@ export class Account extends BaseAccount implements IAccount {
 
   clone(): IAccount {
     return new Account(this._shalowClone());
+  }
+}
+
+/**
+ * Account artifact implementation - directly based on database schema
+ */
+export class Account extends BaseAccount implements IAccount {
+  constructor(prismaAccount: PrismaAccount) {
+    super(prismaAccount);
   }
 }

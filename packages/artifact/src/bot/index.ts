@@ -10,6 +10,7 @@ import {
   type UtilitySpecialization,
 } from "@botking/db";
 import { IGenericArtifact } from "../types";
+import { ZodSchema } from "@botking/validator";
 export interface IBot
   extends PrismaBot,
     IGenericArtifact<IBot, Record<string, any>> {}
@@ -70,6 +71,32 @@ export class Bot extends BaseBot implements IBot {
       createdAt: new Date(this.createdAt),
       updatedAt: new Date(this.updatedAt),
     };
+  }
+
+  protected _validate(
+    createSchema: ZodSchema,
+    updateSchema: ZodSchema
+  ): boolean {
+    return (
+      createSchema.safeParse(this._shalowClone()).success ||
+      updateSchema.safeParse(this._shalowClone()).success
+    );
+  }
+
+  protected _validateCreation(createSchema: ZodSchema): void {
+    const validation = createSchema.safeParse(this._shalowClone());
+
+    if (!validation.success) {
+      throw new Error(validation.error.issues.join(", "));
+    }
+  }
+
+  protected _validateUpdate(updateSchema: ZodSchema): void {
+    const validation = updateSchema.safeParse(this._shalowClone());
+
+    if (!validation.success) {
+      throw new Error(validation.error.issues.join(", "));
+    }
   }
 
   // Serialization

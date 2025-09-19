@@ -1,3 +1,5 @@
+export { ZodSchema } from "zod";
+
 // Export all validation schemas
 export * from "./account";
 export * from "./bot-expansion-chip";

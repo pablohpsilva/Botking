@@ -84,6 +84,9 @@ importers:
       '@botking/logger':
         specifier: workspace:*
         version: link:../logger
+      '@botking/validator':
+        specifier: workspace:*
+        version: link:../validator
     devDependencies:
       typescript:
         specifier: ^5.0.0

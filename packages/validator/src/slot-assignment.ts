@@ -749,7 +749,7 @@ export type SlotAssignmentResponse = z.infer<
  * Schema for SlotAssignment with Configuration information
  */
 export const SlotAssignmentWithConfigurationSchema =
-  SlotAssignmentResponseSchema.extend({
+  SlotAssignmentResponseSchema.safeExtend({
     configuration: z.object({
       id: z.string(),
       botId: z.string(),
@@ -804,7 +804,7 @@ export type SlotConfigurationOverview = z.infer<
  * Schema for slot assignment with part details
  */
 export const SlotAssignmentWithPartDetailsSchema =
-  SlotAssignmentResponseSchema.extend({
+  SlotAssignmentResponseSchema.safeExtend({
     partDetails: z.object({
       id: z.string(),
       name: z.string(),

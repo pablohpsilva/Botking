@@ -718,7 +718,7 @@ export type SkeletonResponse = z.infer<typeof SkeletonResponseSchema>;
 /**
  * Schema for Skeleton with User information
  */
-export const SkeletonWithUserSchema = SkeletonResponseSchema.extend({
+export const SkeletonWithUserSchema = SkeletonResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     name: z.string().nullable(),
@@ -751,7 +751,7 @@ export type SkeletonSummary = z.infer<typeof SkeletonSummarySchema>;
 /**
  * Schema for Skeleton with performance metrics
  */
-export const SkeletonWithPerformanceSchema = SkeletonResponseSchema.extend({
+export const SkeletonWithPerformanceSchema = SkeletonResponseSchema.safeExtend({
   performanceMetrics: z.object({
     mobilityScore: z.number(),
     durabilityRatio: z.number(),

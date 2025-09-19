@@ -571,7 +571,7 @@ export type ExpansionChipResponse = z.infer<typeof ExpansionChipResponseSchema>;
 /**
  * Schema for ExpansionChip with User information
  */
-export const ExpansionChipWithUserSchema = ExpansionChipResponseSchema.extend({
+export const ExpansionChipWithUserSchema = ExpansionChipResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     name: z.string().nullable(),
@@ -603,7 +603,7 @@ export type ExpansionChipSummary = z.infer<typeof ExpansionChipSummarySchema>;
  * Schema for ExpansionChip with effect calculations
  */
 export const ExpansionChipWithEffectsSchema =
-  ExpansionChipResponseSchema.extend({
+  ExpansionChipResponseSchema.safeExtend({
     effectCalculations: z.object({
       actualMagnitude: z.number(),
       energyEfficiency: z.number(),

@@ -7,10 +7,10 @@ import {
 import { z } from "zod";
 
 // Import enum schemas from Prisma types
-const BotTypeSchema = z.enum(BotType);
-const CombatRoleSchema = z.enum(CombatRole);
-const UtilitySpecializationSchema = z.enum(UtilitySpecialization);
-const GovernmentTypeSchema = z.enum(GovernmentType);
+export const BotTypeSchema = z.enum(BotType);
+export const CombatRoleSchema = z.enum(CombatRole);
+export const UtilitySpecializationSchema = z.enum(UtilitySpecialization);
+export const GovernmentTypeSchema = z.enum(GovernmentType);
 
 // ============================================================================
 // BASE SCHEMAS
@@ -111,69 +111,67 @@ export type BotInput = z.infer<typeof BotInputSchema>;
  * Schema for creating a new Bot
  * Compatible with Prisma BotCreateInput
  */
-export const CreateBotSchema = z
-  .object({
-    id: z.string().optional(),
-    userId: z.string().min(1, "User ID is required").nullable().optional(),
-    soulChipId: z
-      .string()
-      .min(1, "Soul chip ID is required")
-      .nullable()
-      .optional(),
-    skeletonId: z.string().min(1, "Skeleton ID is required"),
-    stateId: z.string().min(1, "State ID is required").optional(),
-    name: z
-      .string()
-      .min(1, "Name is required")
-      .max(100, "Name must be 100 characters or less"),
-    botType: BotTypeSchema.default("WORKER"),
-    combatRole: CombatRoleSchema.nullable().optional(),
-    utilitySpec: UtilitySpecializationSchema.nullable().optional(),
-    governmentType: GovernmentTypeSchema.nullable().optional(),
-    description: z.string().optional().nullable(),
-    createdAt: z.coerce.date().optional(),
-    updatedAt: z.coerce.date().optional(),
-  })
-  .strict()
-  .refine(
-    (data) => {
-      if (
-        data.combatRole &&
-        !["PLAYABLE", "KING", "ROGUE"].includes(data.botType)
-      ) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Combat role can only be set for PLAYABLE, KING, or ROGUE bots",
-      path: ["combatRole"],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.utilitySpec && data.botType !== "WORKER") {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Utility specialization can only be set for WORKER bots",
-      path: ["utilitySpec"],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.governmentType && data.botType !== "GOVBOT") {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Government type can only be set for GOVBOT bots",
-      path: ["governmentType"],
-    }
-  );
+export const CreateBotSchema = z.object({
+  id: z.string().optional(),
+  userId: z.string().min(1, "User ID is required").nullable().optional(),
+  soulChipId: z
+    .string()
+    .min(1, "Soul chip ID is required")
+    .nullable()
+    .optional(),
+  skeletonId: z.string().min(1, "Skeleton ID is required"),
+  stateId: z.string().min(1, "State ID is required").optional(),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(100, "Name must be 100 characters or less"),
+  combatRole: CombatRoleSchema.nullable().optional(),
+  utilitySpec: UtilitySpecializationSchema.nullable().optional(),
+  governmentType: GovernmentTypeSchema.nullable().optional(),
+  description: z.string().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
+// .strict()
+// .refine(
+//   (data) => {
+//     if (
+//       data.combatRole &&
+//       !["PLAYABLE", "KING", "ROGUE"].includes(data.botType)
+//     ) {
+//       return false;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "Combat role can only be set for PLAYABLE, KING, or ROGUE bots",
+//     path: ["combatRole"],
+//   }
+// )
+// .refine(
+//   (data) => {
+//     if (data.utilitySpec && data.botType !== "WORKER") {
+//       return false;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "Utility specialization can only be set for WORKER bots",
+//     path: ["utilitySpec"],
+//   }
+// )
+// .refine(
+//   (data) => {
+//     if (data.governmentType && data.botType !== "GOVBOT") {
+//       return false;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "Government type can only be set for GOVBOT bots",
+//     path: ["governmentType"],
+//   }
+// );
 
 export type CreateBotInput = z.infer<typeof CreateBotSchema>;
 
@@ -193,8 +191,6 @@ export const CreateBotApiSchema = z
     utilitySpec: UtilitySpecializationSchema.optional(),
     governmentType: GovernmentTypeSchema.optional(),
     description: z.string().optional(),
-    autoAssignParts: z.boolean().default(false),
-    autoOptimizeSetup: z.boolean().default(false),
   })
   .strict();
 
@@ -234,7 +230,6 @@ export const AssembleBotSchema = z
       )
       .optional(),
     validateCompatibility: z.boolean().default(true),
-    autoOptimize: z.boolean().default(false),
   })
   .strict();
 
@@ -314,8 +309,6 @@ export const UpdateBotConfigurationSchema = z
     combatRole: CombatRoleSchema.nullable().optional(),
     utilitySpec: UtilitySpecializationSchema.nullable().optional(),
     governmentType: GovernmentTypeSchema.nullable().optional(),
-    preserveCurrentParts: z.boolean().default(true),
-    autoOptimizeSetup: z.boolean().default(false),
   })
   .strict();
 
@@ -600,7 +593,7 @@ export type BotResponse = z.infer<typeof BotResponseSchema>;
 /**
  * Schema for Bot with User information
  */
-export const BotWithUserSchema = BotResponseSchema.extend({
+export const BotWithUserSchema = BotResponseSchema.safeExtend({
   user: z
     .object({
       id: z.string(),
@@ -634,7 +627,7 @@ export type BotSummary = z.infer<typeof BotSummarySchema>;
 /**
  * Schema for Bot with complete assembly information
  */
-export const BotWithAssemblySchema = BotResponseSchema.extend({
+export const BotWithAssemblySchema = BotResponseSchema.safeExtend({
   skeleton: z.object({
     id: z.string(),
     name: z.string(),

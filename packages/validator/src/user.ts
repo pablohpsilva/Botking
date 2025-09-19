@@ -435,7 +435,7 @@ export type UserPublicProfile = z.infer<typeof UserPublicProfileSchema>;
 /**
  * Schema for User with basic stats
  */
-export const UserWithStatsSchema = UserResponseSchema.extend({
+export const UserWithStatsSchema = UserResponseSchema.safeExtend({
   stats: z.object({
     totalBots: z.number().int().min(0),
     totalParts: z.number().int().min(0),
@@ -449,7 +449,7 @@ export type UserWithStats = z.infer<typeof UserWithStatsSchema>;
 /**
  * Schema for User with accounts (for admin/auth purposes)
  */
-export const UserWithAccountsSchema = UserResponseSchema.extend({
+export const UserWithAccountsSchema = UserResponseSchema.safeExtend({
   accounts: z.array(
     z.object({
       id: z.string(),

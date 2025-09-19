@@ -3,14 +3,13 @@
  */
 
 import {
-  CreateBotSchema,
-  UpdateBotSchema,
   type BotType,
   type CombatRole,
   type GovernmentType,
   type Bot as PrismaBot,
   type UtilitySpecialization,
 } from "@botking/db";
+import { CreateBotSchema, UpdateBotSchema } from "@botking/validator";
 import { IGenericArtifact } from "../types";
 export interface IBot
   extends PrismaBot,

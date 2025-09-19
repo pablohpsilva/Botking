@@ -911,7 +911,7 @@ export type CollectionResponse = z.infer<typeof CollectionResponseSchema>;
 /**
  * Schema for Collection with User information
  */
-export const CollectionWithUserSchema = CollectionResponseSchema.extend({
+export const CollectionWithUserSchema = CollectionResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     name: z.string().nullable(),

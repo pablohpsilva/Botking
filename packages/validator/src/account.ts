@@ -386,7 +386,7 @@ export type AccountResponse = z.infer<typeof AccountResponseSchema>;
 /**
  * Schema for Account with User relation
  */
-export const AccountWithUserSchema = AccountResponseSchema.extend({
+export const AccountWithUserSchema = AccountResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     email: z.string(),

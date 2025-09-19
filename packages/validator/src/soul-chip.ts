@@ -589,7 +589,7 @@ export type SoulChipResponse = z.infer<typeof SoulChipResponseSchema>;
 /**
  * Schema for SoulChip with User information
  */
-export const SoulChipWithUserSchema = SoulChipResponseSchema.extend({
+export const SoulChipWithUserSchema = SoulChipResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     name: z.string().nullable(),
@@ -621,7 +621,7 @@ export type SoulChipSummary = z.infer<typeof SoulChipSummarySchema>;
 /**
  * Schema for SoulChip with stats and calculations
  */
-export const SoulChipWithStatsSchema = SoulChipResponseSchema.extend({
+export const SoulChipWithStatsSchema = SoulChipResponseSchema.safeExtend({
   effectiveStats: z.object({
     totalPower: z.number(),
     balanceScore: z.number(),

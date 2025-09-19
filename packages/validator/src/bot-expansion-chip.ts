@@ -1014,7 +1014,7 @@ export type BotExpansionChipResponse = z.infer<
  * Schema for BotExpansionChip with Bot and ExpansionChip information
  */
 export const BotExpansionChipWithRelationsSchema =
-  BotExpansionChipResponseSchema.extend({
+  BotExpansionChipResponseSchema.safeExtend({
     bot: z.object({
       id: z.string(),
       name: z.string(),

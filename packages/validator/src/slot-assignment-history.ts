@@ -656,7 +656,7 @@ export type SlotAssignmentHistoryResponse = z.infer<
  * Schema for SlotAssignmentHistory with User and Bot information
  */
 export const SlotAssignmentHistoryWithRelationsSchema =
-  SlotAssignmentHistoryResponseSchema.extend({
+  SlotAssignmentHistoryResponseSchema.safeExtend({
     bot: z.object({
       id: z.string(),
       name: z.string(),

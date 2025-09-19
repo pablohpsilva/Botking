@@ -686,7 +686,7 @@ export type BotStateResponse = z.infer<typeof BotStateResponseSchema>;
 /**
  * Schema for BotState with User and Bot information
  */
-export const BotStateWithRelationsSchema = BotStateResponseSchema.extend({
+export const BotStateWithRelationsSchema = BotStateResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     name: z.string().nullable(),
@@ -723,7 +723,7 @@ export type BotStateSummary = z.infer<typeof BotStateSummarySchema>;
 /**
  * Schema for BotState with analysis
  */
-export const BotStateWithAnalysisSchema = BotStateResponseSchema.extend({
+export const BotStateWithAnalysisSchema = BotStateResponseSchema.safeExtend({
   analysis: z.object({
     energyPercentage: z.number().min(0).max(100),
     healthPercentage: z.number().min(0).max(100),

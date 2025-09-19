@@ -872,7 +872,7 @@ export type PartResponse = z.infer<typeof PartResponseSchema>;
 /**
  * Schema for Part with User information
  */
-export const PartWithUserSchema = PartResponseSchema.extend({
+export const PartWithUserSchema = PartResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     name: z.string().nullable(),
@@ -908,7 +908,7 @@ export type PartSummary = z.infer<typeof PartSummarySchema>;
 /**
  * Schema for Part with performance metrics
  */
-export const PartWithPerformanceSchema = PartResponseSchema.extend({
+export const PartWithPerformanceSchema = PartResponseSchema.safeExtend({
   performanceMetrics: z.object({
     totalPower: z.number(),
     efficiency: z.number(),

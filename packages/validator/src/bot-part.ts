@@ -781,7 +781,7 @@ export type BotPartResponse = z.infer<typeof BotPartResponseSchema>;
 /**
  * Schema for BotPart with Bot and Part information
  */
-export const BotPartWithRelationsSchema = BotPartResponseSchema.extend({
+export const BotPartWithRelationsSchema = BotPartResponseSchema.safeExtend({
   bot: z.object({
     id: z.string(),
     name: z.string(),

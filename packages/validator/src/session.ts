@@ -382,7 +382,7 @@ export type SessionResponse = z.infer<typeof SessionResponseSchema>;
 /**
  * Schema for Session with User information
  */
-export const SessionWithUserSchema = SessionResponseSchema.extend({
+export const SessionWithUserSchema = SessionResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     email: z.string(),

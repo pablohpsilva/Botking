@@ -1,5 +1,7 @@
-import { Bot } from ".";
 import { BotType, type Bot as PrismaBot } from "@botking/db";
+import { CreateGovBotSchema, UpdateGovBotSchema } from "@botking/validator";
+
+import { Bot } from ".";
 
 export class GovBot extends Bot {
   constructor(prismaBot: PrismaBot) {
@@ -17,22 +19,21 @@ export class GovBot extends Bot {
   }
 
   override validate(prismaBot: PrismaBot | Bot): boolean {
-    return (
-      prismaBot.botType === BotType.GOVBOT &&
-      prismaBot.utilitySpec === null &&
-      prismaBot.userId === null &&
-      prismaBot.combatRole !== null &&
-      prismaBot.soulChipId !== null
-    );
+    return CreateGovBotSchema.safeParse(prismaBot).success;
+    // return (
+    //   prismaBot.botType === BotType.GOVBOT &&
+    //   prismaBot.utilitySpec === null &&
+    //   prismaBot.userId === null &&
+    //   prismaBot.combatRole !== null &&
+    //   prismaBot.soulChipId !== null
+    // );
   }
 
   override validateCreation(prismaBot: PrismaBot | Bot): boolean {
-    const result = super.validateCreation(prismaBot);
-    return result && this.validate(prismaBot);
+    return this.validate(prismaBot);
   }
 
   override validateUpdate(prismaBot: PrismaBot | Bot): boolean {
-    const result = super.validateUpdate(prismaBot);
-    return result && this.validate(prismaBot);
+    return UpdateGovBotSchema.safeParse(prismaBot).success;
   }
 }

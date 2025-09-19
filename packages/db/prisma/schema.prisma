@@ -184,11 +184,11 @@ model Part {
 }
 
 model Bot {
-  id         String  @id @default(cuid())
-  userId     String? // User who owns this bot - can be null for autonomous bots
-  soulChipId String?
-  skeletonId String
-  stateId    String  @unique
+  id             String                 @id @default(cuid())
+  userId         String?                // User who owns this bot - can be null for autonomous bots
+  soulChipId     String?                
+  skeletonId     String
+  stateId        String                 @unique
 
   name           String                 @db.VarChar(100)
   botType        BotType                @default(WORKER)

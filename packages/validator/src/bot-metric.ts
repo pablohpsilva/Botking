@@ -614,7 +614,7 @@ export type BotMetricResponse = z.infer<typeof BotMetricResponseSchema>;
 /**
  * Schema for BotMetric with User and Bot information
  */
-export const BotMetricWithRelationsSchema = BotMetricResponseSchema.extend({
+export const BotMetricWithRelationsSchema = BotMetricResponseSchema.safeExtend({
   user: z.object({
     id: z.string(),
     name: z.string().nullable(),
@@ -655,7 +655,7 @@ export type BotMetricSummary = z.infer<typeof BotMetricSummarySchema>;
 /**
  * Schema for BotMetric with calculated stats
  */
-export const BotMetricWithStatsSchema = BotMetricResponseSchema.extend({
+export const BotMetricWithStatsSchema = BotMetricResponseSchema.safeExtend({
   calculatedStats: z.object({
     winRate: z.number().min(0).max(1).nullable(),
     lossRate: z.number().min(0).max(1).nullable(),

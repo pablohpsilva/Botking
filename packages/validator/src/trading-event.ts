@@ -959,7 +959,7 @@ export type TradingEventResponse = z.infer<typeof TradingEventResponseSchema>;
  * Schema for TradingEvent with related data
  */
 export const TradingEventWithRelationsSchema =
-  TradingEventResponseSchema.extend({
+  TradingEventResponseSchema.safeExtend({
     tradeOffers: z
       .array(
         z.object({

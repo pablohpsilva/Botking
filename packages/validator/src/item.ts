@@ -826,7 +826,7 @@ export type ItemResponse = z.infer<typeof ItemResponseSchema>;
 /**
  * Schema for Item with User information
  */
-export const ItemWithUserSchema = ItemResponseSchema.extend({
+export const ItemWithUserSchema = ItemResponseSchema.safeExtend({
   user: z
     .object({
       id: z.string(),

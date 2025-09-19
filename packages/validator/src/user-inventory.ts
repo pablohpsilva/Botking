@@ -739,7 +739,7 @@ export type UserInventoryResponse = z.infer<typeof UserInventoryResponseSchema>;
  * Schema for UserInventory with User and Item information
  */
 export const UserInventoryWithRelationsSchema =
-  UserInventoryResponseSchema.extend({
+  UserInventoryResponseSchema.safeExtend({
     user: z.object({
       id: z.string(),
       name: z.string().nullable(),

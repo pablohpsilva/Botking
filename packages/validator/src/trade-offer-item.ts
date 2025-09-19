@@ -1030,7 +1030,7 @@ export type TradeOfferItemResponse = z.infer<
  * Schema for TradeOfferItem with related data
  */
 export const TradeOfferItemWithRelationsSchema =
-  TradeOfferItemResponseSchema.extend({
+  TradeOfferItemResponseSchema.safeExtend({
     tradeOffer: z
       .object({
         id: z.string(),

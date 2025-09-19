@@ -1,5 +1,10 @@
-import { Bot } from ".";
+import {
+  CreatePlayableBotSchema,
+  UpdatePlayableBotSchema,
+} from "@botking/validator";
 import { BotType, type Bot as PrismaBot } from "@botking/db";
+
+import { Bot } from ".";
 
 export class PlayableBot extends Bot {
   constructor(prismaBot: PrismaBot) {
@@ -17,22 +22,14 @@ export class PlayableBot extends Bot {
   }
 
   override validate(prismaBot: PrismaBot | Bot): boolean {
-    return (
-      prismaBot.botType === BotType.PLAYABLE &&
-      prismaBot.utilitySpec === null &&
-      prismaBot.combatRole !== null &&
-      prismaBot.soulChipId !== null &&
-      prismaBot.userId !== null
-    );
+    return CreatePlayableBotSchema.safeParse(prismaBot).success;
   }
 
   override validateCreation(prismaBot: PrismaBot | Bot): boolean {
-    const result = super.validateCreation(prismaBot);
-    return result && this.validate(prismaBot);
+    return this.validate(prismaBot);
   }
 
   override validateUpdate(prismaBot: PrismaBot | Bot): boolean {
-    const result = super.validateUpdate(prismaBot);
-    return result && this.validate(prismaBot);
+    return UpdatePlayableBotSchema.safeParse(prismaBot).success;
   }
 }

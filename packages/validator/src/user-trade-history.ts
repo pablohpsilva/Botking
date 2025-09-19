@@ -998,7 +998,7 @@ export type GetUserTradeStats = z.infer<typeof GetUserTradeStatsSchema>;
 /**
  * Schema for UserTradeHistory API responses
  */
-export const UserTradeHistoryResponseSchema = UserTradeHistorySchema.extend({
+export const UserTradeHistoryResponseSchema = UserTradeHistorySchema.safeExtend({
   itemsGiven: z.array(TradeItemSnapshotSchema),
   itemsReceived: z.array(TradeItemSnapshotSchema),
   metadata: TradeHistoryMetadataSchema.nullable(),
@@ -1012,7 +1012,7 @@ export type UserTradeHistoryResponse = z.infer<
  * Schema for UserTradeHistory with related data
  */
 export const UserTradeHistoryWithRelationsSchema =
-  UserTradeHistoryResponseSchema.extend({
+  UserTradeHistoryResponseSchema.safeExtend({
     user: z
       .object({
         id: z.string(),

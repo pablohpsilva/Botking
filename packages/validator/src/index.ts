@@ -31,7 +31,7 @@ export { VerificationValidation } from "./verification";
 export { SoulChipValidation } from "./soul-chip";
 export { SkeletonValidation } from "./skeleton";
 export { PartValidation } from "./part";
-export { BotValidation } from "./bot";
+export { BotValidation } from "./bot/types";
 export { ExpansionChipValidation } from "./expansion-chip";
 export { BotStateValidation } from "./bot-state";
 export { BotMetricValidation } from "./bot-metric";

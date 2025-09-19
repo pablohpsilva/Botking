@@ -524,7 +524,7 @@ export type SkeletonSlotConfigurationResponse = z.infer<
  * Schema for SkeletonSlotConfiguration with Bot information
  */
 export const SkeletonSlotConfigurationWithBotSchema =
-  SkeletonSlotConfigurationResponseSchema.extend({
+  SkeletonSlotConfigurationResponseSchema.safeExtend({
     bot: z.object({
       id: z.string(),
       name: z.string(),
@@ -559,7 +559,7 @@ export type SkeletonSlotConfigurationSummary = z.infer<
  * Schema for SkeletonSlotConfiguration with complete slot details
  */
 export const SkeletonSlotConfigurationWithSlotsSchema =
-  SkeletonSlotConfigurationResponseSchema.extend({
+  SkeletonSlotConfigurationResponseSchema.safeExtend({
     slotAssignments: z.array(
       z.object({
         id: z.string(),

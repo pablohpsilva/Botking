@@ -23,6 +23,7 @@
   "dependencies": {
     "@botking/db": "workspace:*",
     "@botking/artifact": "workspace:*",
+    "@botking/validator": "workspace:*",
     "zod": "^3.22.4"
   },
   "devDependencies": {

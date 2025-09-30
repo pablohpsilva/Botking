@@ -62,7 +62,7 @@ enum asset_kind {
    auth (minimal identity)
    ========================= */
 model user {
-  authUserId String        @id @default(uuid())
+  id String        @id @default(uuid())
   email        String? // removed @db.Citext
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -74,15 +74,15 @@ model user {
 
 model identity_link {
   id               String   @id @default(uuid())
-  authUserId     String
+  userId     String
   globalPlayerId String @unique @default(uuid())
   linkedAt        DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user user @relation(fields: [authUserId], references: [authUserId], onDelete: Cascade)
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([authUserId, globalPlayerId])
+  @@unique([userId, globalPlayerId])
   @@schema("auth")
   @@map("identity_link")
 }
@@ -102,9 +102,9 @@ model shard {
 }
 
 model player_account {
+  id               String   @id @default(uuid())
   shardId         Int
-  playerId        BigInt
-  globalPlayerId String
+  globalPlayerId String @unique @default(uuid())
   createdAt       DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -115,7 +115,6 @@ model player_account {
   instances instance[]
   robots    robot[]
 
-  @@id([shardId, playerId])
   @@unique([globalPlayerId, shardId], name: "ux_player_global_per_shard")
 
   @@schema("core")
@@ -146,14 +145,14 @@ model template {
 model instance {
   id    String         @id @default(uuid())
   shardId        Int
-  playerId       BigInt
+  playerId       String
   templateId     String
   state           instance_state // 'NEW' | 'USED' | 'EQUIPPED' (enforce via SQL if you like)
   boundToPlayer String?
   createdAt       DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  account  player_account @relation(fields: [shardId, playerId], references: [shardId, playerId], onDelete: Cascade)
+  account  player_account @relation(fields: [shardId, playerId], references: [shardId, id], onDelete: Cascade)
   template template       @relation(fields: [templateId], references: [id], onDelete: Restrict)
 
   // robot slot relations
@@ -174,13 +173,13 @@ model instance {
 model inventory_stack {
   id    String @id @default(uuid())
   shardId    Int
-  playerId   BigInt
+  playerId   String
   templateId String
   quantity         BigInt
   createdAt       DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  account  player_account @relation(fields: [shardId, playerId], references: [shardId, playerId], onDelete: Cascade)
+  account  player_account @relation(fields: [shardId, playerId], references: [shardId, id], onDelete: Cascade)
   template template       @relation(fields: [templateId], references: [id], onDelete: Restrict)
 
   @@unique([shardId, playerId, templateId])
@@ -196,12 +195,12 @@ model inventory_stack {
 model robot {
   id   String   @id @default(uuid())
   shardId   Int
-  playerId  BigInt
+  playerId  String
   nickname   String?
   createdAt       DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  account player_account @relation(fields: [shardId, playerId], references: [shardId, playerId], onDelete: Cascade)
+  account player_account @relation(fields: [shardId, playerId], references: [shardId, id], onDelete: Cascade)
 
   // loadout
   soul_chip  soul_chip_slot?

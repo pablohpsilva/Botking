@@ -24,8 +24,7 @@
   },
   "dependencies": {
     "@botking/db": "workspace:*",
-    "@botking/domain": "workspace:*",
     "@botking/logger": "workspace:*",
-    "@botking/validator": "workspace:*"
+    "zod": "^3.22.4"
   }
 }

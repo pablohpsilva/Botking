@@ -1,0 +1,915 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator zod {
+  provider                      = "prisma-zod-generator"
+  output                        = "../src/generated/zod"
+  relationModel                 = true
+  modelCase                     = "camelCase"
+  modelSuffix                   = "Schema"
+  useDecimalJs                  = true
+  prismaJsonNullabilityBehavior = "strip"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------
+// Better Auth required models
+// ----------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  name          String?
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  sessions        Session[]
+  accounts        Account[]
+
+  // Artifact Relations
+  soulChips       SoulChip[]
+  skeletons       Skeleton[]
+  parts           Part[]
+  expansionChips  ExpansionChip[]
+  bots            Bot[]
+  botStates       BotState[]
+  botMetrics      BotMetric[]
+  collections     Collection[]
+  items           ItemTemplate[]
+  inventory       UserInventory[]
+  tradeHistory    UserTradeHistory[]
+  activeEffects   ActiveEffect[]
+  inventoryEvents InventoryEvent[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  providerId            String
+  accountId             String
+  password              String?
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@map("verifications")
+}
+
+// ----------------------------
+// Core Models
+// The main goal of the tables below is to be used as references for other tables
+// so that we can avoid duplicating data and keep the data consistent
+// ----------------------------
+model SoulChip {
+  id           String   @id @default(cuid())
+  name         String   @db.VarChar(100)
+  rarity       Rarity
+  intelligence Int      @default(50)
+  resilience   Int      @default(50)
+  adaptability Int      @default(50)
+  learningRate Float    @default(0.5)
+  description  String?
+  //
+  version      Int      @default(1) // Can be used to allow the game to show only certain versions per season
+  //
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  bots BotSoulChip[]
+
+  @@map("soul_chips")
+}
+
+model Skeleton {
+  id                String       @id @default(cuid())
+  name              String       @db.VarChar(100)
+  type              SkeletonType
+  rarity            Rarity
+  mobilityType      MobilityType
+  baseDurability    Int          @default(100)
+  currentDurability Int          @default(100)
+  maxDurability     Int          @default(100)
+  description       String?
+  //
+  version           Int          @default(1) // Can be used to allow the game to show only certain versions per season
+  //
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relations
+  bots BotSkeleton[]
+
+  @@map("skeletons")
+}
+
+model Part {
+  id                String       @id @default(cuid())
+  name              String       @db.VarChar(100)
+  description       String?
+  category          PartCategory
+  rarity            Rarity
+  //
+  attack            Int          @default(0)
+  defense           Int          @default(0)
+  speed             Int          @default(0)
+  perception        Int          @default(0)
+  energyConsumption Int          @default(5)
+  currentDurability Int          @default(100)
+  maxDurability     Int          @default(100)
+  //
+  version           Int          @default(1) // Can be used to allow the game to show only certain versions per season
+  //
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relations
+  botParts BotPart[]
+
+  @@map("parts")
+}
+
+model ExpansionChip {
+  id              String      @id @default(cuid())
+  name            String      @db.VarChar(100)
+  effect          BuffEffects
+  rarity          Rarity
+  effectMagnitude Float       @default(1.0)
+  energyCost      Int         @default(5)
+  description     String?
+  //
+  version         Int         @default(1) // Can be used to allow the game to show only certain versions per season
+  //
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("expansion_chips")
+}
+
+model ItemTemplate {
+  id           String       @id @default(cuid())
+  name         String       @unique
+  type         ItemCategory
+  rarity       Rarity       @default(COMMON)
+  stackable    Boolean      @default(true)
+  maxStack     Int          @default(9999)
+  consumable   Boolean      @default(true) // FALSE for gear
+  tradable     Boolean      @default(true)
+  bindOnPickup Boolean      @default(false)
+  iconAsset    String?
+  //
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  // Relations
+  itemSpeedups      ItemSpeedup[]
+  itemBonuses       ItemBonus[]
+  itemResources     ItemResource[]
+  activeEffects     ActiveEffect[]
+  effects           Effect[]
+  inventoryEvents   InventoryEvent[]
+  inventory         UserInventory[]
+  tradeOfferItems   TradeOfferItem[]
+
+  @@map("item_templates")
+}
+
+model Effect {
+  id              String       @id @default(cuid())
+  effectKind      EffectKind   @default(SHIELD) // e.g., 'shield','time_reduction','resource_grant',...
+  durationSeconds Int          @default(0) // NULL for instant effects like resource_grant
+  stackingRule    StackingRule @default(REFRESH) // 'stack','refresh','ignore'
+  params          Json         @default("{}") // magnitudes, %s, caps, etc. {"seconds":300}, {"resources":[{"resource":"coin","amount":1000},{"resource":"gem","amount":5}]}
+  //
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("effects")
+}
+
+model CurrencyTemplate {
+  id             String   @id @default(cuid())
+  name           String   @db.VarChar(100)
+  description    String?
+  rarity         Rarity   @default(COMMON)
+  isPrimary      Boolean  @default(false)
+  //
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  gameCurrencies GameCurrency[]
+
+  @@map("currency_templates")
+}
+
+// ----------------------------
+// Relations Models (finalized)
+// Each relation table is used to store the relationship between two entities
+// and the metadata for the relationship
+// ----------------------------
+
+model ItemSpeedup {
+  id              String        @id @default(cuid())
+  itemTemplateId  String
+  speedUpTarget   SpeedUpTarget @default(ANY)
+  speedMultiplier Float
+  timeReduction   Int
+  //
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  itemTemplate ItemTemplate @relation(fields: [itemTemplateId], references: [id], onDelete: Cascade)
+
+  @@unique([itemTemplateId, speedUpTarget])
+  @@map("item_speedups")
+}
+
+// ----------------------------
+// Item Bonus Models
+// Each item bonus is used to store the amount of a specific bonus that an item has.
+// Exmaples: Attack Buff, Defense Buff, Speed Buff, etc.
+// ----------------------------
+model ItemBonus {
+  id             String      @id @default(cuid())
+  itemTemplateId String
+  type           BuffEffects @default(ATTACK_BUFF)
+  magnitude      Float
+  //
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  itemTemplate ItemTemplate @relation(fields: [itemTemplateId], references: [id], onDelete: Cascade)
+
+  @@unique([itemTemplateId, type])
+  @@map("item_bonuses")
+}
+
+// ----------------------------
+// Item Resource Models
+// Each item resource is used to store the amount of a specific resource that an item has.
+// Exmaples: Electricity, Scrap Parts, Microchips, etc.
+// ----------------------------
+model ItemResource {
+  id             String       @id @default(cuid())
+  itemTemplateId String
+  type           ResourceType @default(ELECTRICITY)
+  amount         Int          @default(100)
+  //
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  itemTemplate ItemTemplate @relation(fields: [itemTemplateId], references: [id], onDelete: Cascade)
+
+  @@unique([itemTemplateId, type])
+  @@map("item_resources")
+}
+
+// ----------------------------
+// Active Effect Models
+// Each active effect is used to store the amount of a specific currency that a player has.
+// Exmaples: Shield, Time Reduction, Resource Grant, etc.
+// ----------------------------
+model ActiveEffect {
+  id                   String   @id @default(cuid())
+  userId               String
+  effectId             String
+  startsAt             DateTime
+  expiresAt            DateTime
+  sourceItemTemplateId String?
+  //
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  effect             Effect        @relation(fields: [effectId], references: [id], onDelete: Cascade)
+  sourceItemTemplate ItemTemplate? @relation(fields: [sourceItemTemplateId], references: [id], onDelete: Cascade)
+
+  @@map("active_effects")
+}
+
+// ----------------------------
+// Player Currency Models
+// Each player currency is used to store the amount of a specific currency that a player has.
+// Exmaples: Gold, Gem, etc.
+// ----------------------------
+model GameCurrency {
+  id               String @id @default(cuid())
+  userId           String
+  gameCurrencyId   String
+  amount           Int    @default(0)
+  //
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  gameCurrency CurrencyTemplate @relation(fields: [gameCurrencyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameCurrencyId])
+  @@map("game_currencies")
+}
+
+// ----------------------------
+// Audit Trail Models
+// Each audit trail table is used to store the history of changes to an entity
+// ----------------------------
+
+model InventoryEvent {
+  id             String   @id @default(cuid())
+  userId         String
+  itemTemplateId String?
+  // instanceId      String
+  deltaQuantity  Int //             -- for stacks (+/-)
+  action         String //       -- 'grant','consume','equip','unequip','upgrade','craft','purchase'
+  ref_context    Json //               -- e.g., {"build_id":123}, {"battle_id": 999}
+  // 
+  created_at     DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemTemplate ItemTemplate? @relation(fields: [itemTemplateId], references: [id], onDelete: Cascade)
+  // instance ItemTemplate @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@map("inventory_events")
+}
+
+// ----------------------------
+// Relations Models
+// Each relation table is used to store the relationship between two entities
+// and the metadata for the relationship
+// ----------------------------
+
+model BotSoulChip {
+  id           String   @id @default(cuid())
+  userId       String
+  soulChipId   String
+  // Can be overridden
+  level        Int      @default(0)
+  experience   Int      @default(0)
+  //
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  soulChip SoulChip @relation(fields: [soulChipId], references: [id], onDelete: Cascade)
+  bots     Bot[]
+
+  @@map("bot_soul_chips")
+}
+
+model BotSkeleton {
+  id                String   @id @default(cuid())
+  skeletonId        String
+  // Can be overridden
+  baseDurability    Int      @default(100)
+  currentDurability Int      @default(100)
+  maxDurability     Int      @default(100)
+  upgradeLevel      Int      @default(0)
+  description       String?
+  level             Int      @default(0)
+  experience        Int      @default(0)
+  //
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  skeleton Skeleton @relation(fields: [skeletonId], references: [id], onDelete: Cascade)
+  bots     Bot[]
+
+  @@map("bot_skeletons")
+}
+
+model BotPart {
+  id                String   @id @default(cuid())
+  partId            String
+  // Can be overridden
+  attack            Int      @default(0)
+  defense           Int      @default(0)
+  speed             Int      @default(0)
+  perception        Int      @default(0)
+  energyConsumption Int      @default(5)
+  upgradeLevel      Int      @default(0)
+  currentDurability Int      @default(100)
+  maxDurability     Int      @default(100)
+  level             Int      @default(0)
+  experience        Int      @default(0)
+  //
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  part Part @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@map("bot_parts")
+}
+
+model BotExpansionChip {
+  id              String   @id @default(cuid())
+  expansionChipId String
+  effectMagnitude Float    @default(1.0)
+  energyCost      Int      @default(5)
+  description     String?
+  level           Int      @default(0)
+  experience      Int      @default(0)
+  //
+  version         Int      @default(1) // Can be used to allow the game to show only certain versions per season
+  //
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  expansionChip ExpansionChip @relation(fields: [expansionChipId], references: [id], onDelete: Cascade)
+
+  @@map("bot_expansion_chips")
+}
+
+model Bot {
+  id             String                 @id @default(cuid())
+  userId         String?                // User who owns this bot - can be null for autonomous bots
+  soulChipId     String?
+  skeletonId     String
+  stateId        String                 @unique
+
+  name           String                 @db.VarChar(100)
+  botType        BotType                @default(WORKER)
+  combatRole     CombatRole?            // Combat specialization (null for non-combat bots)
+  utilitySpec    UtilitySpecialization? // Utility specialization (null for non-utility bots)
+  governmentType GovernmentType?        // Government type (null for non-government bots)
+  description    String?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  // Relations
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  soulChip      SoulChip?      @relation(fields: [soulChipId], references: [id], onDelete: Cascade)
+  skeleton      Skeleton       @relation(fields: [skeletonId], references: [id], onDelete: Cascade)
+  metrics       BotMetric[]
+  parts         BotPart[]
+  state         BotState?
+  skeletonSlots SkeletonSlots?
+
+  @@map("bots")
+}
+
+model BotState {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  botId           String      @unique
+
+  // Core properties (all bot types)
+  energyLevel     Int         @default(100)
+  healthLevel     Int         @default(100)
+  currentLocation BotLocation @default(STORAGE)
+  experience      Int         @default(0)
+  bondLevel       Int?        @default(0) // 0-100, null for worker bots
+  level           Int         @default(1)
+
+  // Legacy fields (kept for backward compatibility)
+  energy    Int @default(100) // Maps to energyLevel
+  maxEnergy Int @default(100)
+  health    Int @default(100) // Maps to maintenanceLevel
+  maxHealth Int @default(100)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bot  Bot  @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, botId])
+  @@map("bot_states")
+}
+
+model BotMetric {
+  id           String @id @default(cuid())
+  userId       String
+  botId        String @unique
+
+  battlesWon   Int? @default(0) // null for worker bots
+  battlesLost  Int? @default(0) // null for worker bots
+  totalBattles Int? @default(0) // null for worker bots
+
+  missionsCompleted Int   @default(0)
+  successRate       Float @default(0.0)
+  totalCombatTime   Int   @default(0)
+  damageDealt       Int   @default(0)
+  damageTaken       Int   @default(0)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bot  Bot  @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, botId])
+  @@map("bot_metric")
+}
+
+model UserInventory {
+  id       String @id @default(cuid())
+  userId   String
+  itemId   String
+  quantity Int    @default(1)
+
+  // Optional metadata for inventory items
+  acquiredAt DateTime  @default(now())
+  expiresAt  DateTime? // For items with expiration dates
+  metadata   Json?     // Additional item-specific data (condition, customizations, etc.)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item ItemTemplate @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId]) // One entry per user per item type
+  @@map("user_inventory")
+}
+
+model SkeletonSlots {
+  id                       String @id @default(cuid())
+  botId                    String @unique
+  skeletonId               String @unique
+  //
+  headPartId               String? @unique
+  torsoPartId              String? @unique
+  armLeftPartId            String? @unique
+  armRightPartId           String? @unique
+  legLeftPartId            String? @unique
+  legRightPartId           String? @unique
+  //
+  botExpansionChip1Id      String? @unique
+  botExpansionChip1Enabled Boolean @default(false)
+  botExpansionChip2Id      String? @unique
+  botExpansionChip2Enabled Boolean @default(false)
+  botExpansionChip3Id      String? @unique
+  botExpansionChip3Enabled Boolean @default(false)
+  botExpansionChip4Id      String? @unique
+  botExpansionChip4Enabled Boolean @default(false)
+  //
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  // Relations
+  bot               Bot               @relation(fields: [botId], references: [id], onDelete: Cascade)
+  skeleton          Skeleton          @relation(fields: [skeletonId], references: [id], onDelete: Cascade)
+  headPart          BotPart?          @relation(fields: [headPartId], references: [id], onDelete: Cascade)
+  torsoPart         BotPart?          @relation(fields: [torsoPartId], references: [id], onDelete: Cascade)
+  armLeftPart       BotPart?          @relation(fields: [armLeftPartId], references: [id], onDelete: Cascade)
+  armRightPart      BotPart?          @relation(fields: [armRightPartId], references: [id], onDelete: Cascade)
+  legLeftPart       BotPart?          @relation(fields: [legLeftPartId], references: [id], onDelete: Cascade)
+  legRightPart      BotPart?          @relation(fields: [legRightPartId], references: [id], onDelete: Cascade)
+  botExpansionChip1 BotExpansionChip? @relation(fields: [botExpansionChip1Id], references: [id], onDelete: Cascade)
+  botExpansionChip2 BotExpansionChip? @relation(fields: [botExpansionChip2Id], references: [id], onDelete: Cascade)
+  botExpansionChip3 BotExpansionChip? @relation(fields: [botExpansionChip3Id], references: [id], onDelete: Cascade)
+  botExpansionChip4 BotExpansionChip? @relation(fields: [botExpansionChip4Id], references: [id], onDelete: Cascade)
+
+  @@map("skeleton_slots")
+}
+
+model Collection {
+  id          String         @id @default(cuid())
+  userId      String
+  name        String         @db.VarChar(100)
+  description String?
+  type        CollectionType
+  itemIds     String[]       @default([])
+  isPublic    Boolean        @default(false)
+  shareCode   String?        @unique
+  version     Int            @default(1)
+  source      String?
+  tags        String[]       @default([])
+  metadata    Json?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("collections")
+}
+
+// Trading System Models
+model TradingEvent {
+  id          String             @id @default(cuid())
+  name        String             @db.VarChar(100) // "Summer Trades", "Winter Special"
+  description String?            @db.Text
+  status      TradingEventStatus @default(DRAFT)
+
+  // Time constraints
+  startDate DateTime? // When event becomes active
+  endDate   DateTime? // When event ends
+
+  // Event settings
+  isRepeatable     Boolean @default(false) // Can users trade multiple times
+  maxTradesPerUser Int?    // Limit trades per user (null = unlimited)
+  priority         Int     @default(0) // For sorting/display order
+
+  // Event metadata
+  tags     String[] @default([])
+  imageUrl String?  // Event banner/icon
+
+  // Admin fields
+  createdBy String?  // Admin who created this event
+  isPublic  Boolean  @default(true) // Visible to users
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tradeOffers TradeOffer[]
+  userTrades  UserTradeHistory[]
+
+  @@map("trading_events")
+}
+
+model TradeOffer {
+  id             String           @id @default(cuid())
+  tradingEventId String
+  name           String           @db.VarChar(100) // "Gems for Rare Parts"
+  description    String?          @db.Text
+  status         TradeOfferStatus @default(ACTIVE)
+
+  // Availability limits
+  maxTotalTrades Int? // Total number of times this trade can be executed
+  currentTrades  Int  @default(0) // How many times it's been traded
+  maxPerUser     Int? // Max times a single user can make this trade
+
+  // Time constraints (inherit from event if null)
+  startDate DateTime?
+  endDate   DateTime?
+
+  // Display settings
+  displayOrder  Int     @default(0)
+  isHighlighted Boolean @default(false) // Featured trade
+
+  // Trade metadata
+  tags String[] @default([])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tradingEvent TradingEvent       @relation(fields: [tradingEventId], references: [id], onDelete: Cascade)
+  tradeItems   TradeOfferItem[]
+  userTrades   UserTradeHistory[]
+
+  @@map("trade_offers")
+}
+
+model TradeOfferItem {
+  id           String        @id @default(cuid())
+  tradeOfferId String
+  itemId       String
+  itemType     TradeItemType // REQUIRED or REWARD
+  quantity     Int           @default(1)
+
+  // Additional constraints
+  minLevel Int? // Minimum user level required
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tradeOffer TradeOffer   @relation(fields: [tradeOfferId], references: [id], onDelete: Cascade)
+  item       ItemTemplate @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([tradeOfferId, itemId, itemType]) // Prevent duplicate items in same trade offer
+  @@map("trade_offer_items")
+}
+
+model UserTradeHistory {
+  id             String @id @default(cuid())
+  userId         String
+  tradingEventId String
+  tradeOfferId   String
+
+  // Trade details
+  executedAt    DateTime @default(now())
+  itemsGiven    Json     // Snapshot of items given
+  itemsReceived Json     // Snapshot of items received
+
+  // Transaction metadata
+  userLevel Int?  // User level at time of trade
+  metadata  Json? // Additional context
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tradingEvent TradingEvent @relation(fields: [tradingEventId], references: [id], onDelete: Cascade)
+  tradeOffer   TradeOffer   @relation(fields: [tradeOfferId], references: [id], onDelete: Cascade)
+
+  @@map("user_trade_history")
+}
+
+// ----------------------------
+// ----------------------------
+// Enums
+// ----------------------------
+// ----------------------------
+enum Rarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+  ULTRA_RARE
+  PROTOTYPE
+}
+
+enum SkeletonType {
+  LIGHT
+  BALANCED
+  HEAVY
+  FLYING
+  MODULAR
+}
+
+enum MobilityType {
+  WHEELED
+  BIPEDAL
+  WINGED
+  TRACKED
+  HYBRID
+}
+
+enum PartCategory {
+  ARM
+  LEG
+  TORSO
+  HEAD
+  ACCESSORY
+}
+
+enum BuffEffects {
+  ATTACK_BUFF
+  DEFENSE_BUFF
+  SPEED_BUFF
+  AI_UPGRADE
+  ENERGY_EFFICIENCY
+  SPECIAL_ABILITY
+  STAT_BOOST
+  RESISTANCE
+}
+
+enum BotLocation {
+  STORAGE
+  TRAINING
+  MISSION
+  MAINTENANCE
+  COMBAT
+}
+
+enum BotType {
+  WORKER
+  PLAYABLE
+  KING
+  ROGUE
+  GOVBOT
+}
+
+enum CollectionType {
+  BOTS
+  PARTS
+  CHIPS
+  SKELETONS
+  MIXED
+}
+
+enum CombatRole {
+  ASSAULT
+  TANK
+  SNIPER
+  SCOUT
+}
+
+enum UtilitySpecialization {
+  CONSTRUCTION
+  MINING
+  REPAIR
+  TRANSPORT
+}
+
+enum GovernmentType {
+  SECURITY
+  ADMIN
+  MAINTENANCE
+}
+
+enum ItemCategory {
+  SPEED_UP
+  RESOURCE
+  BONUS
+  MISC
+}
+
+enum ResourceType {
+  ELECTRICITY
+  SCRAP_PARTS
+  MICROCHIPS
+  STAMINA
+}
+
+enum EnhancementDuration {
+  TEMPORARY
+  PERMANENT
+}
+
+enum SpeedUpTarget {
+  ANY
+  CONSTRUCTION
+  MANUFACTURING
+  TRAINING
+  MISSION
+  RESEARCH
+  REPAIR
+}
+
+enum EffectKind {
+  SHIELD
+  TIME_REDUCTION
+  RESOURCE_GRANT
+}
+
+enum StackingRule {
+  STACK
+  REFRESH
+  IGNORE
+}
+
+enum GemType {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+// Trading System Enums
+enum TradingEventStatus {
+  DRAFT     // Event is being prepared
+  ACTIVE    // Event is live and accepting trades
+  PAUSED    // Event is temporarily disabled
+  ENDED     // Event has ended
+  CANCELLED // Event was cancelled
+}
+
+enum TradeOfferStatus {
+  ACTIVE   // Available for trading
+  PAUSED   // Temporarily disabled
+  SOLD_OUT // No more available
+  EXPIRED  // Time limit reached
+}
+
+enum TradeItemType {
+  REQUIRED // Items user must give
+  REWARD   // Items user will receive
+}

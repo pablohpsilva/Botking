@@ -23,7 +23,7 @@
     "@botking/logger": "workspace:*",
     "@hono/node-server": "^1.8.0",
     "@hono/zod-validator": "^0.7.3",
-    "@prisma/client": "^5.19.1",
+    "@prisma/client": "^6.16.2",
     "hono": "^4.0.0",
     "zod": "^4.1.9"
   },

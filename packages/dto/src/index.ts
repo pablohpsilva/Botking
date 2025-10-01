@@ -1,48 +1,42 @@
 /**
- * Botking Artifact System - Enhanced Object-Oriented Architecture
+ * Botking DTO System - Data Transfer Objects for CRUD Operations
  *
- * A comprehensive OOP system for managing bot components including:
- * - Soul Chips: Core personality and AI traits
- * - Skeletons: Structural frames with slots and mobility
- * - Parts: Modular equipment for combat roles
- * - Expansion Chips: Slot-based enhancers
- * - Bot State: Dynamic runtime state management
- * - Items: Consumable objects for game mechanics
- * - Trading: Event-based item exchange system
+ * A comprehensive DTO system for managing database operations on bot components including:
+ * - Asset Packs: Collections of game assets
+ * - Assets: Individual game resources
+ * - Expansion Slots: Robot expansion capabilities
+ * - Identity Links: User authentication connections
+ * - Instances: Item instances in the game
+ * - Inventory Stacks: Player inventory management
+ * - Item Template Assets: Asset-template relationships
+ * - Parts Slots: Robot part attachments
+ * - Player Accounts: Player data per shard
+ * - Robots: Bot entities
+ * - Shards: Game server instances
+ * - Skeleton Slots: Robot skeleton attachments
+ * - Soul Chip Slots: Robot AI chip attachments
+ * - Templates: Item templates
+ * - Users: User accounts
  *
- * Enhanced OOP features:
- * - ArtifactManager: Centralized artifact lifecycle management
- * - Builder Patterns: Fluent interfaces for complex artifact creation
- * - Template Method: Structured validation with extensible rules
- * - Strategy Pattern: Flexible assembly strategies for different bot types
- * - Validation Framework: Comprehensive artifact validation with scoring
+ * Each DTO provides:
+ * - CRUD operations (Create, Read, Update, Delete)
+ * - Validation using Zod schemas
+ * - Database connection management
  */
 
-// Main OOP Management Classes
-export * from "./artifact-manager";
-
-// Builder Patterns
-export * from "./bot/bot-builder";
-export * from "./item/item-builder";
-
-// Validation Framework (Template Method Pattern)
-export * from "./validation/artifact-validator";
-export * from "./validation/bot-validator";
-
-// Assembly Framework (Strategy Pattern)
-export * from "./assembly/assembly-strategy";
-
-// Export all types and enums
-export * from "./types";
-
-// Export all artifact classes
-export * from "./bot";
-export * from "./bot-state";
-export * from "./expansion-chip";
-export * from "./item";
-export * from "./part";
-export * from "./skeleton";
-export * from "./soul-chip";
-export * from "./trading";
+// Export all DTO classes
+export * from "./asset-pack";
+export * from "./asset";
+export * from "./expansion-slot";
+export * from "./identity-link";
+export * from "./instance";
+export * from "./inventory-stack";
+export * from "./item-template-asset";
+export * from "./parts-slot";
+export * from "./player-account";
+export * from "./robot";
+export * from "./shard";
+export * from "./skeleton-slot";
+export * from "./soul-chip-slot";
+export * from "./template";
 export * from "./user";
-export * from "./account";

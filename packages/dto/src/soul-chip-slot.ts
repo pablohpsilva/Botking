@@ -1,43 +1,40 @@
-import { ExpansionSlot, Robot, Instance } from "@botking/artifact";
-import { validateData, ExpansionSlotSchema } from "@botking/validator";
+import { SoulChipSlot, Robot, Instance } from "@botking/artifact";
+import { validateData, SoulChipSlotSchema } from "@botking/validator";
 import { connectionManager } from "@botking/db";
 import { RobotDto } from "./robot";
 import { InstanceDto } from "./instance";
 
 // Define loading options type
-type ExpansionSlotLoadOptions = {
+type SoulChipSlotLoadOptions = {
   includeRobot?: boolean;
   includeInstance?: boolean;
 };
 
-export class ExpansionSlotDto {
-  public expansionSlot?: ExpansionSlot;
+export class SoulChipSlotDto {
+  public soulChipSlot?: SoulChipSlot;
   public robot?: RobotDto;
   public instance?: InstanceDto;
 
   constructor(props?: {
     robotId: string;
     itemInstId: string;
-    slotIx: number;
     createdAt: Date;
     updatedAt: Date;
   }) {
     if (props) {
-      this.expansionSlot = new ExpansionSlot(props);
+      this.soulChipSlot = new SoulChipSlot(props);
     }
   }
 
   /**
-   * Find expansion slot by composite key with optional relationship loading
+   * Find soul chip slot by robot ID with optional relationship loading
    * @param robotId Robot ID
-   * @param slotIx Slot index
    * @param options Loading options for relationships
    */
-  public async findByCompositeKey(
+  public async findByRobotId(
     robotId: string,
-    slotIx: number,
-    options: ExpansionSlotLoadOptions = {}
-  ): Promise<ExpansionSlotDto> {
+    options: SoulChipSlotLoadOptions = {}
+  ): Promise<SoulChipSlotDto> {
     // Build include object dynamically
     const include: any = {};
 
@@ -55,21 +52,15 @@ export class ExpansionSlotDto {
 
     const dbResult = await connectionManager
       .getClient()
-      .expansion_slot.findUnique({
-        where: {
-          robotId_slotIx: {
-            robotId,
-            slotIx,
-          },
-        },
+      .soul_chip_slot.findUnique({
+        where: { robotId },
         include: Object.keys(include).length > 0 ? include : undefined,
       });
 
     if (dbResult) {
-      this.expansionSlot = new ExpansionSlot({
+      this.soulChipSlot = new SoulChipSlot({
         robotId: dbResult.robotId,
         itemInstId: dbResult.itemInstId,
-        slotIx: dbResult.slotIx,
         createdAt: dbResult.createdAt,
         updatedAt: dbResult.updatedAt,
       });
@@ -96,39 +87,35 @@ export class ExpansionSlotDto {
   /**
    * Convenience methods for common use cases
    */
-  public async findByCompositeKeyBasic(
-    robotId: string,
-    slotIx: number
-  ): Promise<ExpansionSlotDto> {
-    return this.findByCompositeKey(robotId, slotIx, {});
+  public async findByRobotIdBasic(robotId: string): Promise<SoulChipSlotDto> {
+    return this.findByRobotId(robotId, {});
   }
 
-  public async findByCompositeKeyWithInstance(
-    robotId: string,
-    slotIx: number
-  ): Promise<ExpansionSlotDto> {
-    return this.findByCompositeKey(robotId, slotIx, { includeInstance: true });
+  public async findByRobotIdWithInstance(
+    robotId: string
+  ): Promise<SoulChipSlotDto> {
+    return this.findByRobotId(robotId, { includeInstance: true });
   }
 
   /**
    * Lazy loading methods for optional relationships
    */
   public async loadRobot(): Promise<void> {
-    if (!this.expansionSlot?.robotId || this.robot) return;
+    if (!this.soulChipSlot?.robotId || this.robot) return;
 
-    this.robot = await new RobotDto().findByIdBasic(this.expansionSlot.robotId);
+    this.robot = await new RobotDto().findByIdBasic(this.soulChipSlot.robotId);
   }
 
   public async loadInstance(): Promise<void> {
-    if (!this.expansionSlot?.itemInstId || this.instance) return;
+    if (!this.soulChipSlot?.itemInstId || this.instance) return;
 
     this.instance = await new InstanceDto().findByIdWithTemplate(
-      this.expansionSlot.itemInstId
+      this.soulChipSlot.itemInstId
     );
   }
 
-  public validate(): ExpansionSlotDto {
-    const result = validateData(ExpansionSlotSchema, this.expansionSlot);
+  public validate(): SoulChipSlotDto {
+    const result = validateData(SoulChipSlotSchema, this.soulChipSlot);
 
     if (!result.success) {
       throw new Error(result.error);
@@ -137,22 +124,17 @@ export class ExpansionSlotDto {
     return this;
   }
 
-  public async upsert(): Promise<ExpansionSlotDto> {
+  public async upsert(): Promise<SoulChipSlotDto> {
     this.validate();
 
-    if (!this.expansionSlot) {
-      throw new Error("Expansion slot is not allowed to be set");
+    if (!this.soulChipSlot) {
+      throw new Error("Soul chip slot is not allowed to be set");
     }
 
-    await connectionManager.getClient().expansion_slot.upsert({
-      where: {
-        robotId_slotIx: {
-          robotId: this.expansionSlot.robotId,
-          slotIx: this.expansionSlot.slotIx,
-        },
-      },
-      update: this.expansionSlot,
-      create: this.expansionSlot,
+    await connectionManager.getClient().soul_chip_slot.upsert({
+      where: { robotId: this.soulChipSlot.robotId },
+      update: this.soulChipSlot,
+      create: this.soulChipSlot,
     });
 
     return this;

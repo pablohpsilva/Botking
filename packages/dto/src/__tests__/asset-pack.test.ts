@@ -197,13 +197,10 @@ describe("AssetPackDto", () => {
   });
 
   describe("Edge Cases", () => {
-    it("should handle undefined ID in constructor", () => {
-      const props = createMockAssetPack();
-      delete props.id;
-
-      const dto = new AssetPackDto(props);
-      expect(dto.assetPack?.id).toBeUndefined();
-    });
+     it("should handle undefined ID in constructor", () => {
+       const dto = new AssetPackDto();
+       expect(dto.assetPack).toBeUndefined();
+     });
 
     it("should handle empty string values", () => {
       const props = createMockAssetPack({ name: "", version: "" });

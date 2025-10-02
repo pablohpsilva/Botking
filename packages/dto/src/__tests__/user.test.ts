@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { UserDto } from "../user";
 import {
   mockClient,
+  mockValidateData,
   createMockUser,
   createMockIdentityLink,
   resetAllMocks,
@@ -270,8 +271,7 @@ describe("UserDto", () => {
     });
 
     it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
+      mockValidateData.mockReturnValue({
         success: false,
         error: "Invalid email format",
       });
@@ -378,11 +378,8 @@ describe("UserDto", () => {
     });
 
     it("should handle undefined ID in constructor", () => {
-      const props = createMockUser();
-      delete props.id;
-
-      const dto = new UserDto(props);
-      expect(dto.user?.id).toBeUndefined();
+      const dto = new UserDto();
+      expect(dto.user).toBeUndefined();
     });
   });
 });

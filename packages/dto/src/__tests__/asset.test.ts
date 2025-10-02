@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { AssetDto } from "../asset";
 import {
   mockClient,
+  mockValidateData,
   createMockAsset,
   createMockAssetPack,
   resetAllMocks,
@@ -271,18 +272,17 @@ describe("AssetDto", () => {
       expect(result).toBe(dto);
     });
 
-    it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
-        success: false,
-        error: "Invalid asset data",
-      });
+     it("should throw error when validation fails", () => {
+       mockValidateData.mockReturnValue({
+         success: false,
+         error: "Invalid asset data",
+       });
 
-      const props = createMockAsset();
-      const dto = new AssetDto(props);
+       const props = createMockAsset();
+       const dto = new AssetDto(props);
 
-      expect(() => dto.validate()).toThrow("Invalid asset data");
-    });
+       expect(() => dto.validate()).toThrow("Invalid asset data");
+     });
   });
 
   describe("Integration Tests", () => {

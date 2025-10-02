@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { InstanceDto } from "../instance";
 import {
   mockClient,
+  mockValidateData,
   createMockInstance,
   createMockTemplate,
   createMockPlayerAccount,
@@ -459,8 +460,7 @@ describe("InstanceDto", () => {
     });
 
     it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
+      mockValidateData.mockReturnValue({
         success: false,
         error: "Invalid instance data",
       });
@@ -498,7 +498,7 @@ describe("InstanceDto", () => {
 
     it("should handle large player ID values", () => {
       const largePlayerId = "9223372036854775807"; // Max BigInt value
-      const props = createMockInstance({ playerId: largePlayerId });
+      const props = createMockInstance({ playerId: BigInt(largePlayerId) });
       const dto = new InstanceDto(props);
 
       expect(dto.instance?.playerId).toBe(BigInt(largePlayerId));

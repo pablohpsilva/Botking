@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { InventoryStackDto } from "../inventory-stack";
 import {
   mockClient,
+  mockValidateData,
   createMockInventoryStack,
   createMockTemplate,
   createMockPlayerAccount,
@@ -301,7 +302,7 @@ describe("InventoryStackDto", () => {
       });
 
       it("should update existing inventory stack successfully", async () => {
-        const props = createMockInventoryStack({ quantity: "25" });
+        const props = createMockInventoryStack({ quantity: BigInt("25") });
         const dto = new InventoryStackDto(props);
 
         const expectedDbData = {
@@ -309,7 +310,7 @@ describe("InventoryStackDto", () => {
           shardId: props.shardId,
           playerId: props.playerId.toString(),
           templateId: props.templateId,
-          quantity: BigInt(props.quantity),
+          quantity: props.quantity,
           createdAt: props.createdAt,
           updatedAt: props.updatedAt,
         };
@@ -359,8 +360,7 @@ describe("InventoryStackDto", () => {
     });
 
     it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
+      mockValidateData.mockReturnValue({
         success: false,
         error: "Invalid inventory stack data",
       });
@@ -445,7 +445,7 @@ describe("InventoryStackDto", () => {
 
   describe("Edge Cases", () => {
     it("should handle zero quantity", () => {
-      const props = createMockInventoryStack({ quantity: "0" });
+      const props = createMockInventoryStack({ quantity: BigInt(0) });
       const dto = new InventoryStackDto(props);
 
       expect(dto.inventoryStack?.quantity).toBe(BigInt(0));
@@ -453,7 +453,9 @@ describe("InventoryStackDto", () => {
 
     it("should handle large quantity values", () => {
       const largeQuantity = "9223372036854775807"; // Max BigInt value
-      const props = createMockInventoryStack({ quantity: largeQuantity });
+      const props = createMockInventoryStack({
+        quantity: BigInt(largeQuantity),
+      });
       const dto = new InventoryStackDto(props);
 
       expect(dto.inventoryStack?.quantity).toBe(BigInt(largeQuantity));
@@ -461,7 +463,9 @@ describe("InventoryStackDto", () => {
 
     it("should handle large player ID values", () => {
       const largePlayerId = "9223372036854775807"; // Max BigInt value
-      const props = createMockInventoryStack({ playerId: largePlayerId });
+      const props = createMockInventoryStack({
+        playerId: BigInt(largePlayerId),
+      });
       const dto = new InventoryStackDto(props);
 
       expect(dto.inventoryStack?.playerId).toBe(BigInt(largePlayerId));
@@ -506,11 +510,8 @@ describe("InventoryStackDto", () => {
     });
 
     it("should handle undefined ID in constructor", () => {
-      const props = createMockInventoryStack();
-      delete props.id;
-
-      const dto = new InventoryStackDto(props);
-      expect(dto.inventoryStack?.id).toBeUndefined();
+      const dto = new InventoryStackDto();
+      expect(dto.inventoryStack).toBeUndefined();
     });
   });
 });

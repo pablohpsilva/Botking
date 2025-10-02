@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { PlayerAccountDto } from "../player-account";
-import { createMockPlayerAccount, resetAllMocks } from "./setup";
+import { mockValidateData, createMockPlayerAccount, resetAllMocks } from "./setup";
 
 describe("PlayerAccountDto", () => {
   beforeEach(() => {
@@ -35,18 +35,17 @@ describe("PlayerAccountDto", () => {
       expect(result).toBe(dto);
     });
 
-    it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
-        success: false,
-        error: "Invalid player account data",
-      });
+     it("should throw error when validation fails", () => {
+       mockValidateData.mockReturnValue({
+         success: false,
+         error: "Invalid player account data",
+       });
 
-      const props = createMockPlayerAccount();
-      const dto = new PlayerAccountDto(props);
+       const props = createMockPlayerAccount();
+       const dto = new PlayerAccountDto(props);
 
-      expect(() => dto.validate()).toThrow("Invalid player account data");
-    });
+       expect(() => dto.validate()).toThrow("Invalid player account data");
+     });
 
     it("should validate with undefined player account", () => {
       const dto = new PlayerAccountDto();

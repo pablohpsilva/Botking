@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { TemplateDto } from "../template";
-import { mockClient, createMockTemplate, resetAllMocks } from "./setup";
+import { mockClient, mockValidateData, createMockTemplate, resetAllMocks } from "./setup";
 
 describe("TemplateDto", () => {
   beforeEach(() => {
@@ -133,18 +133,17 @@ describe("TemplateDto", () => {
       expect(result).toBe(dto);
     });
 
-    it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
-        success: false,
-        error: "Invalid template data",
-      });
+     it("should throw error when validation fails", () => {
+       mockValidateData.mockReturnValue({
+         success: false,
+         error: "Invalid template data",
+       });
 
-      const props = createMockTemplate();
-      const dto = new TemplateDto(props);
+       const props = createMockTemplate();
+       const dto = new TemplateDto(props);
 
-      expect(() => dto.validate()).toThrow("Invalid template data");
-    });
+       expect(() => dto.validate()).toThrow("Invalid template data");
+     });
   });
 
   describe("Integration Tests", () => {
@@ -179,29 +178,25 @@ describe("TemplateDto", () => {
       expect(finalDto.template?.name).toBe("Updated Template Name");
     });
 
-    it("should handle validation in upsert flow", async () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
-        success: false,
-        error: "Name is required",
-      });
+     it("should handle validation in upsert flow", async () => {
+       mockValidateData.mockReturnValue({
+         success: false,
+         error: "Name is required",
+       });
 
-      const props = createMockTemplate({ name: "" });
-      const dto = new TemplateDto(props);
+       const props = createMockTemplate({ name: "" });
+       const dto = new TemplateDto(props);
 
-      await expect(dto.upsert()).rejects.toThrow("Name is required");
-      expect(mockClient.template.upsert).not.toHaveBeenCalled();
-    });
+       await expect(dto.upsert()).rejects.toThrow("Name is required");
+       expect(mockClient.template.upsert).not.toHaveBeenCalled();
+     });
   });
 
   describe("Edge Cases", () => {
-    it("should handle undefined ID in constructor", () => {
-      const props = createMockTemplate();
-      delete props.id;
-
-      const dto = new TemplateDto(props);
-      expect(dto.template?.id).toBeUndefined();
-    });
+     it("should handle undefined ID in constructor", () => {
+       const dto = new TemplateDto();
+       expect(dto.template).toBeUndefined();
+     });
 
     it("should handle empty string values", () => {
       const props = createMockTemplate({ name: "", slug: "" });

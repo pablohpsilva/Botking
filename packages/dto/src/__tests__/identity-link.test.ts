@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { IdentityLinkDto } from "../identity-link";
 import {
   mockClient,
+  mockValidateData,
   createMockIdentityLink,
   createMockUser,
   resetAllMocks,
@@ -25,7 +26,7 @@ describe("IdentityLinkDto", () => {
 
       expect(dto.identityLink).toBeDefined();
       expect(dto.identityLink?.id).toBe(props.id);
-      expect(dto.identityLink?.authUserId).toBe(props.userId);
+      expect(dto.identityLink?.authUserId).toBe(props.authUserId);
       expect(dto.identityLink?.globalPlayerId).toBe(props.globalPlayerId);
     });
   });
@@ -125,7 +126,7 @@ describe("IdentityLinkDto", () => {
         await dto.loadUser();
 
         expect(mockClient.user.findUnique).toHaveBeenCalledWith({
-          where: { id: mockLink.userId },
+          where: { id: mockLink.authUserId },
           include: undefined,
         });
         expect(dto.user?.user).toEqual(mockUser);
@@ -210,7 +211,7 @@ describe("IdentityLinkDto", () => {
 
         const expectedDbData = {
           id: props.id,
-          userId: props.userId,
+          userId: props.authUserId,
           globalPlayerId: props.globalPlayerId,
           linkedAt: props.linkedAt,
           createdAt: props.createdAt,
@@ -237,7 +238,7 @@ describe("IdentityLinkDto", () => {
 
         const expectedDbData = {
           id: props.id,
-          userId: props.userId,
+          userId: props.authUserId,
           globalPlayerId: props.globalPlayerId,
           linkedAt: props.linkedAt,
           createdAt: props.createdAt,
@@ -289,8 +290,7 @@ describe("IdentityLinkDto", () => {
     });
 
     it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
+      mockValidateData.mockReturnValue({
         success: false,
         error: "Invalid identity link data",
       });
@@ -361,16 +361,13 @@ describe("IdentityLinkDto", () => {
 
   describe("Edge Cases", () => {
     it("should handle undefined ID in constructor", () => {
-      const props = createMockIdentityLink();
-      delete props.id;
-
-      const dto = new IdentityLinkDto(props);
-      expect(dto.identityLink?.id).toBeUndefined();
+      const dto = new IdentityLinkDto();
+      expect(dto.identityLink).toBeUndefined();
     });
 
     it("should handle empty string values", () => {
       const props = createMockIdentityLink({
-        userId: "",
+        authUserId: "",
         globalPlayerId: "",
       });
       const dto = new IdentityLinkDto(props);

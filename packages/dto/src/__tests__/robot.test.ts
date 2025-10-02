@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { RobotDto } from "../robot";
-import { mockClient, createMockRobot, resetAllMocks } from "./setup";
+import {
+  mockClient,
+  mockValidateData,
+  createMockRobot,
+  resetAllMocks,
+} from "./setup";
 
 describe("RobotDto", () => {
   beforeEach(() => {
@@ -23,7 +28,7 @@ describe("RobotDto", () => {
       expect(dto.robot?.id).toBe(props.id);
       expect(dto.robot?.nickname).toBe(props.nickname);
       expect(dto.robot?.shardId).toBe(props.shardId);
-      expect(dto.robot?.playerId).toBe(BigInt(props.playerId));
+      expect(dto.robot?.playerId).toBe(props.playerId);
     });
   });
 
@@ -433,8 +438,7 @@ describe("RobotDto", () => {
     });
 
     it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
+      mockValidateData.mockReturnValue({
         success: false,
         error: "Invalid robot data",
       });
@@ -553,7 +557,7 @@ describe("RobotDto", () => {
 
     it("should handle large player ID values", () => {
       const largePlayerId = "9223372036854775807"; // Max BigInt value
-      const props = createMockRobot({ playerId: largePlayerId });
+      const props = createMockRobot({ playerId: BigInt(largePlayerId) });
       const dto = new RobotDto(props);
 
       expect(dto.robot?.playerId).toBe(BigInt(largePlayerId));

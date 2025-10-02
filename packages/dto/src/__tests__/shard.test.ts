@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ShardDto } from "../shard";
-import { mockClient, createMockShard, resetAllMocks } from "./setup";
+import { mockClient, mockValidateData, createMockShard, resetAllMocks } from "./setup";
 
 describe("ShardDto", () => {
   beforeEach(() => {
@@ -146,18 +146,17 @@ describe("ShardDto", () => {
       expect(result).toBe(dto);
     });
 
-    it("should throw error when validation fails", () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
-        success: false,
-        error: "Invalid shard data",
-      });
+     it("should throw error when validation fails", () => {
+       mockValidateData.mockReturnValue({
+         success: false,
+         error: "Invalid shard data",
+       });
 
-      const props = createMockShard();
-      const dto = new ShardDto(props);
+       const props = createMockShard();
+       const dto = new ShardDto(props);
 
-      expect(() => dto.validate()).toThrow("Invalid shard data");
-    });
+       expect(() => dto.validate()).toThrow("Invalid shard data");
+     });
   });
 
   describe("Integration Tests", () => {
@@ -192,19 +191,18 @@ describe("ShardDto", () => {
       expect(finalDto.shard?.updatedAt).toEqual(new Date("2023-12-31"));
     });
 
-    it("should handle validation in upsert flow", async () => {
-      const { validateData } = require("@botking/validator");
-      validateData.mockReturnValue({
-        success: false,
-        error: "Shard ID is required",
-      });
+     it("should handle validation in upsert flow", async () => {
+       mockValidateData.mockReturnValue({
+         success: false,
+         error: "Shard ID is required",
+       });
 
-      const props = createMockShard({ shardId: null as any });
-      const dto = new ShardDto(props);
+       const props = createMockShard({ shardId: null as any });
+       const dto = new ShardDto(props);
 
-      await expect(dto.upsert()).rejects.toThrow("Shard ID is required");
-      expect(mockClient.shard.upsert).not.toHaveBeenCalled();
-    });
+       await expect(dto.upsert()).rejects.toThrow("Shard ID is required");
+       expect(mockClient.shard.upsert).not.toHaveBeenCalled();
+     });
   });
 
   describe("Edge Cases", () => {

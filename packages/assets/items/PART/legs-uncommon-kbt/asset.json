@@ -1,0 +1,10 @@
+{
+  "name": "LEGS_KBT",
+  "slot": "LEGS",
+  "rarity": "UNCOMMON",
+  "meta": {
+    "mods": {
+      "spdPct": 0.12
+    }
+  }
+}

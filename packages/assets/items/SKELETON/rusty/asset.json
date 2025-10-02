@@ -1,0 +1,12 @@
+{
+  "name": "SKELETON_RUSTY",
+  "meta": {
+    "mods": {
+      "atkPct": 0.05,
+      "defPct": 0.05,
+      "spdPct": 0.05,
+      "perceptionPct": 0.05,
+      "energyConsumptionPct": 0.05
+    }
+  }
+}

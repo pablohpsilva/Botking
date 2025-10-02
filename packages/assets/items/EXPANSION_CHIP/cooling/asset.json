@@ -1,0 +1,9 @@
+{
+  "name": "EXPANSION_CHIP_COOLING",
+  "slot": "EXPANSION_CHIP",
+  "meta": {
+    "mods": {
+      "overheatResistPct": 0.2
+    }
+  }
+}

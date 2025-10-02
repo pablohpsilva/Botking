@@ -1,0 +1,12 @@
+{
+  "name": "SOUL_CHIP_PTT_LEVEL_1",
+  "meta": {
+    "mods": {
+      "atkPct": 0.15,
+      "defPct": 0.15,
+      "spdPct": 0.15,
+      "perceptionPct": 0.15,
+      "energyConsumptionPct": 0.15
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "HEAD_KBT",
+  "slot": "HEAD",
+  "rarity": "RARE",
+  "meta": {
+    "mods": {
+      "defPct": 0.15
+    }
+  }
+}

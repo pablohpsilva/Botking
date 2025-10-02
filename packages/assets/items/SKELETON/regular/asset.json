@@ -1,0 +1,12 @@
+{
+  "name": "SKELETON_REGULAR",
+  "meta": {
+    "mods": {
+      "atkPct": 0.1,
+      "defPct": 0.1,
+      "spdPct": 0.1,
+      "perceptionPct": 0.1,
+      "energyConsumptionPct": 0.15
+    }
+  }
+}

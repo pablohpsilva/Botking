@@ -1,0 +1,9 @@
+{
+  "name": "EXPANSION_CHIP_TARGETING",
+  "slot": "EXPANSION_CHIP",
+  "meta": {
+    "mods": {
+      "critRatePct": 0.05
+    }
+  }
+}

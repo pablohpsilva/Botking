@@ -1,0 +1,10 @@
+{
+  "name": "LEFT_ARM_MACHINE_GUN",
+  "slot": "ARM_L",
+  "rarity": "UNCOMMON",
+  "meta": {
+    "mods": {
+      "atkPct": 0.15
+    }
+  }
+}

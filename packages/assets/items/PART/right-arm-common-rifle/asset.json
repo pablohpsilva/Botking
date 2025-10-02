@@ -1,0 +1,10 @@
+{
+  "name": "RIGHT_ARM_RIFLE",
+  "slot": "ARM_R",
+  "rarity": "COMMON",
+  "meta": {
+    "mods": {
+      "atkPct": 0.15
+    }
+  }
+}

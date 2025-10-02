@@ -1,0 +1,9 @@
+{
+  "name": "TORSO_KBT",
+  "slot": "TORSO",
+  "meta": {
+    "mods": {
+      "defPct": 0.15
+    }
+  }
+}

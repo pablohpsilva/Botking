@@ -7,9 +7,6 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest run",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },

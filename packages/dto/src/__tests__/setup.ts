@@ -4,11 +4,13 @@
  */
 
 import { vi } from "vitest";
-import { connectionManager } from "@botking/db";
+import { connectionManager, PrismaClient } from "@botking/db";
 import { validateData } from "@botking/validator";
 
 // Export the mocked functions for use in tests
-export const mockClient = vi.mocked(connectionManager.getClient());
+export const mockClient = vi.mocked(
+  connectionManager.getClient()
+) as PrismaClient;
 export const mockValidateData = vi.mocked(validateData);
 
 // Test data factories
@@ -162,10 +164,11 @@ export const resetAllMocks = () => {
   Object.values(mockClient).forEach((table) => {
     Object.values(table).forEach((method) => {
       if (typeof method === "function" && "mockReset" in method) {
+        // @ts-expect-error
         method.mockReset();
       }
     });
   });
   mockValidateData.mockReset();
-  mockValidateData.mockReturnValue({ success: true });
+  mockValidateData.mockReturnValue({ success: true, data: {} });
 };
